@@ -334,7 +334,7 @@ MuseScore {
           }
           endStaff = cursor.staffIdx;
         }
-
+        console.log(startStaff + " - " + endStaff + " - " + endTick)
         // -------------- Actual thing here -----------------------
 
 
@@ -369,8 +369,8 @@ MuseScore {
                     func(note, parms);
                   }
                 }
-                cursor.next();
               }
+              cursor.next();
             }
           }
         }
