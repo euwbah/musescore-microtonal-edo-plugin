@@ -243,7 +243,9 @@ MuseScore {
             y: 150
           }
           Text {
-            text: "It's not necessary to enter the key signature into\nthe dialog only if a standard key signature is used."
+            text: "If a custom created key signature is used,\n" +
+                  "entering the key signature in the\n" +
+                  "input fields to the left is required."
             x: 250
             y: 230
           }
