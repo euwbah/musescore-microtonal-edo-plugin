@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 1.0
 
 MuseScore {
-      version:  "1.1-alpha"
+      version:  "1.1-alpha1"
       description: "Retune selection to 31-TET, or whole score if nothing selected."
       menuPath: "Plugins.Notes.Retune 31-TET"
       pluginType: "dialog"
