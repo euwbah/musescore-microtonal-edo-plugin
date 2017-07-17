@@ -1,10 +1,10 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 1.3
+import QtQuick.Controls.Styles 1.3
 import MuseScore 1.0
 
 MuseScore {
-      version:  "1.0"
+      version:  "1.1-alpha"
       description: "Retune selection to 31-TET, or whole score if nothing selected."
       menuPath: "Plugins.Notes.Retune 31-TET"
       pluginType: "dialog"
@@ -347,11 +347,16 @@ MuseScore {
             if (fullScore)
               cursor.rewind(0) // if no selection, beginning of score
 
+            var measureCount = 0;
+
             // Loop elements of a voice
             while (cursor.segment && (fullScore || cursor.tick < endTick)) {
               // Reset accidentals if new measure.
-              if (cursor.measure.firstSegment == cursor.segment)
+              if (cursor.segment.tick == cursor.measure.firstSegment.tick) {
                 parms.accidentals = {};
+                measureCount ++;
+                console.log("Reset accidentals - " + measureCount);
+              }
 
               if (cursor.element) {
 
@@ -608,7 +613,9 @@ MuseScore {
           return;
         }
 
-        // tpc is natural.... either natural note, or special accidental.
+        // in the event that tpc is considered natural by
+        // MuseScore's playback, it would mean that it is
+        // either a natural note, or a microtonal accidental.
 
         var baseNote;
         switch(tpc) {
