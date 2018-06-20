@@ -98,6 +98,7 @@ System Text or Staff Text.
   all staves from there onwards
 - Use **Staff Text** (`Shift` + `T`) if you only want the code to affect the staff that it is on.
   This is especially useful when using custom **local** time signatures!
+- Remember to make the custom key signature code invisible! (Press `V` to toggle visibility)
 
 The syntax of this *super-special key signature code* is simple:
 
