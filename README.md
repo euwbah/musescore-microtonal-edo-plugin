@@ -94,6 +94,13 @@ the section to retune before clicking "Retune".
 `tpc`
 : Tonal pitch class
 
+`segment.annotations[idx].textStyleType`
+: 22 if Staff Text,
+: 21 if System Text
+
+`segment.annotations[idx].text`
+: Contains given text
+
 ## TODO:
 
 - Don't hard-code / bruteforce frequencies, just use a dictionary a exponential operations instead
