@@ -49,9 +49,11 @@ any custom key signature can't be read by the plugin, at least for now.
 
 Should you want to create a microtonal key signature and have it affect the
 playback, you have to explicitly declare the custom key signature using some
-super-special accidental code:
+*super-special accidental code*:
 
-| Diesis steps | Accidental code |
+#### Accidental Code
+
+| Diesis steps | *Super-special accidental code* |
 | ----: | :----: |
 | -5   | `bb` |
 | -4   | `db`  |
@@ -66,25 +68,52 @@ super-special accidental code:
 | 5   |  `x` |
 
 
-There are two ways you can enter the accidental code as shown below
+There are two ways you can enter the accidental code as shown below.
 
 > Note that explicit accidentals will still take precedence over the
 > declared custom key signature, behaving exactly the same way a key signature
 > would.
 
-#### Method 1: Using the text input fields in the plugin window
+#### Method 1: Using the text input fields in the plugin window (Obsoleted)
 
-![customkeysig](images/2018/06/customkeysig.png)
+![Text field custom key sig](images/2018/06/text-field-custom-key-sig.png)
 
 This method will only allow tuning to one custom key signature at a time,
-if there are changes in key signature (whether from custom to standard key, or
-custom to custom), each section will have to be tuned independently by selecting
+if there are changes in key signature that modulate from or to a custom key
+signature, each section will have to be tuned independently by selecting
 the section to retune before clicking "Retune".
 
-#### Method 2: Using staff text [WIP]
+If there are numerous key signature changes, or require local key signatures
+(hooray for simultaneous microtonality and polytonality!), use Method 2 instead...
 
+#### Method 2: Using staff text
 
+![Staff text custom key sig](images/2018/06/staff-text-custom-key-sig.png)
 
+This method allows you to indicate custom key signatures in the score itself
+by entering *super-special key signature code* inside
+System Text or Staff Text.
+
+- Use **System Text** (`Ctrl` + `Shift` + `T`) if you want the super-special key signature code to affect
+  all staves from there onwards
+- Use **Staff Text** (`Shift` + `T`) if you only want the code to affect the staff that it is on.
+  This is especially useful when using custom **local** time signatures!
+
+The syntax of this *super-special key signature code* is simple:
+
+1. Start with a dot `.`
+2. Put the required accidental for the note **C** using the [accidental code](#accidental-code)
+3. Put another dot `.`
+4. Put the required accidental for **D**
+5. Repeat from **C** thru **B**
+
+Note that There **must** be seven `.` in total,
+natural accidentals are denoted by leaving the space blank,
+and spaces/newlines can be placed before or after the dots to improve readability.
+
+**For example:**
+Ab-down major can be denoted like this: `.v.bv.bv.v.v.bv.bv`
+representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 
 
 ### Note to self / developers:
