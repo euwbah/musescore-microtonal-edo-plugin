@@ -115,6 +115,11 @@ and spaces/newlines can be placed before or after the dots to improve readabilit
 Ab-down major can be denoted like this: `.v.bv.bv.v.v.bv.bv`
 representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 
+**IMPORTANT!** Following a custom key signature, should there be a modulation to any standard
+key signature, it is still necessary to reset the custom key signature to the default, that is,
+`.......`. Otherwise, the previous custom key signature would still be in effect, as it is being
+overriden.
+
 
 ### Note to self / developers:
 
@@ -140,6 +145,9 @@ representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 ### 1.2
 
 - Fixed non-naturalised explicit natural accidental in note affected by a custom key signature
+- Added support for declaring custom key signature changes in SystemText/StaffText
+- Added usage guide in this file
+- Preparing for meantone quartertone-accidental mode support
 
 ### 1.1
 
