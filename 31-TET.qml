@@ -11,6 +11,9 @@ MuseScore {
       width: 600
       height: 480
 
+      // WARNING! This doesn't validate the accidental code!
+      property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+
       property variant centOffsets: {
         'a': {
           '-5': 38.70967742 * -5 + 200, // Abb
@@ -260,6 +263,11 @@ MuseScore {
             onClicked: {
               var parms = {};
 
+              /*
+                key signature as denoted by the TextFields.
+
+                THIS SHOULD BE READONLY!
+              */
               parms.keySig = {
                 'c': convertAccidentalToSteps(c.text),
                 'd': convertAccidentalToSteps(d.text),
@@ -269,6 +277,18 @@ MuseScore {
                 'a': convertAccidentalToSteps(a.text),
                 'b': convertAccidentalToSteps(b.text),
               };
+
+              /*
+              Used for StaffText declared custom key signature.
+              No worries about handling system text vs staff text as
+              the annotation automatically applies appropriately.
+
+              Will be reset to the original TextField denoted key signature
+              at the start of each staff, although using both TextField
+              and StaffText(22)/SystemText(21) methods of custom key sig
+              entry is STRONGLY DISCOURAGED due to extreme unpredicatability.
+              */
+              parms.currKeySig = parms.keySig
 
               parms.accidentals = {};
 
@@ -307,6 +327,96 @@ MuseScore {
         default:
           return 0;
         }
+      }
+      function convertAccidentalToStepsOrNull(acc) {
+        switch(acc.trim()) {
+        case 'bb':
+          return -5;
+        case 'db':
+          return -4;
+        case 'bv':
+          return -3;
+        case 'b':
+          return -2;
+        case 'v':
+        case 'b^':
+          return -1;
+        case '':
+          return 0;
+        case '^':
+        case '#v':
+          return 1;
+        case '#':
+          return 2;
+        case '#^':
+          return 3;
+        case '#+':
+          return 4;
+        case 'x':
+          return 5;
+        default:
+          return null;
+        }
+      }
+
+      // Takes in annotations[].text and returns either
+      // a key signature object if str is a valid custom key sig code or null.
+      //
+      // Valid key sig code is denoted as such:
+      //  .c.d.e.f.g.a.b
+      // where identifiers c thru b denote a valid accidental code of which
+      // will apply to the respective notes.
+      //
+      // For example, this is F-down major: .v.v.v.v.v.v.bv
+      //
+      // whitespace can be placed between dots and accidentals for readability.
+      //
+      // For the natural accidental, blank or whitespace will both work.
+      //
+      // Assign the key signature object to the parms.currKeySig field!
+      function scanCustomKeySig(str) {
+        str = str.trim();
+        var keySig = {};
+        var res = str.match(customKeySigRegex);
+        if (res === null)
+          return null;
+        var acc = convertAccidentalToStepsOrNull(res[1].trim());
+        if (acc !== null)
+          keySig.c = acc;
+        else
+          return null;
+        acc = convertAccidentalToStepsOrNull(res[2].trim());
+        if (acc !== null)
+          keySig.d = acc;
+        else
+          return null;
+        acc = convertAccidentalToStepsOrNull(res[3].trim());
+        if (acc !== null)
+          keySig.e = acc;
+        else
+          return null;
+        acc = convertAccidentalToStepsOrNull(res[4].trim());
+        if (acc !== null)
+          keySig.f = acc;
+        else
+          return null;
+        acc = convertAccidentalToStepsOrNull(res[5].trim());
+        if (acc !== null)
+          keySig.g = acc;
+        else
+          return null;
+        acc = convertAccidentalToStepsOrNull(res[6].trim());
+        if (acc !== null)
+          keySig.a = acc;
+        else
+          return null;
+        acc = convertAccidentalToStepsOrNull(res[7].trim());
+        if (acc !== null)
+          keySig.b = acc;
+        else
+          return null;
+
+        return keySig;
       }
 
       // Apply the given function to all notes in selection
@@ -352,6 +462,11 @@ MuseScore {
 
             var measureCount = 0;
 
+            // After every track/voice, reset the currKeySig back to the original keySig
+
+            parms.currKeySig = parms.keySig;
+            console.log("currKeySig reset");
+
             // Loop elements of a voice
             while (cursor.segment && (fullScore || cursor.tick < endTick)) {
               // Reset accidentals if new measure.
@@ -359,6 +474,15 @@ MuseScore {
                 parms.accidentals = {};
                 measureCount ++;
                 console.log("Reset accidentals - " + measureCount);
+              }
+
+              // Check for StaffText key signature changes.
+              for (var i = 0, annotation = cursor.segment.annotations[i]; i < cursor.segment.annotations.length; i++) {
+                var maybeKeySig = scanCustomKeySig(annotation.text);
+                if (maybeKeySig !== null) {
+                  parms.currKeySig = maybeKeySig;
+                  console.log("detected new customer keySig: " + annotation.text);
+                }
               }
 
               if (cursor.element) {
@@ -669,7 +793,7 @@ MuseScore {
         if (parms.accidentals[note.line] !== undefined)
         stepsFromBaseNote = parms.accidentals[note.line];
         else // No prev accidentals. Use key signature instead.
-        stepsFromBaseNote = parms.keySig[baseNote];
+        stepsFromBaseNote = parms.currKeySig[baseNote];
 
         console.log("Base Note: " + baseNote + ", diesis: " + stepsFromBaseNote);
         note.tuning = centOffsets[baseNote][stepsFromBaseNote];
