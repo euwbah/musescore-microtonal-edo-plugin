@@ -211,47 +211,10 @@ MuseScore {
           }
 
           Text {
-            text: "Empty = natural"
-            x: 250
-            y: 10
-          }
-          Text {
-            text: "'^', '#v' / 'v', 'b^' = 1 step up / down"
-            x: 250
-            y: 30
-          }
-          Text {
-            text: "'#' / 'b' = 2 steps up / down"
-            x: 250
-            y: 50
-          }
-          Text {
-            text: "'#^' / 'bv' = 3 steps up / down"
-            x: 250
-            y: 70
-          }
-          Text {
-            text: "'#+' / 'db' = 4 steps up / down"
-            x: 250
-            y: 90
-          }
-          Text {
-            text: "'x' / 'bb' = 5 steps up / down (why tho lol)"
-            x: 250
-            y: 110
-          }
-          Text {
-            text: "Note: If there is a selection,\nthis plugin will only retune selected notes,\n" +
-                  "instead of the entire score."
-            x: 250
-            y: 150
-          }
-          Text {
-            text: "If a custom created key signature is used,\n" +
-                  "entering the key signature in the\n" +
-                  "input fields to the left is required."
+            text: '<html><style type="text/css"></style><a href="https://github.com/euwbah/musescore-31-tet-plugin/blob/master/README.md#usage">Usage guide</a></html>'
             x: 250
             y: 230
+            onLinkActivated: Qt.openUrlExternally(link)
           }
 
           Button {
