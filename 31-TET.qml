@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 1.0
 
 MuseScore {
-      version:  "1.1-alpha1"
+      version:  "1.2"
       description: "Retune selection to 31-TET, or whole score if nothing selected."
       menuPath: "Plugins.Notes.Retune 31-TET"
       pluginType: "dialog"
@@ -238,7 +238,8 @@ MuseScore {
             y: 110
           }
           Text {
-            text: "Note: If there is a selection,\nthis plugin will only retune selected notes."
+            text: "Note: If there is a selection,\nthis plugin will only retune selected notes,\n" +
+                  "instead of the entire score."
             x: 250
             y: 150
           }
@@ -665,7 +666,7 @@ MuseScore {
         }
         // Check for prev accidentals first
         var stepsFromBaseNote;
-        if (parms.accidentals[note.line])
+        if (parms.accidentals[note.line] !== undefined)
         stepsFromBaseNote = parms.accidentals[note.line];
         else // No prev accidentals. Use key signature instead.
         stepsFromBaseNote = parms.keySig[baseNote];
