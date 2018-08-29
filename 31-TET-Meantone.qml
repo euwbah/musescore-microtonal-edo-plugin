@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 1.0
 
 MuseScore {
-      version:  "1.2"
+      version:  "1.3"
       description: "Retune selection to 31-TET in meantone mode (Dbb is C+), or whole score if nothing selected."
       menuPath: "Plugins.31-TET.Retune 31-TET (Meantone)"
 

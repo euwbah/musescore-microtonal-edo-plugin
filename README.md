@@ -4,13 +4,17 @@ Musescore plugin to automatically retune notes in [31-EDO](https://en.wikipedia.
 
 ## Usage
 
-- To retune the entire score as is, run the plugin located in Plugins > 31-TET > Retune 31-TET
+To retune the entire score as is, run the plugin located in Plugins > 31-TET > Retune 31-TET
 
-- Depending on the type of notation you prefer, you may use the QML scripts for 
-  [ups-and-downs notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET.qml) 
-  or the [quartertone-accidental 1/4-comma meantone approximation notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET-Meantone.qml) modes
+To only retune certain notes / parts, make a selection before running the plugin.
 
-- To only retune certain notes / parts, make a selection before running the plugin.
+Depending on the type of notation you prefer, you may use the QML scripts for 
+[ups-and-downs notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET.qml)
+which uses [these accidentals](#ups-and-downs-notation-diatonic-enharmonic-equivalent)
+or the [quartertone-accidental 1/4-comma meantone approximation notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET-Meantone.qml) which uses [these accidentals](#14-comma-meantone-approximation-quarter-tone-accidentals).
+
+You may enable both QML files simultaneously and both of the modes will show up in the plugin menu.
+
 
 ### Accidentals
 
@@ -34,13 +38,15 @@ plugin. They can be found in the [advanced palette](https://musescore.org/en/han
 | +5  | ![Double sharp](images/x.png)  |
 
 > Important: This notation differs from the more conventional meantone notation
-> which uses quarter-tone accidentals instead. Meantone notation support is still a WIP.
->
+> which uses quarter-tone accidentals instead.
+> 
 > The benefits of using this notation over meantone is that it allows for proper
-> spelling of notes and chords in all transpositions as it still supports enharmonic diatonic-tone equivalents
+> spelling of notes and chords in all 31 keys as it still supports enharmonic diatonic-tone equivalents
 > by means of the double flat and double sharp accidentals.
 
 #### 1/4-comma meantone approximation (quarter-tone accidentals)
+
+When using the meantone version of the plugin, these are the accidentals used by the plugin.
 
 | Diesis steps | Accidental |
 | ---: | :-----:|
@@ -143,8 +149,9 @@ overriden.
 
 ### 1.3
 
-- Removed unecessary GUI dialog --- planning to make a 31-TET suite that works off key macros to
-  improve workflow.
+- Removed unecessary GUI dialog --- planning to make a 31-TET suite of micro-plugin features which
+  users can take advantage of custom-assigned plugin key bindings to improve workflow. 
+  (E.g. Alt + W to transpose up 1 diesis, Alt + S to transpose down 1 diesis, Alt + E to rotate enharmonical equivalents)
 - Added meantone mode
 
 ### 1.2
