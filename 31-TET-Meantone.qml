@@ -5,8 +5,8 @@ import MuseScore 1.0
 
 MuseScore {
       version:  "1.2"
-      description: "Retune selection to 31-TET in Enharmonic Ups & Downs mode (Dbb is C), or whole score if nothing selected."
-      menuPath: "Plugins.31-TET.Retune 31-TET (Enharmonic Ups & Downs)"
+      description: "Retune selection to 31-TET in meantone mode (Dbb is C+), or whole score if nothing selected."
+      menuPath: "Plugins.31-TET.Retune 31-TET (Meantone)"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -105,62 +105,26 @@ MuseScore {
         }
       }
 
-      function convertAccidentalToSteps(acc) {
-        switch(acc.trim()) {
-        case 'bb':
-          return -5;
-        case 'db':
-          return -4;
-        case 'bv':
-          return -3;
-        case 'b':
-          return -2;
-        case 'v':
-        case 'b^':
-          return -1;
-        case '':
-          return 0;
-        case '^':
-        case '#v':
-          return 1;
-        case '#':
-          return 2;
-        case '#^':
-          return 3;
-        case '#+':
-          return 4;
-        case 'x':
-          return 5;
-        default:
-          return 0;
-        }
-      }
       function convertAccidentalToStepsOrNull(acc) {
         switch(acc.trim()) {
         case 'bb':
-          return -5;
-        case 'db':
           return -4;
-        case 'bv':
+        case 'db':
           return -3;
         case 'b':
           return -2;
-        case 'v':
-        case 'b^':
+        case 'd':
           return -1;
         case '':
           return 0;
-        case '^':
-        case '#v':
+        case '+':
           return 1;
         case '#':
           return 2;
-        case '#^':
-          return 3;
         case '#+':
-          return 4;
+          return 3;
         case 'x':
-          return 5;
+          return 4;
         default:
           return null;
         }
@@ -303,157 +267,34 @@ MuseScore {
         // the key signature to truly determine what note it is.
 
         /*
-          ^   #v   v   b^       -> 1 diesis
-          #        b            -> 2 diesis
-          #^       bv           -> 3 diesis
-          #+       db           -> 4 diesis
-          x        bb           -> 5 diesis
-
-          31-TET | TPC        |  ACC
-            C    |  14 (C)    |  NONE               = C
-                 |  19 (B)    |  SHARP_ARROW_UP     = B#^
-                 |  2  (Dbb)  |  FLAT2              = Dbb
-          ------------------------------------------------
-            C^   |  14 (C)    |  NATURAL_ARROW_UP   = C^
-                 |  14 (C)    |  SHARP_ARROW_DOWN   = C#v
-                 |  19 (B)    |  SHARP_SLASH4       = B#+
-                 |  16 (D)    |  MIRRORED_FLAT2     = Ddb
-          ------------------------------------------------
-            C#   |  21 (C#)   |  SHARP              = C#
-                 |  33 (Bx)   |  SHARP2             = Bx
-                 |  16 (D)    |  FLAT_ARROW_DOWN    = Dbv
-          ------------------------------------------------
-            Db   |  9  (Db)   |  FLAT               = Db
-                 |  14 (C)    |  SHARP_ARROW_UP     = C#^
-          ------------------------------------------------
-            Dv   |  16 (D)    |  NATURAL_ARROW_DOWN = Dv
-                 |  16 (D)    |  FLAT_ARROW_UP      = Db^
-                 |  14 (C)    |  SHARP_SLASH4       = C#+
-          ------------------------------------------------
-            D    |  16 (D)    |  NONE               = D
-                 |  28 (Cx)   |  SHARP2             = Cx
-                 |  4  (Ebb)  |  FLAT2              = Ebb
-          ------------------------------------------------
-            D^   |  16 (D)    |  NATURAL_ARROW_UP   = D^
-                 |  16 (D)    |  SHARP_ARROW_DOWN   = D#v
-                 |  18 (E)    |  MIRRORED_FLAT2     = Edb
-          ------------------------------------------------
-            D#   |  23 (D#)   |  SHARP              = D#
-                 |  18 (E)    |  FLAT_ARROW_DOWN    = Ebv
-          ------------------------------------------------
-            Eb   |  11 (Eb)   |  FLAT               = Eb
-                 |  16 (D)    |  SHARP_ARROW_UP     = D#^
-                 |  -1 (Fbb)  |  FLAT2              = Fbb
-          ------------------------------------------------
-            Ev   |  18 (E)    |  NATURAL_ARROW_DOWN = Ev
-                 |  18 (E)    |  FLAT_ARROW_UP      = Eb^
-                 |  16 (D)    |  SHARP_SLASH4       = D#+
-                 |  13 (F)    |  MIRRORED_FLAT2     = Fdb
-          ------------------------------------------------
-            E    |  18 (E)    |  NONE               = E
-                 |  30 (Dx)   |  SHARP2             = Dx
-                 |  13 (F)    |  FLAT_ARROW_DOWN    = Fbv
-          ------------------------------------------------
-            E^   |  18 (E)    |  NATURAL_ARROW_UP   = E^
-                 |  18 (E)    |  SHARP_ARROW_DOWN   = E#v
-                 |  6  (Fb)   |  FLAT               = Fb
-          ------------------------------------------------
-            Fv   |  13 (F)    |  NATURAL_ARROW_DOWN = Fv
-                 |  13 (F)    |  FLAT_ARROW_UP      = Fb^
-                 |  25 (E#)   |  SHARP              = E#
-          ------------------------------------------------
-            F    |  13 (F)    |  NONE               = F
-                 |  18 (E)    |  SHARP_ARROW_UP     = E#^
-                 |  1  (Gbb)  |  FLAT2              = Gbb
-          ------------------------------------------------
-            F^   |  13 (F)    |  NATURAL_ARROW_UP   = F^
-                 |  13 (F)    |  SHARP_ARROW_DOWN   = F#v
-                 |  18 (E)    |  SHARP_SLASH4       = E#+
-                 |  15 (G)    |  MIRRORED_FLAT2     = Gdb
-          ------------------------------------------------
-            F#   |  20 (F#)   |  SHARP              = F#
-                 |  32 (Ex)   |  SHARP2             = Ex
-                 |  15 (G)    |  FLAT_ARROW_DOWN    = Gbv
-          ------------------------------------------------
-            Gb   |  8  (Gb)   |  FLAT               = Gb
-                 |  13 (F)    |  SHARP_ARROW_UP     = F#^
-          ------------------------------------------------
-            Gv   |  15 (G)    |  NATURAL_ARROW_DOWN = Gv
-                 |  15 (G)    |  FLAT_ARROW_UP      = Gb^
-                 |  13 (F)    |  SHARP_SLASH4       = F#+
-          ------------------------------------------------
-            G    |  15 (G)    |  NONE               = G
-                 |  27 (Fx)   |  SHARP2             = Fx
-                 |  3  (Abb)  |  FLAT2              = Abb
-          ------------------------------------------------
-            G^   |  15 (G)    |  NATURAL_ARROW_UP   = G^
-                 |  15 (G)    |  SHARP_ARROW_DOWN   = G#v
-                 |  17 (A)    |  MIRRORED_FLAT2     = Adb
-          ------------------------------------------------
-            G#   |  22 (G#)   |  SHARP              = G#
-                 |  17 (A)    |  FLAT_ARROW_DOWN    = Abv
-          ------------------------------------------------
-            Ab   |  10 (Ab)   |  FLAT               = Ab
-                 |  15 (G)    |  SHARP_ARROW_UP     = G#^
-          ------------------------------------------------
-            Av   |  17 (A)    |  NATURAL_ARROW_DOWN = Av
-                 |  17 (A)    |  FLAT_ARROW_UP      = Ab^
-                 |  15 (G)    |  SHARP_SLASH4       = G#+
-          ------------------------------------------------
-            A    |  17 (A)    |  NONE               = A
-                 |  29 (Gx)   |  SHARP2             = Gx
-                 |  5  (Bbb)  |  FLAT2              = Bbb
-          ------------------------------------------------
-            A^   |  17 (A)    |  NATURAL_ARROW_UP   = A^
-                 |  17 (A)    |  SHARP_ARROW_DOWN   = A#v
-                 |  19 (B)    |  MIRRORED_FLAT2     = Bdb
-          ------------------------------------------------
-            A#   |  24 (A#)   |  SHARP              = A#
-                 |  19 (B)    |  FLAT_ARROW_DOWN    = Bbv
-          ------------------------------------------------
-            Bb   |  12 (Bb)   |  FLAT               = Bb
-                 |  17 (A)    |  SHARP_ARROW_UP     = A#^
-                 |  0  (Cbb)  |  FLAT2              = Cbb
-          ------------------------------------------------
-            Bv   |  19 (B)    |  NATURAL_ARROW_DOWN = Bv
-                 |  19 (B)    |  FLAT_ARROW_UP      = Bb^
-                 |  17 (A)    |  SHARP_SLASH4       = A#+
-                 |  14 (C)    |  MIRRORED_FLAT2     = Cdb
-          ------------------------------------------------
-            B    |  19 (B)    |  NONE               = B
-                 |  31 (Ax)   |  SHARP2             = Ax
-                 |  14 (C)    |  FLAT_ARROW_DOWN    = Cbv
-          ------------------------------------------------
-            B^   |  19 (B)    |  NATURAL_ARROW_UP   = B^
-                 |  19 (B)    |  SHARP_ARROW_DOWN   = B#v
-                 |  7  (Cb)   |  FLAT               = Cb
-          ------------------------------------------------
-            Cv   |  14 (C)    |  NATURAL_ARROW_DOWN = Cv
-                 |  14 (C)    |  FLAT_ARROW_UP      = Cb^
-                 |  26 (B#)   |  SHARP              = B#
+          MEANTONE MODE;
+          +        d      -> 1 diesis
+          #        b      -> 2 diesis
+          #+       db     -> 3 diesis
+          x        bb     -> 4 diesis
         */
 
         switch(tpc) {
         case -1: //Fbb
-          note.tuning = centOffsets['f'][-5];
+          note.tuning = centOffsets['f'][-4];
           return;
         case 0: //Cbb
-          note.tuning = centOffsets['c'][-5];
+          note.tuning = centOffsets['c'][-4];
           return;
         case 1: //Gbb
-          note.tuning = centOffsets['g'][-5];
+          note.tuning = centOffsets['g'][-4];
           return;
         case 2: //Dbb
-          note.tuning = centOffsets['d'][-5];
+          note.tuning = centOffsets['d'][-4];
           return;
         case 3: //Abb
-          note.tuning = centOffsets['a'][-5];
+          note.tuning = centOffsets['a'][-4];
           return;
         case 4: //Ebb
-          note.tuning = centOffsets['e'][-5];
+          note.tuning = centOffsets['e'][-4];
           return;
         case 5: //Bbb
-          note.tuning = centOffsets['b'][-5];
+          note.tuning = centOffsets['b'][-4];
           return;
 
         case 6: //Fb
@@ -501,25 +342,25 @@ MuseScore {
           return;
 
         case 27: //Fx
-          note.tuning = centOffsets['f'][5];
+          note.tuning = centOffsets['f'][4];
           return;
         case 28: //Cx
-          note.tuning = centOffsets['c'][5];
+          note.tuning = centOffsets['c'][4];
           return;
         case 29: //Gx
-          note.tuning = centOffsets['g'][5];
+          note.tuning = centOffsets['g'][4];
           return;
         case 30: //Dx
-          note.tuning = centOffsets['d'][5];
+          note.tuning = centOffsets['d'][4];
           return;
         case 31: //Ax
-          note.tuning = centOffsets['a'][5];
+          note.tuning = centOffsets['a'][4];
           return;
         case 32: //Ex
-          note.tuning = centOffsets['e'][5];
+          note.tuning = centOffsets['e'][4];
           return;
         case 33: //Bx
-          note.tuning = centOffsets['b'][5];
+          note.tuning = centOffsets['b'][4];
           return;
         }
 
@@ -555,21 +396,15 @@ MuseScore {
         if (note.accidental) {
           console.log('Note: ' + baseNote + ', Line: ' + note.line + ', Special Accidental: ' + note.accidental);
           if (note.accidental.accType == Accidental.MIRRORED_FLAT2)
-            parms.accidentals[note.line] = -4;
-          else if (note.accidental.accType == Accidental.FLAT_ARROW_DOWN)
             parms.accidentals[note.line] = -3;
-          else if (note.accidental.accType == Accidental.NATURAL_ARROW_DOWN ||
-                   note.accidental.accType == Accidental.FLAT_ARROW_UP)
+          else if (note.accidental.accType == Accidental.MIRRORED_FLAT)
             parms.accidentals[note.line] = -1;
           else if (note.accidental.accType == Accidental.NATURAL)
             parms.accidentals[note.line] = 0;
-          else if (note.accidental.accType == Accidental.NATURAL_ARROW_UP ||
-                   note.accidental.accType == Accidental.SHARP_ARROW_DOWN)
+          else if (note.accidental.accType == Accidental.SHARP_SLASH)
             parms.accidentals[note.line] = 1;
-          else if (note.accidental.accType == Accidental.SHARP_ARROW_UP)
-            parms.accidentals[note.line] = 3;
           else if (note.accidental.accType == Accidental.SHARP_SLASH4)
-            parms.accidentals[note.line] = 4;
+            parms.accidentals[note.line] = 3;
         }
         // Check for prev accidentals first
         var stepsFromBaseNote;

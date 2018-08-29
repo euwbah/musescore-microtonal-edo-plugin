@@ -4,10 +4,9 @@ Musescore plugin to automatically retune notes in [31-EDO](https://en.wikipedia.
 
 ## Usage
 
-- To retune the entire score as is, simply run the plugin and click "Retune!"
+- To retune the entire score as is, run the plugin located in Plugins > 31-TET > Retune 31-TET
 
-- If a selection was made prior to clicking "Retune!", only the selected
-notes will be affected.
+- To only retune certain notes / parts, make a selection before running the plugin.
 
 ### Accidentals
 
@@ -37,9 +36,19 @@ plugin. They can be found in the [advanced palette](https://musescore.org/en/han
 > spelling of notes and chords in all transpositions as it still supports enharmonic diatonic-tone equivalents
 > by means of the double flat and double sharp accidentals.
 
-#### Meantone (quarter-tone accidentals)
+#### 1/4-comma meantone approximation (quarter-tone accidentals)
 
-**WIP**
+| Diesis steps | Accidental |
+| ---: | :-----:|
+| -4  | ![Double flat](images/bb.png) |
+| -3  | ![Sesqui flat](images/db.png)  |
+| -2  | ![Flat](images/b.png)  |
+| -1  | ![Down](images/d-quarter.png) |
+| 0   | ![Natural](images/n.png) |
+| +1  | ![Up](images/+.png) |
+| +2  | ![Sharp](images/s.png)  |
+| +3  | ![Sesqui sharp](images/ss.png)  |
+| +4  | ![Double sharp](images/x.png)  |
 
 ### Custom key signatures
 
@@ -49,48 +58,31 @@ any custom key signature can't be read by the plugin, at least for now.
 
 Should you want to create a microtonal key signature and have it affect the
 playback, you have to explicitly declare the custom key signature using some
-*super-special accidental code*:
-
-#### Accidental Code
-
-| Diesis steps | *Super-special accidental code* |
-| ----: | :----: |
-| -5   | `bb` |
-| -4   | `db`  |
-| -3   | `bv`  |
-| -2   | `b`  |
-| -1   | `b^` or `v`|
-| 0  | Leave blank  |
-| 1   | `^` or `#v` |
-| 2  | `#`  |
-| 3   | `#^`  |
-| 4  | `#+`  |
-| 5   |  `x` |
-
-
-There are two ways you can enter the accidental code as shown below.
+accidental code:
 
 > Note that explicit accidentals will still take precedence over the
 > declared custom key signature, behaving exactly the same way a key signature
 > would.
 
-#### Method 1: Using the text input fields in the plugin window (Obsoleted)
+#### Accidental Code
 
-![Text field custom key sig](images/2018/06/text-field-custom-key-sig.png)
-
-This method will only allow tuning to one custom key signature at a time,
-if there are changes in key signature that modulate from or to a custom key
-signature, each section will have to be tuned independently by selecting
-the section to retune before clicking "Retune".
-
-If there are numerous key signature changes, or require local key signatures
-(hooray for simultaneous microtonality and polytonality!), use Method 2 instead...
-
-#### Method 2: Using staff text
+| Diesis steps | accidental code (Ups-and-downs) | accidental code (1/4-comma meantone approximation) |
+| ----: | :----: | :----: |
+| -5   | `bb` | None |
+| -4   | `db`  | `bb` |
+| -3   | `bv`  | `db` |
+| -2   | `b`  | `b` |
+| -1   | `b^` or `v`| `d` |
+| 0  | Leave blank  | Leave blank |
+| 1   | `^` or `#v` | `+` |
+| 2  | `#`  | `#` |
+| 3   | `#^`  | `#+` |
+| 4  | `#+`  | `x` |
+| 5   |  `x` | None |
 
 ![Staff text custom key sig](images/2018/06/staff-text-custom-key-sig.png)
 
-This method allows you to indicate custom key signatures in the score itself
+You can indicate custom key signatures in the score itself
 by entering *super-special key signature code* inside
 System Text or Staff Text.
 
@@ -113,7 +105,7 @@ natural accidentals are denoted by leaving the space blank,
 and spaces/newlines can be placed before or after the dots to improve readability.
 
 **For example:**
-Ab-down major can be denoted like this: `.v.bv.bv.v.v.bv.bv`
+Ab-down major in ups-and-downs mode can be denoted like this: `.v.bv.bv.v.v.bv.bv`
 representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 
 **IMPORTANT!** Following a custom key signature, should there be a modulation to any standard
@@ -138,10 +130,18 @@ overriden.
 
 ## TODO:
 
-- Don't hard-code / bruteforce frequencies, just use a dictionary a exponential operations instead
-- Hence, supporting other EDOs should be easier.
+- Meantone mode
+- Transpose Diesis up/down for both enharmonic up-and-downs mode and meantone mode
+- Enharmonic equivalent switching for enharmonic up-and-downs mode (e.g. Cv = B# and C = B#^ = Dbb)
+- Don't hard-code / bruteforce frequencies, just use a dictionary of exponential operations instead
 
 ## Changes:
+
+### 1.3
+
+- Removed unecessary GUI dialog --- planning to make a 31-TET suite that works off key macros to
+  improve workflow.
+- Added meantone mode
 
 ### 1.2
 
