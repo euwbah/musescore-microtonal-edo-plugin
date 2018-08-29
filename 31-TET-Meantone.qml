@@ -138,7 +138,7 @@ MuseScore {
       // where identifiers c thru b denote a valid accidental code of which
       // will apply to the respective notes.
       //
-      // For example, this is F-down major: .v.v.v.v.v.v.bv
+      // For example, this is Fd major (1/4-comma meantone quarter-tone notation): .d.d.d.d.d.d.db
       //
       // whitespace can be placed between dots and accidentals for readability.
       //
@@ -156,7 +156,7 @@ MuseScore {
           return null;
 
         for (var i = 1; i <= 7; i++) {
-          var acc = convertAccidentalToStepsOrNull(res[1].trim());
+          var acc = convertAccidentalToStepsOrNull(res[i].trim());
           if (acc !== null)
             keySig[notes[i]] = acc;
           else
@@ -228,7 +228,7 @@ MuseScore {
                 var maybeKeySig = scanCustomKeySig(annotation.text);
                 if (maybeKeySig !== null) {
                   parms.currKeySig = maybeKeySig;
-                  console.log("detected new customer keySig: " + annotation.text);
+                  console.log("detected new custom keySig: " + annotation.text);
                 }
               }
 

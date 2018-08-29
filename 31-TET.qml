@@ -192,11 +192,11 @@ MuseScore {
           return null;
 
         for (var i = 1; i <= 7; i++) {
-          var acc = convertAccidentalToStepsOrNull(res[1].trim());
+          var acc = convertAccidentalToStepsOrNull(res[i].trim());
           if (acc !== null)
             keySig[notes[i]] = acc;
           else
-            return null;
+            keySig[notes[i]] = 0;
         }
 
         return keySig;
@@ -264,7 +264,7 @@ MuseScore {
                 var maybeKeySig = scanCustomKeySig(annotation.text);
                 if (maybeKeySig !== null) {
                   parms.currKeySig = maybeKeySig;
-                  console.log("detected new customer keySig: " + annotation.text);
+                  console.log("detected new custom keySig: " + annotation.text);
                 }
               }
 
@@ -308,129 +308,6 @@ MuseScore {
           #^       bv           -> 3 diesis
           #+       db           -> 4 diesis
           x        bb           -> 5 diesis
-
-          31-TET | TPC        |  ACC
-            C    |  14 (C)    |  NONE               = C
-                 |  19 (B)    |  SHARP_ARROW_UP     = B#^
-                 |  2  (Dbb)  |  FLAT2              = Dbb
-          ------------------------------------------------
-            C^   |  14 (C)    |  NATURAL_ARROW_UP   = C^
-                 |  14 (C)    |  SHARP_ARROW_DOWN   = C#v
-                 |  19 (B)    |  SHARP_SLASH4       = B#+
-                 |  16 (D)    |  MIRRORED_FLAT2     = Ddb
-          ------------------------------------------------
-            C#   |  21 (C#)   |  SHARP              = C#
-                 |  33 (Bx)   |  SHARP2             = Bx
-                 |  16 (D)    |  FLAT_ARROW_DOWN    = Dbv
-          ------------------------------------------------
-            Db   |  9  (Db)   |  FLAT               = Db
-                 |  14 (C)    |  SHARP_ARROW_UP     = C#^
-          ------------------------------------------------
-            Dv   |  16 (D)    |  NATURAL_ARROW_DOWN = Dv
-                 |  16 (D)    |  FLAT_ARROW_UP      = Db^
-                 |  14 (C)    |  SHARP_SLASH4       = C#+
-          ------------------------------------------------
-            D    |  16 (D)    |  NONE               = D
-                 |  28 (Cx)   |  SHARP2             = Cx
-                 |  4  (Ebb)  |  FLAT2              = Ebb
-          ------------------------------------------------
-            D^   |  16 (D)    |  NATURAL_ARROW_UP   = D^
-                 |  16 (D)    |  SHARP_ARROW_DOWN   = D#v
-                 |  18 (E)    |  MIRRORED_FLAT2     = Edb
-          ------------------------------------------------
-            D#   |  23 (D#)   |  SHARP              = D#
-                 |  18 (E)    |  FLAT_ARROW_DOWN    = Ebv
-          ------------------------------------------------
-            Eb   |  11 (Eb)   |  FLAT               = Eb
-                 |  16 (D)    |  SHARP_ARROW_UP     = D#^
-                 |  -1 (Fbb)  |  FLAT2              = Fbb
-          ------------------------------------------------
-            Ev   |  18 (E)    |  NATURAL_ARROW_DOWN = Ev
-                 |  18 (E)    |  FLAT_ARROW_UP      = Eb^
-                 |  16 (D)    |  SHARP_SLASH4       = D#+
-                 |  13 (F)    |  MIRRORED_FLAT2     = Fdb
-          ------------------------------------------------
-            E    |  18 (E)    |  NONE               = E
-                 |  30 (Dx)   |  SHARP2             = Dx
-                 |  13 (F)    |  FLAT_ARROW_DOWN    = Fbv
-          ------------------------------------------------
-            E^   |  18 (E)    |  NATURAL_ARROW_UP   = E^
-                 |  18 (E)    |  SHARP_ARROW_DOWN   = E#v
-                 |  6  (Fb)   |  FLAT               = Fb
-          ------------------------------------------------
-            Fv   |  13 (F)    |  NATURAL_ARROW_DOWN = Fv
-                 |  13 (F)    |  FLAT_ARROW_UP      = Fb^
-                 |  25 (E#)   |  SHARP              = E#
-          ------------------------------------------------
-            F    |  13 (F)    |  NONE               = F
-                 |  18 (E)    |  SHARP_ARROW_UP     = E#^
-                 |  1  (Gbb)  |  FLAT2              = Gbb
-          ------------------------------------------------
-            F^   |  13 (F)    |  NATURAL_ARROW_UP   = F^
-                 |  13 (F)    |  SHARP_ARROW_DOWN   = F#v
-                 |  18 (E)    |  SHARP_SLASH4       = E#+
-                 |  15 (G)    |  MIRRORED_FLAT2     = Gdb
-          ------------------------------------------------
-            F#   |  20 (F#)   |  SHARP              = F#
-                 |  32 (Ex)   |  SHARP2             = Ex
-                 |  15 (G)    |  FLAT_ARROW_DOWN    = Gbv
-          ------------------------------------------------
-            Gb   |  8  (Gb)   |  FLAT               = Gb
-                 |  13 (F)    |  SHARP_ARROW_UP     = F#^
-          ------------------------------------------------
-            Gv   |  15 (G)    |  NATURAL_ARROW_DOWN = Gv
-                 |  15 (G)    |  FLAT_ARROW_UP      = Gb^
-                 |  13 (F)    |  SHARP_SLASH4       = F#+
-          ------------------------------------------------
-            G    |  15 (G)    |  NONE               = G
-                 |  27 (Fx)   |  SHARP2             = Fx
-                 |  3  (Abb)  |  FLAT2              = Abb
-          ------------------------------------------------
-            G^   |  15 (G)    |  NATURAL_ARROW_UP   = G^
-                 |  15 (G)    |  SHARP_ARROW_DOWN   = G#v
-                 |  17 (A)    |  MIRRORED_FLAT2     = Adb
-          ------------------------------------------------
-            G#   |  22 (G#)   |  SHARP              = G#
-                 |  17 (A)    |  FLAT_ARROW_DOWN    = Abv
-          ------------------------------------------------
-            Ab   |  10 (Ab)   |  FLAT               = Ab
-                 |  15 (G)    |  SHARP_ARROW_UP     = G#^
-          ------------------------------------------------
-            Av   |  17 (A)    |  NATURAL_ARROW_DOWN = Av
-                 |  17 (A)    |  FLAT_ARROW_UP      = Ab^
-                 |  15 (G)    |  SHARP_SLASH4       = G#+
-          ------------------------------------------------
-            A    |  17 (A)    |  NONE               = A
-                 |  29 (Gx)   |  SHARP2             = Gx
-                 |  5  (Bbb)  |  FLAT2              = Bbb
-          ------------------------------------------------
-            A^   |  17 (A)    |  NATURAL_ARROW_UP   = A^
-                 |  17 (A)    |  SHARP_ARROW_DOWN   = A#v
-                 |  19 (B)    |  MIRRORED_FLAT2     = Bdb
-          ------------------------------------------------
-            A#   |  24 (A#)   |  SHARP              = A#
-                 |  19 (B)    |  FLAT_ARROW_DOWN    = Bbv
-          ------------------------------------------------
-            Bb   |  12 (Bb)   |  FLAT               = Bb
-                 |  17 (A)    |  SHARP_ARROW_UP     = A#^
-                 |  0  (Cbb)  |  FLAT2              = Cbb
-          ------------------------------------------------
-            Bv   |  19 (B)    |  NATURAL_ARROW_DOWN = Bv
-                 |  19 (B)    |  FLAT_ARROW_UP      = Bb^
-                 |  17 (A)    |  SHARP_SLASH4       = A#+
-                 |  14 (C)    |  MIRRORED_FLAT2     = Cdb
-          ------------------------------------------------
-            B    |  19 (B)    |  NONE               = B
-                 |  31 (Ax)   |  SHARP2             = Ax
-                 |  14 (C)    |  FLAT_ARROW_DOWN    = Cbv
-          ------------------------------------------------
-            B^   |  19 (B)    |  NATURAL_ARROW_UP   = B^
-                 |  19 (B)    |  SHARP_ARROW_DOWN   = B#v
-                 |  7  (Cb)   |  FLAT               = Cb
-          ------------------------------------------------
-            Cv   |  14 (C)    |  NATURAL_ARROW_DOWN = Cv
-                 |  14 (C)    |  FLAT_ARROW_UP      = Cb^
-                 |  26 (B#)   |  SHARP              = B#
         */
 
         switch(tpc) {
@@ -574,9 +451,9 @@ MuseScore {
         // Check for prev accidentals first
         var stepsFromBaseNote;
         if (parms.accidentals[note.line] !== undefined)
-        stepsFromBaseNote = parms.accidentals[note.line];
+          stepsFromBaseNote = parms.accidentals[note.line];
         else // No prev accidentals. Use key signature instead.
-        stepsFromBaseNote = parms.currKeySig[baseNote];
+          stepsFromBaseNote = parms.currKeySig[baseNote];
 
         console.log("Base Note: " + baseNote + ", diesis: " + stepsFromBaseNote);
         note.tuning = centOffsets[baseNote][stepsFromBaseNote];
