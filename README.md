@@ -6,6 +6,10 @@ Musescore plugin to automatically retune notes in [31-EDO](https://en.wikipedia.
 
 - To retune the entire score as is, run the plugin located in Plugins > 31-TET > Retune 31-TET
 
+- Depending on the type of notation you prefer, you may use the QML scripts for 
+  [ups-and-downs notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET.qml) 
+  or the [quartertone-accidental 1/4-comma meantone approximation notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET-Meantone.qml) modes
+
 - To only retune certain notes / parts, make a selection before running the plugin.
 
 ### Accidentals
