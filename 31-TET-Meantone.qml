@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 1.0
 
 MuseScore {
-      version:  "1.3"
+      version:  "1.3.1"
       description: "Retune selection to 31-TET in meantone mode (Dbb is C+), or whole score if nothing selected."
       menuPath: "Plugins.31-TET.Retune 31-TET (Meantone)"
 
@@ -199,6 +199,10 @@ MuseScore {
 
 
         for (var staff = startStaff; staff <= endStaff; staff++) {
+
+          // Reset accidentals at the start of every staff.
+          parms.accidentals = {};
+
           for (var voice = 0; voice < 4; voice++) {
             cursor.rewind(1); // sets voice to 0
             cursor.voice = voice; //voice has to be set after goTo
@@ -216,11 +220,19 @@ MuseScore {
 
             // Loop elements of a voice
             while (cursor.segment && (fullScore || cursor.tick < endTick)) {
-              // Reset accidentals if new measure.
-              if (cursor.segment.tick == cursor.measure.firstSegment.tick) {
-                parms.accidentals = {};
+              // Note that the parms.accidentals object now stores accidentals
+              // from all 4 voices in a staff since microtonal accidentals from one voice 
+              // should affect subsequent notes on the same line in other voices as well.
+              if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
+                // once new bar is reached, denote new bar in the parms.accidentals.bars object
+                // so that getAccidental will reset. Only do this for the first voice in a staff
+                // since voices in a staff shares the same barrings.
+                if (!parms.accidentals.bars)
+                  parms.accidentals.bars = [];
+
+                parms.accidentals.bars.push(cursor.segment.tick);
                 measureCount ++;
-                console.log("Reset accidentals - " + measureCount);
+                console.log("New bar - " + measureCount);
               }
 
               // Check for StaffText key signature changes.
@@ -240,12 +252,12 @@ MuseScore {
                     // iterate through all grace chords
                     var notes = graceChords[i].notes;
                     for (var j = 0; j < notes.length; j++)
-                      func(notes[j], parms);
+                      func(notes[j], cursor.segment, parms);
                   }
                   var notes = cursor.element.notes;
                   for (var i = 0; i < notes.length; i++) {
                     var note = notes[i];
-                    func(note, parms);
+                    func(note, cursor.segment, parms);
                   }
                 }
               }
@@ -255,7 +267,66 @@ MuseScore {
         }
       }
 
-      function tuneNote(note, parms) {
+      // This will register an accidental's offset value and tick position.
+      // Unified accidental registry is necessary so that special accidentals across
+      // different voices in the same staff will affect each other as it should.
+      //
+      // Only microtonal accidentals need to be registered. Musescore properly handles
+      // normal accidentals with TPCs.
+      //
+      // Remember to reset the parms.accidentals array after every bar & staff!
+      function registerAccidental(noteLine, tick, diesisOffset, parms) {
+        if (!parms.accidentals[noteLine]) {
+          parms.accidentals[noteLine] = [];
+        }
+
+        parms.accidentals[noteLine].push({
+          tick: tick,
+          offset: diesisOffset
+        });
+      }
+
+      // Returns the diesis offset if a prior microtonal accidental exists
+      // before or at the given tick value.
+      // Null if there are no explicit microtonal accidentals
+      function getAccidental(noteLine, tick, parms) {
+        // Tick of the most recent measure just before current tick
+        var mostRecentBar = 0;
+
+        for (var i = 0; i < parms.accidentals.bars.length; i++) {
+          var barTick = parms.accidentals.bars[i];
+
+          if (barTick > mostRecentBar && barTick <= tick) {
+            mostRecentBar = barTick;
+          }
+        }
+
+        var oldTick = -1;
+        var offset = null;
+
+        if (!parms.accidentals[noteLine])
+          return null;
+
+        for (var i = 0; i < parms.accidentals[noteLine].length; i++) {
+          var acc = parms.accidentals[noteLine][i];
+
+          // Accidentals only count if
+          // 1. They are in the same bar as the current note
+          // 2. They are before or at the current note's tick
+          // 3. It is the most recent accidental that fulfills 1. and 2.
+          if (acc.tick >= mostRecentBar && acc.tick <= tick && acc.tick > oldTick) {
+            console.log('note line: ' + noteLine + ', diesis: ' + acc.offset + ', tick: ' + acc.tick);
+            console.log('acc.tick: ' + acc.tick + ', mostRecentBar: ' + mostRecentBar + ', tick: ' + tick + ', oldTick: ' + oldTick);
+            offset = acc.offset;
+            oldTick = acc.tick;
+          }
+        }
+
+        return offset;
+      }
+
+
+      function tuneNote(note, segment, parms) {
         var tpc = note.tpc;
         var acc = note.accidental;
 
@@ -394,24 +465,32 @@ MuseScore {
         }
         //NOTE: Only special accidentals need to be remembered.
         if (note.accidental) {
+          var accOffset = null;
+
           console.log('Note: ' + baseNote + ', Line: ' + note.line + ', Special Accidental: ' + note.accidental);
           if (note.accidental.accType == Accidental.MIRRORED_FLAT2)
-            parms.accidentals[note.line] = -3;
+            accOffset = -3;
           else if (note.accidental.accType == Accidental.MIRRORED_FLAT)
-            parms.accidentals[note.line] = -1;
+            accOffset = -1;
           else if (note.accidental.accType == Accidental.NATURAL)
-            parms.accidentals[note.line] = 0;
+            accOffset = 0;
           else if (note.accidental.accType == Accidental.SHARP_SLASH)
-            parms.accidentals[note.line] = 1;
+            accOffset = 1;
           else if (note.accidental.accType == Accidental.SHARP_SLASH4)
-            parms.accidentals[note.line] = 3;
+            accOffset= 3;
+
+          if (accOffset !== null) {
+            registerAccidental(note.line, segment.tick, accOffset, parms);
+          }
         }
+
         // Check for prev accidentals first
-        var stepsFromBaseNote;
-        if (parms.accidentals[note.line] !== undefined)
-        stepsFromBaseNote = parms.accidentals[note.line];
-        else // No prev accidentals. Use key signature instead.
-        stepsFromBaseNote = parms.currKeySig[baseNote];
+        var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
+
+        if (!stepsFromBaseNote) {
+          // No accidentals - check key signature.
+          stepsFromBaseNote = parms.currKeySig[baseNote];
+        }
 
         console.log("Base Note: " + baseNote + ", diesis: " + stepsFromBaseNote);
         note.tuning = centOffsets[baseNote][stepsFromBaseNote];

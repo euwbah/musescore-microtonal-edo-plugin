@@ -140,10 +140,13 @@ overriden.
 
 ## TODO:
 
+- Handle cross-staff notation (ctrl + shift + up/down in connected staves, e.g. grand staff) where note appears to be in another staff
+  other than the cursor's staffIdx. Currently, accidentals in the cross-staff do not work on the notes that came from another staff.
+  See Add Courtesy Accidentals plugin for how to do this
 - Meantone mode
 - Transpose Diesis up/down for both enharmonic up-and-downs mode and meantone mode
-- Enharmonic equivalent switching for enharmonic up-and-downs mode (e.g. Cv = B# and C = B#^ = Dbb)
-- Don't hard-code / bruteforce frequencies, just use a dictionary of exponential operations instead
+- Tonal-center / harmonic series based enharmonic equivalent switching for enharmonic up-and-downs mode (e.g. Cv = B# and C = B#^ = Dbb)
+- Don't hard-code frequencies, just use a dictionary of exponential operations instead
 
 ## Changes:
 
@@ -153,6 +156,7 @@ overriden.
   users can take advantage of custom-assigned plugin key bindings to improve workflow. 
   (E.g. Alt + W to transpose up 1 diesis, Alt + S to transpose down 1 diesis, Alt + E to rotate enharmonical equivalents)
 - Added meantone mode
+- Fixed microtonal accidentals from notes in same staff not affecting subsequent notes of other voices in same staff in measure.
 
 ### 1.2
 
