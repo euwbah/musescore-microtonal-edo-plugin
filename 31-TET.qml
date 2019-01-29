@@ -212,7 +212,7 @@ MuseScore {
         var endStaff;
         var endTick;
         var fullScore = false;
-        if (!cursor.segment) { // no selection
+        if (!cursor.segment()) { // no selection
           fullScore = true;
           startStaff = 0; // start with 1st staff
           endStaff = curScore.nstaves - 1; // and end with last
@@ -255,24 +255,24 @@ MuseScore {
             console.log("currKeySig reset");
 
             // Loop elements of a voice
-            while (cursor.segment && (fullScore || cursor.tick < endTick)) {
+            while (cursor.segment() && (fullScore || cursor.tick < endTick)) {
               // Note that the parms.accidentals object now stores accidentals
-              // from all 4 voices in a staff since microtonal accidentals from one voice 
+              // from all 4 voices in a staff since microtonal accidentals from one voice
               // should affect subsequent notes on the same line in other voices as well.
-              if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
+              if (cursor.segment().tick == cursor.measure.firstSegment.tick && voice === 0) {
                 // once new bar is reached, denote new bar in the parms.accidentals.bars object
                 // so that getAccidental will reset. Only do this for the first voice in a staff
                 // since voices in a staff shares the same barrings.
                 if (!parms.accidentals.bars)
                   parms.accidentals.bars = [];
 
-                parms.accidentals.bars.push(cursor.segment.tick);
+                parms.accidentals.bars.push(cursor.segment().tick);
                 measureCount ++;
                 console.log("New bar - " + measureCount);
               }
 
               // Check for StaffText key signature changes.
-              for (var i = 0, annotation = cursor.segment.annotations[i]; i < cursor.segment.annotations.length; i++) {
+              for (var i = 0, annotation = cursor.segment().annotations[i]; i < cursor.segment().annotations.length; i++) {
                 var maybeKeySig = scanCustomKeySig(annotation.text);
                 if (maybeKeySig !== null) {
                   parms.currKeySig = maybeKeySig;
@@ -280,20 +280,20 @@ MuseScore {
                 }
               }
 
-              if (cursor.element) {
+              if (cursor.element()) {
 
-                if (cursor.element.type == Element.CHORD) {
-                  var graceChords = cursor.element.graceNotes;
+                if (cursor.element().type == Ms.CHORD) {
+                  var graceChords = cursor.element().graceNotes;
                   for (var i = 0; i < graceChords.length; i++) {
                     // iterate through all grace chords
                     var notes = graceChords[i].notes;
                     for (var j = 0; j < notes.length; j++)
-                      func(notes[j], cursor.segment, parms);
+                      func(notes[j], cursor.segment(), parms);
                   }
-                  var notes = cursor.element.notes;
+                  var notes = cursor.element().notes;
                   for (var i = 0; i < notes.length; i++) {
                     var note = notes[i];
-                    func(note, cursor.segment, parms);
+                    func(note, cursor.segment(), parms);
                   }
                 }
               }
@@ -362,8 +362,8 @@ MuseScore {
       }
 
       function tuneNote(note, segment, parms) {
-        var tpc = note.tpc;
-        var acc = note.accidental;
+        var tpc = note.get("tpc");
+        var acc = note.get("accidental");
 
         // If tpc is non-natural, there's no need to go through additional steps,
         // since accidentals and key sig are already taken into consideration
@@ -382,91 +382,91 @@ MuseScore {
 
         switch(tpc) {
         case -1: //Fbb
-          note.tuning = centOffsets['f'][-5];
+          note.set("tuning", centOffsets['f'][-5])
           return;
         case 0: //Cbb
-          note.tuning = centOffsets['c'][-5];
+          note.set("tuning", centOffsets['c'][-5])
           return;
         case 1: //Gbb
-          note.tuning = centOffsets['g'][-5];
+          note.set("tuning", centOffsets['g'][-5])
           return;
         case 2: //Dbb
-          note.tuning = centOffsets['d'][-5];
+          note.set("tuning", centOffsets['d'][-5])
           return;
         case 3: //Abb
-          note.tuning = centOffsets['a'][-5];
+          note.set("tuning", centOffsets['a'][-5])
           return;
         case 4: //Ebb
-          note.tuning = centOffsets['e'][-5];
+          note.set("tuning", centOffsets['e'][-5])
           return;
         case 5: //Bbb
-          note.tuning = centOffsets['b'][-5];
+          note.set("tuning", centOffsets['b'][-5])
           return;
 
         case 6: //Fb
-          note.tuning = centOffsets['f'][-2];
+          note.set("tuning", centOffsets['f'][-2])
           return;
         case 7: //Cb
-          note.tuning = centOffsets['c'][-2];
+          note.set("tuning", centOffsets['c'][-2])
           return;
         case 8: //Gb
-          note.tuning = centOffsets['g'][-2];
+          note.set("tuning", centOffsets['g'][-2])
           return;
         case 9: //Db
-          note.tuning = centOffsets['d'][-2];
+          note.set("tuning", centOffsets['d'][-2])
           return;
         case 10: //Ab
-          note.tuning = centOffsets['a'][-2];
+          note.set("tuning", centOffsets['a'][-2])
           return;
         case 11: //Eb
-          note.tuning = centOffsets['e'][-2];
+          note.set("tuning", centOffsets['e'][-2])
           return;
         case 12: //Bb
-          note.tuning = centOffsets['b'][-2];
+          note.set("tuning", centOffsets['b'][-2])
           return;
 
         case 20: //F#
-          note.tuning = centOffsets['f'][2];
+          note.set("tuning", centOffsets['f'][2])
           return;
         case 21: //C#
-          note.tuning = centOffsets['c'][2];
+          note.set("tuning", centOffsets['c'][2])
           return;
         case 22: //G#
-          note.tuning = centOffsets['g'][2];
+          note.set("tuning", centOffsets['g'][2])
           return;
         case 23: //D#
-          note.tuning = centOffsets['d'][2];
+          note.set("tuning", centOffsets['d'][2])
           return;
         case 24: //A#
-          note.tuning = centOffsets['a'][2];
+          note.set("tuning", centOffsets['a'][2])
           return;
         case 25: //E#
-          note.tuning = centOffsets['e'][2];
+          note.set("tuning", centOffsets['e'][2])
           return;
         case 26: //B#
-          note.tuning = centOffsets['b'][2];
+          note.set("tuning", centOffsets['b'][2])
           return;
 
         case 27: //Fx
-          note.tuning = centOffsets['f'][5];
+          note.set("tuning", centOffsets['f'][5])
           return;
         case 28: //Cx
-          note.tuning = centOffsets['c'][5];
+          note.set("tuning", centOffsets['c'][5])
           return;
         case 29: //Gx
-          note.tuning = centOffsets['g'][5];
+          note.set("tuning", centOffsets['g'][5])
           return;
         case 30: //Dx
-          note.tuning = centOffsets['d'][5];
+          note.set("tuning", centOffsets['d'][5])
           return;
         case 31: //Ax
-          note.tuning = centOffsets['a'][5];
+          note.set("tuning", centOffsets['a'][5])
           return;
         case 32: //Ex
-          note.tuning = centOffsets['e'][5];
+          note.set("tuning", centOffsets['e'][5])
           return;
         case 33: //Bx
-          note.tuning = centOffsets['b'][5];
+          note.set("tuning", centOffsets['b'][5])
           return;
         }
 
@@ -500,28 +500,29 @@ MuseScore {
         }
 
         //NOTE: Only special accidentals need to be remembered.
-        if (note.accidental) {
+        if (note.get("accidental")) {
           var accOffset = null;
-          console.log('Note: ' + baseNote + ', Line: ' + note.line + ', Special Accidental: ' + note.accidental);
-          if (note.accidental.accType == Accidental.MIRRORED_FLAT2)
+          console.log('Note: ' + baseNote + ', Line: ' + note.get("line") +
+                      ', Special Accidental: ' + note.get("accidental"));
+          if (note.get("accidental").accType == Accidental.MIRRORED_FLAT2)
             accOffset = -4;
-          else if (note.accidental.accType == Accidental.FLAT_ARROW_DOWN)
+          else if (note.get("accidental").accType == Accidental.FLAT_ARROW_DOWN)
             accOffset = -3;
-          else if (note.accidental.accType == Accidental.NATURAL_ARROW_DOWN ||
-                   note.accidental.accType == Accidental.FLAT_ARROW_UP)
+          else if (note.get("accidental").accType == Accidental.NATURAL_ARROW_DOWN ||
+                   note.get("accidental").accType == Accidental.FLAT_ARROW_UP)
             accOffset = -1;
-          else if (note.accidental.accType == Accidental.NATURAL)
+          else if (note.get("accidental").accType == Accidental.NATURAL)
             accOffset = 0;
-          else if (note.accidental.accType == Accidental.NATURAL_ARROW_UP ||
-                   note.accidental.accType == Accidental.SHARP_ARROW_DOWN)
+          else if (note.get("accidental").accType == Accidental.NATURAL_ARROW_UP ||
+                   note.get("accidental").accType == Accidental.SHARP_ARROW_DOWN)
             accOffset = 1;
-          else if (note.accidental.accType == Accidental.SHARP_ARROW_UP)
+          else if (note.get("accidental").accType == Accidental.SHARP_ARROW_UP)
             accOffset = 3;
-          else if (note.accidental.accType == Accidental.SHARP_SLASH4)
+          else if (note.get("accidental").accType == Accidental.SHARP_SLASH4)
             accOffset = 4;
 
           if (accOffset !== null) {
-            registerAccidental(note.line, segment.tick, accOffset, parms);
+            registerAccidental(note.get("line"), segment.tick, accOffset, parms);
           }
         }
         // Check for prev accidentals first
@@ -533,7 +534,7 @@ MuseScore {
         }
 
         console.log("Base Note: " + baseNote + ", diesis: " + stepsFromBaseNote);
-        note.tuning = centOffsets[baseNote][stepsFromBaseNote];
+        note.set("tuning", centOffsets[baseNote][stepsFromBaseNote])
         return;
       }
 
