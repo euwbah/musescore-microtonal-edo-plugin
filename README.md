@@ -1,4 +1,4 @@
-# 31 EDO Retuner plugin for Musescore 2
+# 31 EDO Retuner plugin for Musescore 2 / 3
 
 Musescore plugin to automatically retune notes in [31-EDO](https://en.wikipedia.org/wiki/31_equal_temperament)
 
@@ -8,7 +8,7 @@ To retune the entire score as is, run the plugin located in Plugins > 31-TET > R
 
 To only retune certain notes / parts, make a selection before running the plugin.
 
-Depending on the type of notation you prefer, you may use the QML scripts for 
+Depending on the type of notation you prefer, you may use the QML scripts for
 [ups-and-downs notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET.qml)
 which uses [these accidentals](#ups-and-downs-notation-diatonic-enharmonic-equivalent)
 or the [quartertone-accidental 1/4-comma meantone approximation notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET-Meantone.qml) which uses [these accidentals](#14-comma-meantone-approximation-quarter-tone-accidentals).
@@ -39,7 +39,7 @@ plugin. They can be found in the [advanced palette](https://musescore.org/en/han
 
 > Important: This notation differs from the more conventional meantone notation
 > which uses quarter-tone accidentals instead.
-> 
+>
 > The benefits of using this notation over meantone is that it allows for proper
 > spelling of notes and chords in all 31 keys as it still supports enharmonic diatonic-tone equivalents
 > by means of the double flat and double sharp accidentals.
@@ -150,10 +150,14 @@ overriden.
 
 ## Changes:
 
+### 1.3.2
+
+- Now supports MuseScore version 3!
+
 ### 1.3
 
 - Removed unecessary GUI dialog --- planning to make a 31-TET suite of micro-plugin features which
-  users can take advantage of custom-assigned plugin key bindings to improve workflow. 
+  users can take advantage of custom-assigned plugin key bindings to improve workflow.
   (E.g. Alt + W to transpose up 1 diesis, Alt + S to transpose down 1 diesis, Alt + E to rotate enharmonical equivalents)
 - Added meantone mode
 - Fixed microtonal accidentals from notes in same staff not affecting subsequent notes of other voices in same staff in measure.
