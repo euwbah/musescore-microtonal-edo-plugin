@@ -1,7 +1,7 @@
-import QtQuick 2.0
+import QtQuick 2.1
 import QtQuick.Controls 1.3
 import QtQuick.Controls.Styles 1.3
-import MuseScore 1.0
+import MuseScore 3.0
 
 MuseScore {
       version:  "1.3.1"
@@ -221,7 +221,7 @@ MuseScore {
             // Loop elements of a voice
             while (cursor.segment && (fullScore || cursor.tick < endTick)) {
               // Note that the parms.accidentals object now stores accidentals
-              // from all 4 voices in a staff since microtonal accidentals from one voice 
+              // from all 4 voices in a staff since microtonal accidentals from one voice
               // should affect subsequent notes on the same line in other voices as well.
               if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
                 // once new bar is reached, denote new bar in the parms.accidentals.bars object
