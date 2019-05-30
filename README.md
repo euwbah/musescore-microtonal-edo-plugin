@@ -150,6 +150,10 @@ overriden.
 
 ## Changes:
 
+### 1.3.3
+- Fixed custom key signatures not working if multiple annotations exist on same segment
+  (caused by JavaScript insanity)
+
 ### 1.3.2
 
 - Now supports MuseScore version 3!

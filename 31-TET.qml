@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "1.3.2"
+      version:  "1.3.3"
       description: "Retune selection to 31-TET in Enharmonic Ups & Downs mode (Dbb is C), or whole score if nothing selected."
       menuPath: "Plugins.31-TET.Retune 31-TET (Enharmonic Ups and Downs)"
 
@@ -272,7 +272,9 @@ MuseScore {
               }
 
               // Check for StaffText key signature changes.
-              for (var i = 0, annotation = cursor.segment.annotations[i]; i < cursor.segment.annotations.length; i++) {
+              for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                var annotation = cursor.segment.annotations[i];
+                console.log("found annotation type: " + annotation.subtypeName());
                 var maybeKeySig = scanCustomKeySig(annotation.text);
                 if (maybeKeySig !== null) {
                   parms.currKeySig = maybeKeySig;
@@ -325,6 +327,7 @@ MuseScore {
       // Returns the diesis offset if a prior microtonal accidental exists
       // before or at the given tick value.
       // Null if there are no explicit microtonal accidentals
+      // WARNING: DON'T USE !getAccidental() to check for Null because !0 IS TRUE!
       function getAccidental(noteLine, tick, parms) {
         // Tick of the most recent measure just before current tick
         var mostRecentBar = 0;
@@ -503,32 +506,32 @@ MuseScore {
         if (note.accidental) {
           var accOffset = null;
           console.log('Note: ' + baseNote + ', Line: ' + note.line +
-                      ', Special Accidental: ' + note.accidental);
-          if (note.accidental.accType == Accidental.MIRRORED_FLAT2)
+                      ', Special Accidental: ' + note.accidentalType);
+          if (note.accidentalType == Accidental.MIRRORED_FLAT2)
             accOffset = -4;
-          else if (note.accidental.accType == Accidental.FLAT_ARROW_DOWN)
+          else if (note.accidentalType == Accidental.FLAT_ARROW_DOWN)
             accOffset = -3;
-          else if (note.accidental.accType == Accidental.NATURAL_ARROW_DOWN ||
-                   note.accidental.accType == Accidental.FLAT_ARROW_UP)
+          else if (note.accidentalType == Accidental.NATURAL_ARROW_DOWN ||
+                   note.accidentalType == Accidental.FLAT_ARROW_UP)
             accOffset = -1;
-          else if (note.accidental.accType == Accidental.NATURAL)
+          else if (note.accidentalType == Accidental.NATURAL)
             accOffset = 0;
-          else if (note.accidental.accType == Accidental.NATURAL_ARROW_UP ||
-                   note.accidental.accType == Accidental.SHARP_ARROW_DOWN)
+          else if (note.accidentalType == Accidental.NATURAL_ARROW_UP ||
+                   note.accidentalType == Accidental.SHARP_ARROW_DOWN)
             accOffset = 1;
-          else if (note.accidental.accType == Accidental.SHARP_ARROW_UP)
+          else if (note.accidentalType == Accidental.SHARP_ARROW_UP)
             accOffset = 3;
-          else if (note.accidental.accType == Accidental.SHARP_SLASH4)
+          else if (note.accidentalType == Accidental.SHARP_SLASH4)
             accOffset = 4;
 
           if (accOffset !== null) {
             registerAccidental(note.line, segment.tick, accOffset, parms);
           }
         }
-        // Check for prev accidentals first
+        // Check for prev accidentals first, will be null if not present
         var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
 
-        if (!stepsFromBaseNote) {
+        if (stepsFromBaseNote === null) {
           // No accidentals - check key signature.
           stepsFromBaseNote = parms.currKeySig[baseNote];
         }

@@ -236,7 +236,8 @@ MuseScore {
               }
 
               // Check for StaffText key signature changes.
-              for (var i = 0, annotation = cursor.segment.annotations[i]; i < cursor.segment.annotations.length; i++) {
+              for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                var annotation = cursor.segment.annotations[i];
                 var maybeKeySig = scanCustomKeySig(annotation.text);
                 if (maybeKeySig !== null) {
                   parms.currKeySig = maybeKeySig;
@@ -484,10 +485,10 @@ MuseScore {
           }
         }
 
-        // Check for prev accidentals first
+        // Check for prev accidentals first, will be null if not present
         var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
 
-        if (!stepsFromBaseNote) {
+        if (stepsFromBaseNote === null) {
           // No accidentals - check key signature.
           stepsFromBaseNote = parms.currKeySig[baseNote];
         }
