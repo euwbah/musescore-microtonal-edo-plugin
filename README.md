@@ -150,9 +150,14 @@ overriden.
 
 ## Changes:
 
+### 1.3.4
+- Fixed meantone double accidentals not accounting for accidental's default double
+  sharp/flat effect (https://musescore.org/en/node/285449)
+
 ### 1.3.3
 - Fixed custom key signatures not working if multiple annotations exist on same segment
   (caused by JavaScript insanity)
+- Fixed explicit natural accidentals not affecting custom key signatures
 
 ### 1.3.2
 
