@@ -455,15 +455,15 @@ MuseScore {
           var accOffset = null;
 
           console.log('Note: ' + baseNote + ', Line: ' + note.line + ', Special Accidental: ' + note.accidental);
-          if (note.accidental.accType == Accidental.MIRRORED_FLAT2)
+          if (note.accidentalType == Accidental.MIRRORED_FLAT2)
             accOffset = -3;
-          else if (note.accidental.accType == Accidental.MIRRORED_FLAT)
+          else if (note.accidentalType == Accidental.MIRRORED_FLAT)
             accOffset = -1;
-          else if (note.accidental.accType == Accidental.NATURAL)
+          else if (note.accidentalType == Accidental.NATURAL)
             accOffset = 0;
-          else if (note.accidental.accType == Accidental.SHARP_SLASH)
+          else if (note.accidentalType == Accidental.SHARP_SLASH)
             accOffset = 1;
-          else if (note.accidental.accType == Accidental.SHARP_SLASH4)
+          else if (note.accidentalType == Accidental.SHARP_SLASH4)
             accOffset= 3;
 
           if (accOffset !== null) {
