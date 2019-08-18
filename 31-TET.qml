@@ -252,6 +252,7 @@ MuseScore {
           // tuned.
           var staffKeySigHistory = [];
 
+          // initial run to populate custom key signatures
           for (var voice = 0; voice < 4; voice++) {
             cursor.rewind(1); // goes to start of selection, will reset voice to 0
             cursor.voice = voice;
@@ -283,59 +284,62 @@ MuseScore {
               }
           }
 
-          for (var voice = 0; voice < 4; voice++) {
-            cursor.rewind(1); // goes to start of selection, will reset voice to 0
-            cursor.voice = voice; //voice has to be set after goTo
-            cursor.staffIdx = staff;
+          // 2 passes - one to ensure all accidentals are represented acorss
+          // all 4 voices, then the second one to apply those accidentals.
+          for (var rep = 0; rep < 2; rep++) {
+            for (var voice = 0; voice < 4; voice++) {
+              cursor.rewind(1); // goes to start of selection, will reset voice to 0
+              cursor.voice = voice; //voice has to be set after goTo
+              cursor.staffIdx = staff;
 
-            if (fullScore)
-              cursor.rewind(0) // if no selection, beginning of score
+              if (fullScore)
+                cursor.rewind(0) // if no selection, beginning of score
 
-            var measureCount = 0;
+              var measureCount = 0;
 
-            console.log("processing staff: " + staff + ", voice: " + voice);
+              console.log("processing staff: " + staff + ", voice: " + voice);
 
-            // Loop elements of a voice
-            while (cursor.segment && (fullScore || cursor.tick < endTick)) {
-              // Note that the parms.accidentals object now stores accidentals
-              // from all 4 voices in a staff since microtonal accidentals from one voice
-              // should affect subsequent notes on the same line in other voices as well.
-              if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
-                // once new bar is reached, denote new bar in the parms.accidentals.bars object
-                // so that getAccidental will reset. Only do this for the first voice in a staff
-                // since voices in a staff shares the same barrings.
-                if (!parms.accidentals.bars)
-                  parms.accidentals.bars = [];
+              // Loop elements of a voice
+              while (cursor.segment && (fullScore || cursor.tick < endTick)) {
+                // Note that the parms.accidentals object now stores accidentals
+                // from all 4 voices in a staff since microtonal accidentals from one voice
+                // should affect subsequent notes on the same line in other voices as well.
+                if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0 && rep === 0) {
+                  // once new bar is reached, denote new bar in the parms.accidentals.bars object
+                  // so that getAccidental will reset. Only do this for the first voice in a staff
+                  // since voices in a staff shares the same barrings.
+                  if (!parms.accidentals.bars)
+                    parms.accidentals.bars = [];
 
-                parms.accidentals.bars.push(cursor.segment.tick);
-                measureCount ++;
-                console.log("New bar - " + measureCount);
-              }
+                  parms.accidentals.bars.push(cursor.segment.tick);
+                  measureCount ++;
+                  console.log("New bar - " + measureCount);
+                }
 
-              for (var i = 0; i < staffKeySigHistory.length; i++) {
-                var keySig = staffKeySigHistory[i];
-                if (keySig.tick <= cursor.tick)
-                  parms.currKeySig = keySig.keySig;
-              }
+                for (var i = 0; i < staffKeySigHistory.length; i++) {
+                  var keySig = staffKeySigHistory[i];
+                  if (keySig.tick <= cursor.tick)
+                    parms.currKeySig = keySig.keySig;
+                }
 
-              if (cursor.element) {
-
-                if (cursor.element.type == Ms.CHORD) {
-                  var graceChords = cursor.element.graceNotes;
-                  for (var i = 0; i < graceChords.length; i++) {
-                    // iterate through all grace chords
-                    var notes = graceChords[i].notes;
-                    for (var j = 0; j < notes.length; j++)
-                      func(notes[j], cursor.segment, parms);
-                  }
-                  var notes = cursor.element.notes;
-                  for (var i = 0; i < notes.length; i++) {
-                    var note = notes[i];
-                    func(note, cursor.segment, parms);
+                if (cursor.element) {
+                  if (cursor.element.type == Ms.CHORD) {
+                    var graceChords = cursor.element.graceNotes;
+                    for (var i = 0; i < graceChords.length; i++) {
+                      // iterate through all grace chords
+                      var notes = graceChords[i].notes;
+                      for (var j = 0; j < notes.length; j++)
+                        func(notes[j], cursor.segment, parms);
+                    }
+                    var notes = cursor.element.notes;
+                    for (var i = 0; i < notes.length; i++) {
+                      var note = notes[i];
+                      func(note, cursor.segment, parms);
+                    }
                   }
                 }
+                cursor.next();
               }
-              cursor.next();
             }
           }
         }

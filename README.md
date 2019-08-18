@@ -153,6 +153,7 @@ overriden.
 ### 1.3.5
 - Added 22-edo superpyth version.
 - Fixed custom key signatures not affecting other voices (even system text)
+- Fixed accidentals on notes of higher voices not affecting lower voices
 
 ### 1.3.4
 - Fixed meantone double accidentals not accounting for accidental's default double
