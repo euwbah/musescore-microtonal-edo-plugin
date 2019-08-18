@@ -150,6 +150,10 @@ overriden.
 
 ## Changes:
 
+### 1.3.5
+- Added 22-edo superpyth version.
+- Fixed custom key signatures not affecting other voices (even system text)
+
 ### 1.3.4
 - Fixed meantone double accidentals not accounting for accidental's default double
   sharp/flat effect (https://musescore.org/en/node/285449)

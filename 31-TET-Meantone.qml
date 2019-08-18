@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "1.3.4"
+      version:  "1.3.5"
       description: "Retune selection to 31-TET in meantone mode (Dbb is C+), or whole score if nothing selected."
       menuPath: "Plugins.31-TET.Retune 31-TET (Meantone)"
 
@@ -189,8 +189,52 @@ MuseScore {
           // Reset accidentals at the start of every staff.
           parms.accidentals = {};
 
+          // After every staff, reset the currKeySig back to the original keySig
+
+          parms.currKeySig = parms.keySig;
+
+          // Even if system text is used for key sig, the text
+          // won't carry over for all voices (if the text was placed on voice 1, only
+          // voice 1 will see the text)
+          //
+          // Therefore, all the diff custom key sig texts across all 4 voices
+          // need to be aggregated into this array before the notes can be
+          // tuned.
+          var staffKeySigHistory = [];
+
           for (var voice = 0; voice < 4; voice++) {
-            cursor.rewind(1); // sets voice to 0
+            cursor.rewind(1); // goes to start of selection, will reset voice to 0
+            cursor.voice = voice;
+            cursor.staffIdx = staff;
+
+            if (fullScore)
+              cursor.rewind(0);
+
+              var measureCount = 0;
+              console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
+
+              while (cursor.segment && (fullScore || cursor.tick < endTick)) {
+
+                // Check for StaffText key signature changes, then update staffKeySigHistory
+                for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                  var annotation = cursor.segment.annotations[i];
+                  console.log("found annotation type: " + annotation.subtypeName());
+                  var maybeKeySig = scanCustomKeySig(annotation.text);
+                  if (maybeKeySig !== null) {
+                    console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                    staffKeySigHistory.push({
+                      tick: cursor.tick,
+                      keySig: maybeKeySig
+                    });
+                  }
+                }
+
+                cursor.next();
+              }
+          }
+
+          for (var voice = 0; voice < 4; voice++) {
+            cursor.rewind(1); // goes to start of selection, will reset voice to 0
             cursor.voice = voice; //voice has to be set after goTo
             cursor.staffIdx = staff;
 
@@ -199,10 +243,7 @@ MuseScore {
 
             var measureCount = 0;
 
-            // After every track/voice, reset the currKeySig back to the original keySig
-
-            parms.currKeySig = parms.keySig;
-            console.log("currKeySig reset");
+            console.log("processing staff: " + staff + ", voice: " + voice);
 
             // Loop elements of a voice
             while (cursor.segment && (fullScore || cursor.tick < endTick)) {
@@ -221,19 +262,15 @@ MuseScore {
                 console.log("New bar - " + measureCount);
               }
 
-              // Check for StaffText key signature changes.
-              for (var i = 0; i < cursor.segment.annotations.length; i++) {
-                var annotation = cursor.segment.annotations[i];
-                var maybeKeySig = scanCustomKeySig(annotation.text);
-                if (maybeKeySig !== null) {
-                  parms.currKeySig = maybeKeySig;
-                  console.log("detected new custom keySig: " + annotation.text);
-                }
+              for (var i = 0; i < staffKeySigHistory.length; i++) {
+                var keySig = staffKeySigHistory[i];
+                if (keySig.tick <= cursor.tick)
+                  parms.currKeySig = keySig.keySig;
               }
 
               if (cursor.element) {
 
-                if (cursor.element.type == Element.CHORD) {
+                if (cursor.element.type == Ms.CHORD) {
                   var graceChords = cursor.element.graceNotes;
                   for (var i = 0; i < graceChords.length; i++) {
                     // iterate through all grace chords
@@ -494,6 +531,9 @@ MuseScore {
 
         /*
           key signature as denoted by the TextFields.
+
+          NOTE: parms.keySig has been deprecated, it now serves as a placeholder
+                for the natural key signature.
 
           THIS SHOULD BE READONLY!
         */
