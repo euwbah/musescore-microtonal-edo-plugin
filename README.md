@@ -11,16 +11,14 @@ To retune the entire score as is, run the plugin located in Plugins > 31-TET / 2
 
 To only retune selected notes, make a selection before running the plugin.
 
-Depending on the type of notation you prefer, you may use the QML scripts for
-[ups-and-downs notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET.qml)
-which uses [these accidentals](#ups-and-downs-notation-diatonic-enharmonic-equivalent)
-or the [quartertone-accidental 1/4-comma meantone approximation notation](https://github.com/euwbah/musescore-31-tet-plugin/blob/master/31-TET-Meantone.qml) which uses [these accidentals](#14-comma-meantone-approximation-quarter-tone-accidentals).
-
 --------
 
 ### Accidentals (31 edo)
 
 #### Ups and Downs notation (diatonic enharmonic equivalent)
+
+> Plugin file:
+> https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET.qml
 
 In ups and downs notation mode, these are the accidentals used by the
 plugin. They can be found in the [advanced palette](https://musescore.org/en/handbook/palettes-and-workspaces#workspaces).
@@ -48,6 +46,9 @@ plugin. They can be found in the [advanced palette](https://musescore.org/en/han
 
 #### 1/4-comma meantone approximation (quarter-tone accidentals)
 
+> Plugin file:
+> https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml
+
 When using the meantone version of the plugin, these are the accidentals used by the plugin.
 
 | Diesis steps | Accidental |
@@ -65,6 +66,9 @@ When using the meantone version of the plugin, these are the accidentals used by
 ### Accidentals (22 edo)
 
 #### Superpyth Ups and Downs
+
+> Plugin file:
+> https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml
 
 Natural notes in this system are based off the chain of fifths F-C-G-D-A-E-B.
 Each fifth is 13 steps of 22 edo (about 709 cents).
