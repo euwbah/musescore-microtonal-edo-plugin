@@ -183,6 +183,9 @@ overridden. Regular and custom key signatures are not compatible with each other
 - Added 22-edo superpyth version.
 - Fixed custom key signatures not affecting other voices (even system text)
 - Fixed accidentals on notes of higher voices not affecting lower voices
+- Fixed custom key signatures with standard sharp/flat accidentals incorrectly
+  accounting for +/- 100/200 cents accidental playback when MuseScore doesn't
+  recognize them.
 
 ### 1.3.4
 - Fixed meantone double accidentals not accounting for accidental's default double
