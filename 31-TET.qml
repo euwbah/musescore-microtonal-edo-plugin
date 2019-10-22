@@ -11,23 +11,6 @@ MuseScore {
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
 
-      // If normal accidentals are present in the custom key sig, it is IMPORTANT
-      // to UN-undo the +/- 100 and 200 cents offsets to normalize actual sharps
-      // and flats playback
-      property variant customKeySigOffset: {
-        '-5': -200,
-        '-4': 0,
-        '-3': 0,
-        '-2': -100,
-        '-1': 0,
-        0: 0,
-        1: 0,
-        2: 100,
-        3: 0,
-        4: 0,
-        5: 200
-      }
-
       property variant centOffsets: {
         'a': {
           '-5': 38.70967742 * -5 + 200, // Abb
@@ -587,17 +570,13 @@ MuseScore {
         }
         // Check for prev accidentals first, will be null if not present
         var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
-        var usedKeySig = false;
         if (stepsFromBaseNote === null) {
           // No accidentals - check key signature.
           stepsFromBaseNote = parms.currKeySig[baseNote];
-          usedKeySig = true;
         }
 
         console.log("Base Note: " + baseNote + ", diesis: " + stepsFromBaseNote);
         note.tuning = centOffsets[baseNote][stepsFromBaseNote];
-        if (usedKeySig)
-          note.tuning += customKeySigOffset[stepsFromBaseNote];
         return;
       }
 
