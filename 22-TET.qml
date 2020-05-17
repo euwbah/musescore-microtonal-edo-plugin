@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "1.3.5"
+      version:  "1.3.6"
       description: "Retune selection to 22-TET in Superpyth ups and downs mode, or whole score if nothing selected."
       menuPath: "Plugins.22-TET.Retune 22-TET (Superpyth Ups/Downs)"
 
@@ -148,6 +148,8 @@ MuseScore {
       //
       // Assign the key signature object to the parms.currKeySig field!
       function scanCustomKeySig(str) {
+        if (typeof(str) !== 'str')
+          return null;
         str = str.trim();
         var keySig = {};
         var res = str.match(customKeySigRegex);

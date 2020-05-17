@@ -179,6 +179,9 @@ overridden. Regular and custom key signatures are not compatible with each other
 
 ## Changes:
 
+### 1.3.6
+- Fixed fermatas and other non-text annotations breaking the plugin
+
 ### 1.3.5
 - Added 22-edo superpyth version.
 - Fixed custom key signatures not affecting other voices (even system text)
