@@ -222,34 +222,31 @@ MuseScore {
 
           // initial run to populate custom key signatures
           for (var voice = 0; voice < 4; voice++) {
-            cursor.rewind(1); // goes to start of selection, will reset voice to 0
+            cursor.rewind(0); // goes to start of selection, will reset voice to 0
             cursor.voice = voice;
             cursor.staffIdx = staff;
 
-            if (fullScore)
-              cursor.rewind(0);
+            var measureCount = 0;
+            console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
 
-              var measureCount = 0;
-              console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
+            while (cursor.segment && (fullScore || cursor.tick < endTick)) {
 
-              while (cursor.segment && (fullScore || cursor.tick < endTick)) {
-
-                // Check for StaffText key signature changes, then update staffKeySigHistory
-                for (var i = 0; i < cursor.segment.annotations.length; i++) {
-                  var annotation = cursor.segment.annotations[i];
-                  console.log("found annotation type: " + annotation.subtypeName());
-                  var maybeKeySig = scanCustomKeySig(annotation.text);
-                  if (maybeKeySig !== null) {
-                    console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                    staffKeySigHistory.push({
-                      tick: cursor.tick,
-                      keySig: maybeKeySig
-                    });
-                  }
+              // Check for StaffText key signature changes, then update staffKeySigHistory
+              for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                var annotation = cursor.segment.annotations[i];
+                console.log("found annotation type: " + annotation.subtypeName());
+                var maybeKeySig = scanCustomKeySig(annotation.text);
+                if (maybeKeySig !== null) {
+                  console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                  staffKeySigHistory.push({
+                    tick: cursor.tick,
+                    keySig: maybeKeySig
+                  });
                 }
-
-                cursor.next();
               }
+
+              cursor.next();
+            }
           }
 
           // 2 passes - one to ensure all accidentals are represented acorss
