@@ -152,6 +152,14 @@ key signature, it is still necessary to reset the custom key signature to the de
 `.......`. Otherwise, the previous custom key signature would still be in effect, as it is being
 overridden. Regular and custom key signatures are not compatible with each other.
 
+## Known issues:
+
+- cross staff notation doesn't work properly, the accidentals in the staff that the notes are transferred to
+  do not affect the notes that originally belonged in that staff
+
+- accidentals of grace notes that comes after rather than before are handled as if they were before, and also
+  not in the right order. 
+
 
 ### Note to self / developers:
 

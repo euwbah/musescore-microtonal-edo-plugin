@@ -1,5 +1,9 @@
 ## Changelog
 
+### 1.3.7
+- Fixed custom key signatures before selection not being applied to selection.
+- Fixed accidentals in same bar before selection are not taken into account
+
 ### 1.3.6
 - Fixed fermatas and other non-text annotations breaking the plugin
 

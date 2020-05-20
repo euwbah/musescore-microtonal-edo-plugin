@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "1.3.6"
+      version:  "1.3.7"
       description: "Retune selection to 22-TET in Superpyth ups and downs mode, or whole score if nothing selected."
       menuPath: "Plugins.22-TET.Retune 22-TET (Superpyth Ups/Downs)"
 
@@ -253,7 +253,7 @@ MuseScore {
           // all 4 voices, then the second one to apply those accidentals.
           for (var rep = 0; rep < 2; rep++) {
             for (var voice = 0; voice < 4; voice++) {
-              cursor.rewind(1); // goes to start of selection, will reset voice to 0
+              cursor.rewind(rep == 0 ? 0 : 1); // goes to start of selection, will reset voice to 0
               cursor.voice = voice; //voice has to be set after goTo
               cursor.staffIdx = staff;
 
@@ -294,12 +294,12 @@ MuseScore {
                       // iterate through all grace chords
                       var notes = graceChords[i].notes;
                       for (var j = 0; j < notes.length; j++)
-                        func(notes[j], cursor.segment, parms);
+                        func(notes[j], cursor.segment, parms, rep == 0);
                     }
                     var notes = cursor.element.notes;
                     for (var i = 0; i < notes.length; i++) {
                       var note = notes[i];
-                      func(note, cursor.segment, parms);
+                      func(note, cursor.segment, parms, rep == 0);
                     }
                   }
                 }
@@ -369,7 +369,7 @@ MuseScore {
         return offset;
       }
 
-      function tuneNote(note, segment, parms) {
+      function tuneNote(note, segment, parms, scanOnly) {
         var tpc = note.tpc;
         var acc = note.accidental;
 
@@ -392,94 +392,96 @@ MuseScore {
         //       (even though they are 4) in the array to account for the
         //       distinct tpc & pitch of double Accidentals vs. the #^ Accidentals
         //       which are also +/-4 steps, but aren't recognizes as a different note.
-        switch(tpc) {
-        case -1: //Fbb
-          note.tuning = centOffsets['f'][-5]
-          return;
-        case 0: //Cbb
-          note.tuning = centOffsets['c'][-5]
-          return;
-        case 1: //Gbb
-          note.tuning = centOffsets['g'][-5]
-          return;
-        case 2: //Dbb
-          note.tuning = centOffsets['d'][-5]
-          return;
-        case 3: //Abb
-          note.tuning = centOffsets['a'][-5]
-          return;
-        case 4: //Ebb
-          note.tuning = centOffsets['e'][-5]
-          return;
-        case 5: //Bbb
-          note.tuning = centOffsets['b'][-5]
-          return;
+        if (!scanOnly) {
+          switch(tpc) {
+          case -1: //Fbb
+            note.tuning = centOffsets['f'][-5]
+            return;
+          case 0: //Cbb
+            note.tuning = centOffsets['c'][-5]
+            return;
+          case 1: //Gbb
+            note.tuning = centOffsets['g'][-5]
+            return;
+          case 2: //Dbb
+            note.tuning = centOffsets['d'][-5]
+            return;
+          case 3: //Abb
+            note.tuning = centOffsets['a'][-5]
+            return;
+          case 4: //Ebb
+            note.tuning = centOffsets['e'][-5]
+            return;
+          case 5: //Bbb
+            note.tuning = centOffsets['b'][-5]
+            return;
 
-        case 6: //Fb
-          note.tuning = centOffsets['f'][-3]
-          return;
-        case 7: //Cb
-          note.tuning = centOffsets['c'][-3]
-          return;
-        case 8: //Gb
-          note.tuning = centOffsets['g'][-3]
-          return;
-        case 9: //Db
-          note.tuning = centOffsets['d'][-3]
-          return;
-        case 10: //Ab
-          note.tuning = centOffsets['a'][-3]
-          return;
-        case 11: //Eb
-          note.tuning = centOffsets['e'][-3]
-          return;
-        case 12: //Bb
-          note.tuning = centOffsets['b'][-3]
-          return;
+          case 6: //Fb
+            note.tuning = centOffsets['f'][-3]
+            return;
+          case 7: //Cb
+            note.tuning = centOffsets['c'][-3]
+            return;
+          case 8: //Gb
+            note.tuning = centOffsets['g'][-3]
+            return;
+          case 9: //Db
+            note.tuning = centOffsets['d'][-3]
+            return;
+          case 10: //Ab
+            note.tuning = centOffsets['a'][-3]
+            return;
+          case 11: //Eb
+            note.tuning = centOffsets['e'][-3]
+            return;
+          case 12: //Bb
+            note.tuning = centOffsets['b'][-3]
+            return;
 
-        case 20: //F#
-          note.tuning = centOffsets['f'][3]
-          return;
-        case 21: //C#
-          note.tuning = centOffsets['c'][3]
-          return;
-        case 22: //G#
-          note.tuning = centOffsets['g'][3]
-          return;
-        case 23: //D#
-          note.tuning = centOffsets['d'][3]
-          return;
-        case 24: //A#
-          note.tuning = centOffsets['a'][3]
-          return;
-        case 25: //E#
-          note.tuning = centOffsets['e'][3]
-          return;
-        case 26: //B#
-          note.tuning = centOffsets['b'][3]
-          return;
+          case 20: //F#
+            note.tuning = centOffsets['f'][3]
+            return;
+          case 21: //C#
+            note.tuning = centOffsets['c'][3]
+            return;
+          case 22: //G#
+            note.tuning = centOffsets['g'][3]
+            return;
+          case 23: //D#
+            note.tuning = centOffsets['d'][3]
+            return;
+          case 24: //A#
+            note.tuning = centOffsets['a'][3]
+            return;
+          case 25: //E#
+            note.tuning = centOffsets['e'][3]
+            return;
+          case 26: //B#
+            note.tuning = centOffsets['b'][3]
+            return;
 
-        case 27: //Fx
-          note.tuning = centOffsets['f'][5]
-          return;
-        case 28: //Cx
-          note.tuning = centOffsets['c'][5]
-          return;
-        case 29: //Gx
-          note.tuning = centOffsets['g'][5]
-          return;
-        case 30: //Dx
-          note.tuning = centOffsets['d'][5]
-          return;
-        case 31: //Ax
-          note.tuning = centOffsets['a'][5]
-          return;
-        case 32: //Ex
-          note.tuning = centOffsets['e'][5]
-          return;
-        case 33: //Bx
-          note.tuning = centOffsets['b'][5]
-          return;
+          case 27: //Fx
+            note.tuning = centOffsets['f'][5]
+            return;
+          case 28: //Cx
+            note.tuning = centOffsets['c'][5]
+            return;
+          case 29: //Gx
+            note.tuning = centOffsets['g'][5]
+            return;
+          case 30: //Dx
+            note.tuning = centOffsets['d'][5]
+            return;
+          case 31: //Ax
+            note.tuning = centOffsets['a'][5]
+            return;
+          case 32: //Ex
+            note.tuning = centOffsets['e'][5]
+            return;
+          case 33: //Bx
+            note.tuning = centOffsets['b'][5]
+            return;
+          }
         }
 
         // in the event that tpc is considered natural by
@@ -531,9 +533,8 @@ MuseScore {
           else if (note.accidentalType == Accidental.SHARP_ARROW_UP)
             accOffset = 4;
 
-          if (accOffset !== null) {
+          if (accOffset !== null)
             registerAccidental(note.line, segment.tick, accOffset, parms);
-          }
         }
         // Check for prev accidentals first, will be null if not present
         var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
@@ -545,7 +546,8 @@ MuseScore {
         }
 
         console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
-        note.tuning = centOffsets[baseNote][stepsFromBaseNote];
+        if (!scanOnly)
+          note.tuning = centOffsets[baseNote][stepsFromBaseNote];
 
         return;
       }
