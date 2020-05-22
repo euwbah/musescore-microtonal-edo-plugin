@@ -3,13 +3,15 @@
 Musescore plugin to automatically retune notes in [31-EDO](https://en.wikipedia.org/wiki/31_equal_temperament)
 and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
+
+
 ## Usage
 
-Download the QML files and put them in the plugins folder.
+- Download the QML files and put them in the plugins folder.
 
-To retune the entire score as is, run the plugin located in Plugins > 31-TET / 22-TET.
+- To retune the entire score as is, run the plugin located in Plugins > 31-TET / 22-TET.
 
-To only retune selected notes, make a selection before running the plugin.
+- To only retune selected notes, make a selection before running the plugin.
 
 --------
 
@@ -75,7 +77,7 @@ Each fifth is 13 steps of 22 edo (about 709 cents).
 The distance between B-C and E-F is 1 step of 22 edo (about 54.5 cents)
 
 | Diesis steps | Accidental |
-| ---: | :-----:|
+| ---: | :----- |
 | -4  | ![Flat down](images/bd.png) (double flats are also -4 for simplicity's sake)  |
 | -3  | ![Flat](images/b.png)  |
 | -2  | ![Flat up](images/bu.png)  |
@@ -94,7 +96,8 @@ any custom key signature can't be read by the plugin, at least for now.
 
 Should you want to create a microtonal key signature and have it affect the
 playback, you have to explicitly declare the custom key signature using
-system/staff text containing accidental code:
+system/staff text containing accidental code, on top of creating and placing
+the visual custom key signature:
 
 > Note that explicit accidentals will still take precedence over the
 > declared custom key signature, behaving exactly the same way a key signature
@@ -110,7 +113,9 @@ system/staff text containing accidental code:
 | ![Flat](images/b.png)   | `b`  |
 | ![Flat up](images/bu.png)   | `b^` |
 | ![Down](images/d.png)   | `v` |
+| ![Down](images/d-quarter.png) | `d` |
 | ![Natural](images/n.png) | Leave blank / any other character  |
+| ![Up](images/+.png) | `+` |
 | ![Up](images/u.png) | `^` |
 | ![Sharp down](images/sd.png) | `#v` |
 | ![Sharp](images/s.png) | `#`  |
@@ -137,8 +142,9 @@ Key signature code syntax:
 4. Put the required accidental for **D**
 5. Repeat from **C** thru **B**
 
-Note that There **must** be seven `.` in total,
-natural accidentals are denoted by leaving the space blank, or using any other character
+Finally, you should have be seven dots (`.`) in total,
+
+Natural accidentals are denoted by leaving the space blank, or using any other character
 that does not represent an accidental.
 
 Spaces/newlines can be placed before or after the dots to improve readability.
@@ -158,12 +164,20 @@ overridden. Regular and custom key signatures are not compatible with each other
   do not affect the notes that originally belonged in that staff
 
 - accidentals of grace notes that comes after rather than before are handled as if they were before, and also
-  not in the right order. 
+  not in the right order.
 
 
 ### Note to self / developers:
 
+> The most completely documented / commented variant of the plugin is
+> in the 31-TET ups and downs notation plugins.
+> The rest are variants of the code with certain constants and values changed.
+
 ##### Definitions:
+
+**IMPORTANT `Note.accidental` vs. `Note.accidentalType`**:
+: `accidental` represents the accidental Element object itself,
+: whereas, accidentalType is a value of the Accidental enumeration!!
 
 `tpc`
 : Tonal pitch class
@@ -174,6 +188,77 @@ overridden. Regular and custom key signatures are not compatible with each other
 
 `segment.annotations[idx].text`
 : Contains given text
+
+
+#### Musescore Enums
+
+##### Accidentals (used in project)
+
+```
+Accidental.none                (no explicit accidental)
+Accidental.SHARP2              x
+Accidental.SHARP_SLASH4        #+
+Accidental.SHARP_ARROW_UP      #^
+Accidental.SHARP               #
+Accidental.SHARP_ARROW_DOWN    #v
+Accidental.SHARP_SLASH         +
+Accidental.NATURAL_ARROW_UP    ^
+Accidental.NATURAL             natural
+Accidental.NATURAL_ARROW_DOWN  v
+Accidental.MIRRORED_FLAT       d
+Accidental.FLAT_ARROW_UP       b^
+Accidental.FLAT                b
+Accidental.FLAT_ARROW_DOWN     bv
+Accidental.MIRRORED_FLAT2      db
+Accidental.FLAT_2              bb
+```
+
+#### Custom object types in up/down step transposition plugins
+
+##### Key signature object:
+
+```
+{
+  c: {steps: <number of diesis offset>, type: Accidental enum value}
+  d: ...
+  e: ...
+  etc...
+}
+```
+
+##### Accidental object:
+
+```
+{
+  offset: number of diesis offset,
+  type: accidental type as Accidental enum value
+}
+```
+
+##### Enharmonics object:
+
+```
+{
+ above: {baseNote: 'a' through 'g', offset: diesis offset}
+ below: {baseNote: 'a' through 'g', offset: diesis offset}
+}
+```
+
+##### Note pitch data:
+
+```
+{
+  baseNote: a string from 'a' to 'g',
+  line: the note.line property referring to height of the note on the staff
+  tpc: the tonal pitch class of the note (as per note.tpc)
+  tick: the tick position of the note
+  explicitAccidental: Accidental enum of the explicit accidental attatched to this note (if any)
+  implicitAccidental: Accidental enum of the implicit accidental of this note (non null)
+                      (if explicitAccidental exists, implicitAccidental = explicitAccidental)
+  diesisOffset: the number of edo steps offset from the base note this note is
+}
+```
+
 
 ## TODO:
 

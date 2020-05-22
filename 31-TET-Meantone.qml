@@ -355,7 +355,6 @@ MuseScore {
 
       function tuneNote(note, segment, parms, scanOnly) {
         var tpc = note.tpc;
-        var acc = note.accidental;
 
         // If tpc is non-natural, there's no need to go through additional steps,
         // since accidentals and key sig are already taken into consideration
