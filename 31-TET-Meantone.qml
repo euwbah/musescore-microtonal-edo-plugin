@@ -339,7 +339,7 @@ MuseScore {
           // 1. They are in the same bar as the current note
           // 2. They are before or at the current note's tick
           // 3. It is the most recent accidental that fulfills 1. and 2.
-          if (acc.tick >= mostRecentBar && acc.tick <= tick && acc.tick > oldTick) {
+          if (acc.tick >= mostRecentBar && acc.tick <= tick && acc.tick >= oldTick) {
             console.log('note line: ' + noteLine + ', diesis: ' + acc.offset + ', tick: ' + acc.tick);
             console.log('acc.tick: ' + acc.tick + ', mostRecentBar: ' + mostRecentBar + ', tick: ' + tick + ', oldTick: ' + oldTick);
             offset = acc.offset;
@@ -488,9 +488,10 @@ MuseScore {
           baseNote = 'b';
           break;
         }
+
         //NOTE: Only special accidentals need to be remembered.
+        var accOffset = null;
         if (note.accidental) {
-          var accOffset = null;
 
           console.log('Note: ' + baseNote + ', Line: ' + note.line + ', Special Accidental: ' + note.accidental);
           if (note.accidentalType == Accidental.MIRRORED_FLAT2)
@@ -510,7 +511,7 @@ MuseScore {
         }
 
         // Check for prev accidentals first, will be null if not present
-        var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
+        var stepsFromBaseNote = accOffset !== null ? accOffset : getAccidental(note.line, segment.tick, parms);
         if (stepsFromBaseNote === null) {
           // No accidentals - check key signature.
           stepsFromBaseNote = parms.currKeySig[baseNote];

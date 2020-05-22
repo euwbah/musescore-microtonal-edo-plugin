@@ -359,7 +359,7 @@ MuseScore {
           // 1. They are in the same bar as the current note
           // 2. They are before or at the current note's tick
           // 3. It is the most recent accidental that fulfills 1. and 2.
-          if (acc.tick >= mostRecentBar && acc.tick <= tick && acc.tick > oldTick) {
+          if (acc.tick >= mostRecentBar && acc.tick <= tick && acc.tick >= oldTick) {
             console.log('note line: ' + noteLine + ', steps: ' + acc.offset + ', tick: ' + acc.tick);
             console.log('acc.tick: ' + acc.tick + ', mostRecentBar: ' + mostRecentBar + ', tick: ' + tick + ', oldTick: ' + oldTick);
             offset = acc.offset;
@@ -514,8 +514,10 @@ MuseScore {
         }
 
         //NOTE: Only special accidentals need to be remembered.
+
+        var accOffset = null;
+
         if (note.accidental) {
-          var accOffset = null;
           console.log('Note: ' + baseNote + ', Line: ' + note.line +
                       ', Special Accidental: ' + note.accidentalType);
           if (note.accidentalType == Accidental.FLAT_ARROW_DOWN)
