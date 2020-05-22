@@ -2,7 +2,9 @@
 
 ### 1.3.7
 - Fixed custom key signatures before selection not being applied to selection.
-- Fixed accidentals in same bar before selection are not taken into account
+- Fixed accidentals in same bar before selection not being accounted for
+- Fixed partial selection not working
+- Improved handling of two notes with the same line at the same time.
 
 ### 1.3.6
 - Fixed fermatas and other non-text annotations breaking the plugin

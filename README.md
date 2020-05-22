@@ -160,11 +160,23 @@ overridden. Regular and custom key signatures are not compatible with each other
 
 ## Known issues:
 
-- cross staff notation doesn't work properly, the accidentals in the staff that the notes are transferred to
+- Cross staff notation doesn't work properly, the accidentals in the staff that the notes are transferred to
   do not affect the notes that originally belonged in that staff
 
-- accidentals of grace notes that comes after rather than before are handled as if they were before, and also
+- Accidentals of grace notes that comes after rather than before are handled as if they were before, and also
   not in the right order.
+
+- The plugin tries its best to handle chords with pairs of mirrored notes that
+  share the same line (e.g. an F and F# on the same staff line) but due to plugin API
+  limitations, its behavior is somewhat janky.
+  When dealing with them, ALWAYS use explicit accidentals on the mirrored notes to
+  ensure the Accidentals are all registered correctly. This way it is clear to read
+  and also for the plugin to read and understand which accidentals belong to which
+  notes.
+  - The mirrored notes will get scanned first, the accidental of the non-mirrored note shall not
+    affect the played back accidental of the mirrored note, but the accidental of the mirrored note
+    may affect that of the non-mirrored note.
+
 
 
 ### Note to self / developers:
