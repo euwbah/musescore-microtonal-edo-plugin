@@ -253,32 +253,33 @@ MuseScore {
           // all 4 voices, then the second one to apply those accidentals.
           for (var rep = 0; rep < 2; rep++) {
             for (var voice = 0; voice < 4; voice++) {
-              cursor.rewind(rep == 0 ? 0 : 1); // goes to start of selection, will reset voice to 0
               cursor.voice = voice; //voice has to be set after goTo
               cursor.staffIdx = staff;
 
-              if (fullScore)
-                cursor.rewind(0) // if no selection, beginning of score
+              cursor.rewind(fullScore || rep == 0 ? 0 : 1);
 
               var measureCount = 0;
 
-              console.log("processing staff: " + staff + ", voice: " + voice);
+              console.log("processing staff: " + staff + ", rep: " + rep + ", voice: " + voice);
 
               // Loop elements of a voice
               while (cursor.segment && (fullScore || cursor.tick < endTick)) {
                 // Note that the parms.accidentals object now stores accidentals
                 // from all 4 voices in a staff since microtonal accidentals from one voice
                 // should affect subsequent notes on the same line in other voices as well.
+
                 if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0 && rep === 0) {
                   // once new bar is reached, denote new bar in the parms.accidentals.bars object
                   // so that getAccidental will reset. Only do this for the first voice in a staff
                   // since voices in a staff shares the same barrings.
+
+                  console.log("New bar - " + measureCount);
+
                   if (!parms.accidentals.bars)
                     parms.accidentals.bars = [];
 
                   parms.accidentals.bars.push(cursor.segment.tick);
                   measureCount ++;
-                  console.log("New bar - " + measureCount);
                 }
 
                 for (var i = 0; i < staffKeySigHistory.length; i++) {
@@ -535,18 +536,21 @@ MuseScore {
           if (accOffset !== null)
             registerAccidental(note.line, segment.tick, accOffset, parms);
         }
-        // Check for prev accidentals first, will be null if not present
-        var stepsFromBaseNote = getAccidental(note.line, segment.tick, parms);
+
+        if (!scanOnly) {
+          // Check for prev accidentals first, will be null if not present
+          // If explicit accidental exists, use that instead.
+          var stepsFromBaseNote = accOffset !== null ? accOffset : getAccidental(note.line, segment.tick, parms);
 
 
-        if (stepsFromBaseNote === null) {
-          // No accidentals - check key signature.
-          stepsFromBaseNote = parms.currKeySig[baseNote];
-        }
+          if (stepsFromBaseNote === null) {
+            // No accidentals - check key signature.
+            stepsFromBaseNote = parms.currKeySig[baseNote];
+          }
 
-        console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
-        if (!scanOnly)
+          console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
           note.tuning = centOffsets[baseNote][stepsFromBaseNote];
+        }
 
         return;
       }

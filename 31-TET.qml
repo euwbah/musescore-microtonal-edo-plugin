@@ -295,12 +295,10 @@ MuseScore {
               // if first pass go to start of score so that anchors.all
               // accidentals are accounted For
               // otherwise, go to the start of the selection to begin tuning
-              cursor.rewind(rep == 0 ? 0 : 1);
               cursor.voice = voice; //voice has to be set after goTo
               cursor.staffIdx = staff;
 
-              if (fullScore)
-                cursor.rewind(0) // if no selection, beginning of score
+              cursor.rewind(fullScore || rep == 0 ? 0 : 1);
 
               var measureCount = 0;
 

@@ -237,12 +237,10 @@ MuseScore {
           // all 4 voices, then the second one to apply those accidentals.
           for (var rep = 0; rep < 2; rep++) {
             for (var voice = 0; voice < 4; voice++) {
-              cursor.rewind(rep == 0 ? 0 : 1); // goes to start of selection, will reset voice to 0
               cursor.voice = voice; //voice has to be set after goTo
               cursor.staffIdx = staff;
 
-              if (fullScore)
-                cursor.rewind(0) // if no selection, beginning of score
+              cursor.rewind(fullScore || rep == 0 ? 0 : 1);
 
               var measureCount = 0;
 
