@@ -182,8 +182,8 @@ overridden. Regular and custom key signatures are not compatible with each other
 ### Note to self / developers:
 
 > The most completely documented / commented variant of the plugin is
-> in the 31-TET ups and downs notation plugins.
-> The rest are variants of the code with certain constants and values changed.
+> in the 31-TET ups and downs notation plugins for both tuning and transposing variants.
+> The rest are variants of the 31 up-downs code with certain constants and values changed.
 
 ##### Definitions:
 
