@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.0.0 (in testing)
+- Added stepwise note transposition feature for edostep to replace up/down arrow keys
+  function.
+- Refactored accidentals system into a stateless function.
+
 ### 1.3.7
 - Fixed custom key signatures before selection not being applied to selection.
 - Fixed accidentals in same bar before selection not being accounted for
