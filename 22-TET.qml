@@ -148,7 +148,8 @@ MuseScore {
       //
       // Assign the key signature object to the parms.currKeySig field!
       function scanCustomKeySig(str) {
-        if (typeof(str) !== 'str')
+        console.log(typeof(str));
+        if (typeof(str) !== 'string')
           return null;
         str = str.trim();
         var keySig = {};
@@ -229,23 +230,26 @@ MuseScore {
             var measureCount = 0;
             console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
 
-            while (cursor.segment && (fullScore || cursor.tick < endTick)) {
-
-              // Check for StaffText key signature changes, then update staffKeySigHistory
-              for (var i = 0; i < cursor.segment.annotations.length; i++) {
-                var annotation = cursor.segment.annotations[i];
-                console.log("found annotation type: " + annotation.subtypeName());
-                var maybeKeySig = scanCustomKeySig(annotation.text);
-                if (maybeKeySig !== null) {
-                  console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                  staffKeySigHistory.push({
-                    tick: cursor.tick,
-                    keySig: maybeKeySig
-                  });
+            while (fullScore || cursor.tick < endTick) {
+              if (cursor.segment) {
+                // Check for StaffText key signature changes, then update staffKeySigHistory
+                for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                  var annotation = cursor.segment.annotations[i];
+                  console.log("found annotation type: " + annotation.subtypeName() + ", text: " + annotation.text);
+                  var maybeKeySig = scanCustomKeySig(annotation.text);
+                  console.log('maybekeysig: ' + maybeKeySig);
+                  if (maybeKeySig !== null) {
+                    console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                    staffKeySigHistory.push({
+                      tick: cursor.tick,
+                      keySig: maybeKeySig
+                    });
+                  }
                 }
               }
 
-              cursor.next();
+              if (!cursor.next())
+                break;
             }
           }
 
@@ -518,8 +522,11 @@ MuseScore {
         var accOffset = null;
 
         if (note.accidental) {
-          console.log('Note: ' + baseNote + ', Line: ' + note.line +
+          console.log('accidental found on Note: ' + baseNote + ', Line: ' + note.line +
                       ', Special Accidental: ' + note.accidentalType);
+          if (scanOnly)
+            console.log('Scanning only, undefined is ok.');
+
           if (note.accidentalType == Accidental.FLAT_ARROW_DOWN)
             accOffset = -4;
           else if (note.accidentalType == Accidental.FLAT_ARROW_UP)
