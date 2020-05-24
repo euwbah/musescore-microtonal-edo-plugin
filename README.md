@@ -150,36 +150,41 @@ that does not represent an accidental.
 Spaces/newlines can be placed before or after the dots to improve readability.
 
 **For example:**
-Ab-down major in ups-and-downs mode can be denoted like this: `.v.bv.bv.v.v.bv.bv`
+Ab-down major in 31 edo's ups-and-downs mode can be denoted like this: `.v.bv.bv.v.v.bv.bv`
 representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
-
-**IMPORTANT!** Following a custom key signature, should there be a modulation to any standard
-key signature, it is still necessary to reset the custom key signature to the default, that is,
-`.......`. Otherwise, the previous custom key signature would still be in effect, as it is being
-overridden. Regular and custom key signatures are not compatible with each other.
 
 ## Known issues:
 
+- CRITICAL ISSUE: note tuning caps at +/- 200 cents, but 4 steps in 22 edo exceeds this.
+  TODO: alter PlayEvents to transpose notes in steps of 100 cents to fix this. Will fix soon.
+
 - Cross staff notation doesn't work properly, the accidentals in the staff that the notes are transferred to
-  do not affect the notes that originally belonged in that staff
+  do not affect the notes that originally belonged in that staff that the notes were transferred to.
+  Please refrain from using cross-staff notation, or submit a PR for this fix.
 
 - Accidentals of grace notes that comes after rather than before are handled as if they were before, and also
-  not in the right order.
+  not in the right order. This causes huge problems when transposing.
+  Please refrain from using grace notes that attach after main notes, or submit a PR for this fix.
 
 - The plugin tries its best to handle chords with pairs of mirrored notes that
   share the same line (e.g. an F and F# on the same staff line) but due to plugin API
-  limitations, its behavior is somewhat janky.
+  limitations and the way MuseScore natively handles them, its behavior is somewhat janky.
   When dealing with them, ALWAYS use explicit accidentals on the mirrored notes to
   ensure the Accidentals are all registered correctly. This way it is clear to read
   and also for the plugin to read and understand which accidentals belong to which
   notes.
-  - The mirrored notes will get scanned first, the accidental of the non-mirrored note shall not
-    affect the played back accidental of the mirrored note, but the accidental of the mirrored note
-    may affect that of the non-mirrored note.
+  - The exact order the plugin reads and performs operations on its notes of each chord segment are as follows:
+    1. grace notes (in similar fashion to step 2)
+    2. For notes in the same chord, left to right, then bottom to top, as they appear in the score.
 
 
 
 ### Note to self / developers:
+
+- Always set cursor voice (and track) before rewinding!
+- Transposition plugins is now using stateless accidentals, scanning accidentals on the fly.
+  - Works should be done to make the tuning plugins use stateless accidentals too.
+    Makes it way easier to think and removes a lot of possible state errors.
 
 > The most completely documented / commented variant of the plugin is
 > in the 31-TET ups and downs notation plugins for both tuning and transposing variants.
@@ -200,6 +205,10 @@ overridden. Regular and custom key signatures are not compatible with each other
 
 `segment.annotations[idx].text`
 : Contains given text
+
+`MuseScore.curScore.selection.elements`
+: An array of elements containing individual elements the user has selected
+: with ctrl + click. Especially useful for applying an action to certain notes in particular.
 
 
 #### Musescore Enums
