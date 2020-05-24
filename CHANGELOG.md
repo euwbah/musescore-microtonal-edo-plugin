@@ -5,6 +5,7 @@
 - Fixed accidentals in same bar before selection not being accounted for
 - Fixed partial selection not working
 - Improved handling of two notes with the same line at the same time.
+- Fixed custom key signatures in partial selections not working.
 
 ### 1.3.6
 - Fixed fermatas and other non-text annotations breaking the plugin

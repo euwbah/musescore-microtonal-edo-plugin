@@ -161,6 +161,7 @@ MuseScore {
           return null;
 
         for (var i = 1; i <= 7; i++) {
+          console.log(res[i]);
           var acc = convertAccidentalToStepsOrNull(res[i].trim());
           if (acc !== null)
             keySig[notes[i]] = acc;
@@ -223,9 +224,9 @@ MuseScore {
 
           // initial run to populate custom key signatures
           for (var voice = 0; voice < 4; voice++) {
-            cursor.rewind(0); // goes to start of selection, will reset voice to 0
             cursor.voice = voice;
             cursor.staffIdx = staff;
+            cursor.rewind(0); // goes to start of selection, will reset voice to 0
 
             var measureCount = 0;
             console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
