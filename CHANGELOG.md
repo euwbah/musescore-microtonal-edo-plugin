@@ -11,6 +11,7 @@
 - Fixed partial selection not working
 - Improved handling of two notes with the same line at the same time.
 - Fixed custom key signatures in partial selections not working.
+- Fixed cursor rewind calls to use the Only Right Way That Works :tm: for whatever reason.
 
 ### 1.3.6
 - Fixed fermatas and other non-text annotations breaking the plugin

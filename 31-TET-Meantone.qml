@@ -206,52 +206,31 @@ MuseScore {
 
           // initial run to populate custom key signatures
           for (var voice = 0; voice < 4; voice++) {
+            cursor.rewind(1);
             cursor.voice = voice;
             cursor.staffIdx = staff;
-            cursor.rewind(0); // goes to start of selection, will reset voice to 0
+            cursor.rewind(0);
 
             var measureCount = 0;
             console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
 
-            while (cursor.segment && (fullScore || cursor.tick < endTick)) {
+            while (true) {
 
-              // Check for StaffText key signature changes, then update staffKeySigHistory
-              for (var i = 0; i < cursor.segment.annotations.length; i++) {
-                var annotation = cursor.segment.annotations[i];
-                console.log("found annotation type: " + annotation.subtypeName());
-                var maybeKeySig = scanCustomKeySig(annotation.text);
-                if (maybeKeySig !== null) {
-                  console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                  staffKeySigHistory.push({
-                    tick: cursor.tick,
-                    keySig: maybeKeySig
-                  });
+              if (cursor.segment) {
+                // Check for StaffText key signature changes, then update staffKeySigHistory
+                for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                  var annotation = cursor.segment.annotations[i];
+                  console.log("found annotation type: " + annotation.subtypeName());
+                  var maybeKeySig = scanCustomKeySig(annotation.text);
+                  if (maybeKeySig !== null) {
+                    console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                    staffKeySigHistory.push({
+                      tick: cursor.tick,
+                      keySig: maybeKeySig
+                    });
+                  }
                 }
-              }
-
-              cursor.next();
-            }
-          }
-
-          // 2 passes - one to ensure all accidentals are represented acorss
-          // all 4 voices, then the second one to apply those accidentals.
-          for (var rep = 0; rep < 2; rep++) {
-            for (var voice = 0; voice < 4; voice++) {
-              cursor.voice = voice; //voice has to be set after goTo
-              cursor.staffIdx = staff;
-
-              cursor.rewind(fullScore || rep == 0 ? 0 : 1);
-
-              var measureCount = 0;
-
-              console.log("processing staff: " + staff + ", voice: " + voice);
-
-              // Loop elements of a voice
-              while (cursor.segment && (fullScore || cursor.tick < endTick)) {
-                // Note that the parms.accidentals object now stores accidentals
-                // from all 4 voices in a staff since microtonal accidentals from one voice
-                // should affect subsequent notes on the same line in other voices as well.
-                if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0 && rep === 0) {
+                if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
                   // once new bar is reached, denote new bar in the parms.accidentals.bars object
                   // so that getAccidental will reset. Only do this for the first voice in a staff
                   // since voices in a staff shares the same barrings.
@@ -262,6 +241,32 @@ MuseScore {
                   measureCount ++;
                   console.log("New bar - " + measureCount);
                 }
+              }
+
+              if (!cursor.next())
+                break;
+            }
+          }
+
+          // 2 passes - one to ensure all accidentals are represented acorss
+          // all 4 voices, then the second one to apply those accidentals.
+          for (var rep = 0; rep < 2; rep++) {
+            for (var voice = 0; voice < 4; voice++) {
+              cursor.rewind(1)
+              cursor.voice = voice; //voice has to be set after goTo
+              cursor.staffIdx = staff;
+              if (fullScore || rep == 0)
+                cursor.rewind(0);
+
+              var measureCount = 0;
+
+              console.log("processing staff: " + staff + ", voice: " + voice);
+
+              // Loop elements of a voice
+              while (cursor.segment && (fullScore || cursor.tick < endTick)) {
+                // Note that the parms.accidentals object now stores accidentals
+                // from all 4 voices in a staff since microtonal accidentals from one voice
+                // should affect subsequent notes on the same line in other voices as well.
 
                 for (var i = 0; i < staffKeySigHistory.length; i++) {
                   var keySig = staffKeySigHistory[i];
