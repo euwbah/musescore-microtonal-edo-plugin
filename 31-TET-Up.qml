@@ -5,8 +5,8 @@ import MuseScore 3.0
 
 MuseScore {
       version:  "2.0.0"
-      description: "Retune selection to 31-TET in Enharmonic Ups & Downs mode (Dbb is C), or whole score if nothing selected."
-      menuPath: "Plugins.31-TET.Retune 31-TET (Enharmonic Ups and Downs)"
+      description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
+      menuPath: "Plugins.31-TET.31-TET Raise Pitch (Ups and downs)"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -169,30 +169,32 @@ MuseScore {
 
       function convertAccidentalTypeToSteps(accType) {
         switch (accType) {
-        case Accidental.FLAT2 :
+        case Accidental.FLAT2:
           return -5;
-        case Accidental.MIRRORED_FLAT2 :
+        case Accidental.MIRRORED_FLAT2:
           return -4;
-        case Accidental.FLAT_ARROW_DOWN :
+        case Accidental.FLAT_ARROW_DOWN:
           return -3;
         case Accidental.FLAT:
           return -2;
         case Accidental.NATURAL_ARROW_DOWN:
-        case Accidental.FLAT_ARROW_UP :
+        case Accidental.FLAT_ARROW_UP:
           return -1;
         case Accidental.NATURAL:
           return 0;
         case Accidental.NATURAL_ARROW_UP:
-        case Accidental.SHARP_ARROW_DOWN :
+        case Accidental.SHARP_ARROW_DOWN:
           return 1;
         case Accidental.SHARP:
           return 2;
-        case Accidental.SHARP_ARROW_UP :
+        case Accidental.SHARP_ARROW_UP:
           return 3;
-        case Accidental.SHARP_SLASH4 :
-          return 4:
+        case Accidental.SHARP_SLASH4:
+          return 4;
         case Accidental.SHARP2:
           return 5;
+        default:
+          return null;
         }
       }
 
@@ -225,6 +227,45 @@ MuseScore {
           return Accidental.SHARP_SLASH4;
         case 5:
           return Accidental.SHARP2;
+        }
+      }
+
+      function convertAccidentalTypeToName(accType) {
+        switch(accType) {
+        case Accidental.FLAT2:
+          return 'bb';
+        case Accidental.MIRRORED_FLAT2:
+          return 'db';
+        case Accidental.FLAT_ARROW_DOWN:
+          return 'bv';
+        case Accidental.FLAT:
+          return 'b';
+        case Accidental.MIRRORED_FLAT:
+          return 'd';
+        case Accidental.FLAT_ARROW_UP:
+          return 'b^';
+        case Accidental.NATURAL_ARROW_DOWN:
+          return 'v';
+        case Accidental.NATURAL:
+          return 'nat';
+        case Accidental.NATURAL_ARROW_UP:
+          return '^';
+        case Accidental.SHARP_ARROW_DOWN:
+          return '#v';
+        case Accidental.SHARP_SLASH:
+          return '+';
+        case Accidental.SHARP:
+          return '#';
+        case Accidental.SHARP_ARROW_UP:
+          return '#^';
+        case Accidental.SHARP_SLASH4:
+          return '#+';
+        case Accidental.SHARP2:
+          return 'x';
+        case Accidental.NONE:
+          return 'none';
+        default:
+          return 'unrecognized';
         }
       }
 
@@ -313,7 +354,7 @@ MuseScore {
 
         above = above < -5 ? null : {
           baseNote: getNextNote(baseNote),
-          offset: offset - 5;
+          offset: offset - 5
         };
         below = below > 5 ? null : {
           baseNote: getPrevNote(baseNote),
@@ -468,61 +509,67 @@ MuseScore {
             // applying to notes in selection as custom key signatures may precede the selection
             // that should still apply to the score.
 
-            cursor.voice = voice;
+            cursor.rewind(1);
             cursor.staffIdx = staff;
-            cursor.rewind(0); // goes to start of score, will reset voice to 0
+            cursor.voice = voice;
+            cursor.rewind(0);
 
-            var measureCount = 0;
             console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
 
-            while (cursor.segment && (cursor.tick < endTick)) {
+            // NOTE: Initial key signature state and barring state scan covers the entire score.
+            //       This is required as it is now possible to selecting individual notes across
+            //       different bars (Alt + click) instead of just a monolithic phrase selection.
+            //       (Also required to fix tickOfNextBar showing -1 if at end of selection, but
+            //        a following bar exists.)
+            while (true) {
 
-              // Check for StaffText key signature changes, then update staffKeySigHistory
-              for (var i = 0; i < cursor.segment.annotations.length; i++) {
-                var annotation = cursor.segment.annotations[i];
-                console.log("found annotation type: " + annotation.subtypeName());
-                var maybeKeySig = scanCustomKeySig(annotation.text);
-                if (maybeKeySig !== null) {
-                  console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                  staffKeySigHistory.push({
-                    tick: cursor.tick,
-                    keySig: maybeKeySig
-                  });
+              if (cursor.segment) {
+                // Check for StaffText key signature changes, then update staffKeySigHistory
+                for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                  var annotation = cursor.segment.annotations[i];
+                  console.log("found annotation type: " + annotation.subtypeName());
+                  var maybeKeySig = scanCustomKeySig(annotation.text);
+                  if (maybeKeySig !== null) {
+                    console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                    staffKeySigHistory.push({
+                      tick: cursor.tick,
+                      keySig: maybeKeySig
+                    });
+                  }
+                }
+
+                var measureCount = 0;
+
+                if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
+                  // once new bar is reached, denote new bar in the parms.accidentals.bars object
+                  // so that getAccidental will reset. Only do this for the first voice in a staff
+                  // since voices in a staff shares the same barrings.
+                  if (!parms.accidentals.bars)
+                    parms.accidentals.bars = [];
+
+                  parms.accidentals.bars.push(cursor.segment.tick);
+                  measureCount ++;
+                  console.log("New bar - " + measureCount + ", tick: " + cursor.segment.tick);
                 }
               }
 
-              cursor.next();
+              if (!cursor.next())
+                break;
             }
           }
 
-          // NOTE: no need for 2 passes as accidentals are now statelessly evaluated!
+          // NOTE: no more need for 2 passes as accidentals are now statelessly evaluated!
           for (var voice = 0; voice < 4; voice++) {
 
-            cursor.voice = voice;
+            cursor.rewind(1); // goes to start of selection, will reset voice to 0
+
             cursor.staffIdx = staff;
+            cursor.voice = voice;
 
-            cursor.rewind(rep == 0 ? 0 : 1); // goes to start of selection, will reset voice to 0
-
-            var measureCount = 0;
-
-            console.log("processing staff: " + staff + ", voice: " + voice);
+            console.log('processing:' + cursor.tick + ', voice: ' + cursor.voice + ', staffIdx: ' + cursor.staffIdx);
 
             // Loop elements of a voice
             while (cursor.segment && (cursor.tick < endTick)) {
-              // Note that the parms.accidentals object now stores accidentals
-              // from all 4 voices in a staff since microtonal accidentals from one voice
-              // should affect subsequent notes on the same line in other voices as well.
-              if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0 && rep === 0) {
-                // once new bar is reached, denote new bar in the parms.accidentals.bars object
-                // so that getAccidental will reset. Only do this for the first voice in a staff
-                // since voices in a staff shares the same barrings.
-                if (!parms.accidentals.bars)
-                  parms.accidentals.bars = [];
-
-                parms.accidentals.bars.push(cursor.segment.tick);
-                measureCount ++;
-                console.log("New bar - " + measureCount);
-              }
 
               var mostRecentKeySigTick = -1;
               for (var i = 0; i < staffKeySigHistory.length; i++) {
@@ -551,7 +598,7 @@ MuseScore {
                       // accOnSameLineBefore contains the most recent accidental before
                       // this current note that shares the same line and chord as this current note.
                       if (j >= 1 && notes[j].line === prevNoteLine) {
-                        if (notes[j - 1].accidental && notes[j - 1].accidentalType != AccidentalType.NONE)
+                        if (notes[j - 1].accidental && notes[j - 1].accidentalType != Accidental.NONE)
                           parms.accOnSameLineBefore = notes[j - 1].accidentalType;
                       } else {
                         parms.accOnSameLineBefore = undefined;
@@ -590,12 +637,13 @@ MuseScore {
                     parms.chordExcludingSelf = notes.length > 1 ? notes.slice(i, 1) : [];
 
                     if (i >= 1 && note.line === prevNoteLine) {
-                      if (notes[i - 1].accidental && notes[i - 1].accidentalType != AccidentalType.NONE)
+                      if (notes[i - 1].accidental && notes[i - 1].accidentalType != Accidental.NONE)
                         parms.accOnSameLineBefore = notes[i - 1].accidentalType;
                     } else {
                       parms.accOnSameLineBefore = undefined;
                     }
 
+                    parms.noteOnSameOldLineAfter = undefined;
                     if (notes[i + 1] && notes[i + 1].line === note.line)
                       parms.noteOnSameOldLineAfter = notes[i + 1];
 
@@ -607,7 +655,6 @@ MuseScore {
                     }
 
                     func(note, cursor.segment, parms, cursor);
-                    parms.noteOnSameOldLineAfter = undefined;
                   }
                 }
               }
@@ -617,8 +664,37 @@ MuseScore {
         }
       }
 
+      // Set a cursor to a specific position.
+      // NOTE: THIS ACTUALLY WORKS!!!
+      function setCursorToPosition(cursor, tick, voice, staffIdx) {
+        cursor.rewind(1);
+        cursor.voice = voice;
+        cursor.staffIdx = staffIdx;
+        cursor.rewind(0);
+
+        while (cursor.tick < tick) {
+          // cursor.next();
+          if(!cursor.nextMeasure()) {
+            console.log('FATAL ERROR: setCursorToPosition forward BREAK. tick: ' + cursor.tick + ', elem: ' + cursor.element);
+            break;
+          }
+        }
+
+        while (cursor.tick > tick) {
+          // cursor.next();
+          if(!cursor.prev()) {
+            console.log('FATAL ERROR: setCursorToPosition backward BREAK. tick: ' + cursor.tick + ', elem: ' + cursor.element);
+            break;
+          }
+        }
+
+        // how can this even happen
+        if (cursor.tick !== tick)
+          console.log('FATAL ERROR: cursor position messed up (setCursorToPosition)');
+      }
+
       // gets the most recent explicit accidental at the given line.
-      // Only yields explicit accidentals that are BEFORE the given cursor.tick value
+      // Yields explicit accidentals that are DURING or BEFORE the given cursor.tick value
       // at the time this function is invoked.
       //
       // returns an Accidental enum vale if an explicit accidental exists,
@@ -626,19 +702,28 @@ MuseScore {
       // or null, if there are no explicit accidentals, and it is determinable.
       function getMostRecentAccidentalInBar(cursor, noteTick, line, tickOfThisBar, tickOfNextBar, botchedCheck) {
         var thisCursorVoice = cursor.voice;
+        var thisStaffIdx = cursor.staffIdx;
         var mostRecentExplicitAcc;
         var mostRecentExplicitAccTick = -1;
         var mostRecentDoubleLineTick = -1;
+
+        if (tickOfNextBar == -1)
+          tickOfNextBar = cursor.score.lastSegment.tick;
+
+        console.log('called getMostRecentAcc: tick: ' + noteTick + ', line: ' + line + ', thisBar: ' + tickOfThisBar +
+                    ', nextBar: ' + tickOfNextBar + ', botched: ' + botchedCheck);
+
         for (var voice = 0; voice < 4; voice ++) {
+          cursor.rewind(1);
           cursor.voice = voice;
+          cursor.staffIdx = thisStaffIdx;
+          cursor.rewind(0);
 
-          // move cursor the the segment just before the tick of where the cursor was.
-          while (cursor.tick < tickOfNextBar)
-            cursor.next();
-          while (cursor.tick > noteTick)
-            cursor.prev();
+          // move cursor to the segment at noteTick
+          while (cursor.tick < tickOfNextBar && cursor.nextMeasure());
+          while (cursor.tick > noteTick && cursor.prev());
 
-          while (tickOfThisBar !== -1 && cursor.segment && cursor.tick >= tickOfThisBar)) {
+          while (tickOfThisBar !== -1 && cursor.segment && cursor.tick >= tickOfThisBar) {
             if (cursor.element && cursor.element.type == Ms.CHORD) {
               // because this is backwards-traversing, it should look at notes first before grace chords.
               var notes = cursor.element.notes;
@@ -687,20 +772,12 @@ MuseScore {
                 }
               }
             }
+
             cursor.prev();
           }
         }
 
-        cursor.voice = thisCursorVoice;
-        // go back to original cursor position.
-        // XXX: Does this even work???
-        while (cursor.tick !== noteTick ||
-              (!cursor.element || (cursor.element && cursor.element.type !== Ms.CHORD)))
-          cursor.prev();
-
-        // how can this even happen
-        if (cursor.tick < noteTick)
-          console.log('FATAL ERROR: cursor position messed up (1)');
+        setCursorToPosition(cursor, noteTick, thisCursorVoice, thisStaffIdx);
 
         if (botchedCheck && mostRecentDoubleLineTick !== -1 && mostRecentDoubleLineTick >= mostRecentExplicitAccTick) {
           return 'botched';
@@ -754,25 +831,22 @@ MuseScore {
 
         var tickOfNextBar = -1; // if -1, the cursor at the last bar
 
-        for (var i = 0; i < parms.accidental.bars.length; i++) {
+        for (var i = 0; i < parms.accidentals.bars.length; i++) {
           if (parms.accidentals.bars[i] > tick) {
-            tickOfNextBar = parms.accidental.bars[i];
+            tickOfNextBar = parms.accidentals.bars[i];
             break;
           }
         }
 
         var tickOfThisBar = -1; // this should never be -1
 
-        for (var i = 0; i < parms.accidental.bars.length; i++) {
+        for (var i = 0; i < parms.accidentals.bars.length; i++) {
           if (parms.accidentals.bars[i] <= tick) {
-            tickOfThisBar = parms.accidental.bars[i];
+            tickOfThisBar = parms.accidentals.bars[i];
           }
         }
 
-        // note: tick + 1 is there to ensure that the accidental of the CURRENT tick position
-        // is accounted for. the getMostRecentAccidentalInBar function only accounts for Accidentals
-        // BEFORE the noteTick parameter value.
-        var result = getMostRecentAccidentalInBar(cursor, tick + 1, noteLine, tickOfThisBar, tickOfNextBar, botchedCheck)
+        var result = getMostRecentAccidentalInBar(cursor, tick, noteLine, tickOfThisBar, tickOfNextBar, botchedCheck)
 
         if (result === null || result === 'botched')
           return result;
@@ -797,14 +871,11 @@ MuseScore {
       // }
       //
       function getNotePitchData(cursor, note, parms) {
-        var tpc = note.tpc;
-        var acc = note.accidentalType;
         var noteData = {};
 
         noteData.line = note.line;
-        noteData.tpc = tpc;
-        noteData.explicitAccidental = acc;
-        noteData.tick = note.tick;
+        noteData.tpc = note.tpc;
+        noteData.tick = note.parent.parent.tick;
 
         switch(note.tpc) {
         case -1: //Fbb
@@ -959,62 +1030,42 @@ MuseScore {
         // either a natural note, or a microtonal accidental.
 
         if (irregularAccidentalOrNatural) {
-          var baseNote;
-          switch(tpc) {
+          switch(noteData.tpc) {
           case 13:
-            baseNote = 'f';
+            noteData.baseNote = 'f';
             break;
           case 14:
-            baseNote = 'c';
+            noteData.baseNote = 'c';
             break;
           case 15:
-            baseNote = 'g';
+            noteData.baseNote = 'g';
             break;
           case 16:
-            baseNote = 'd';
+            noteData.baseNote = 'd';
             break;
           case 17:
-            baseNote = 'a';
+            noteData.baseNote = 'a';
             break;
           case 18:
-            baseNote = 'e';
+            noteData.baseNote = 'e';
             break;
           case 19:
-            baseNote = 'b';
+            noteData.baseNote = 'b';
             break;
           }
-
-          noteData.baseNote = baseNote;
         }
 
-        if (note.accidental) {
-          noteData.explicitAccidental = note.accidental;
-          noteData.implicitAccidental = explicitAccidental;
+        if (note.accidentalType != Accidental.NONE) {
+          // when assigning note.accidentalType to variables,
+          // ensure that the value read is in integer format to invoke the getter of the
+          // integer enumeration instead of the stringified value of the accidental type.
+          noteData.explicitAccidental = 0 + note.accidentalType;
+          noteData.implicitAccidental = 0 + note.accidentalType;
 
           if (irregularAccidentalOrNatural) {
-            // set to zero in case of unrecognized accidental,
-            // will default to natural if unrecognized.
-            var accOffset = 0;
-            if (note.accidentalType == Accidental.MIRRORED_FLAT2)
-              accOffset = -4;
-            else if (note.accidentalType == Accidental.FLAT_ARROW_DOWN)
-              accOffset = -3;
-            else if (note.accidentalType == Accidental.NATURAL_ARROW_DOWN ||
-                     note.accidentalType == Accidental.FLAT_ARROW_UP)
-              accOffset = -1;
-            else if (note.accidentalType == Accidental.NATURAL)
-              accOffset = 0;
-            else if (note.accidentalType == Accidental.NATURAL_ARROW_UP ||
-                     note.accidentalType == Accidental.SHARP_ARROW_DOWN)
-              accOffset = 1;
-            else if (note.accidentalType == Accidental.SHARP_ARROW_UP)
-              accOffset = 3;
-            else if (note.accidentalType == Accidental.SHARP_SLASH4)
-              accOffset = 4;
-
-            noteData.diesisOffset = accOffset;
+            noteData.diesisOffset = convertAccidentalTypeToSteps(note.accidentalType);
           }
-
+          // explicit acc exists, can return early.
           return noteData;
         }
 
@@ -1024,13 +1075,13 @@ MuseScore {
         //       automatically affix an explicit accidental to the affected note,
         //       and the getAccidental check would run as the function would have
         //       returned in the above clause.
-        var prevAcc = getAccidental(cursor, note.parent.parent.tick, note.line, false, parms);
+        var prevAcc = getAccidental(cursor, noteData.tick, note.line, false, parms);
         if (prevAcc !== null) {
           noteData.implicitAccidental = prevAcc.type;
           noteData.diesisOffset = prevAcc.offset;
         } else {
           // No accidentals - check key signature.
-          var keySig = parms.currKeySig[baseNote];
+          var keySig = parms.currKeySig[noteData.baseNote];
           noteData.implicitAccidental = keySig.type;
           noteData.diesisOffset = keySig.steps;
         }
@@ -1041,7 +1092,7 @@ MuseScore {
       function tuneNote(note, segment, parms, cursor) {
 
         // See: https://musescore.org/en/node/305667
-        // setting accidentalType property calls Score::changeAccidnetal(), which
+        // setting accidentalType property calls Score::changeAccidental(), which
         // uses the line number attribute to derive the tpc value,
         // then, the tpc is overwritten.
 
@@ -1380,7 +1431,12 @@ MuseScore {
 
 
         // Step 0
-        var pitchData = getNotePitchData(note, parms);
+        var pitchData = getNotePitchData(cursor, note, parms);
+
+        console.log('pitchData: note: ' + pitchData.baseNote +
+                  ', acc: ' + convertAccidentalTypeToName(pitchData.implicitAccidental) +
+                  ', explicit: ' + (pitchData.explicitAccidental != undefined ? convertAccidentalTypeToName(pitchData.explicitAccidental) : 'none') +
+                  ', line: ' + pitchData.line + ', offset: ' + pitchData.diesisOffset);
 
         // step 1a. determine naive pitch and accidental of new tranposed note
         // the mutable newAccidental, newOffset, newLine, and newBaseNote
@@ -1397,7 +1453,7 @@ MuseScore {
         }
 
         // diesis offset of the accidental of the next base note at this point in time.
-        var newOffset = convertAccidentalToSteps(newAccidental);
+        var newOffset = convertAccidentalTypeToSteps(newAccidental);
 
         // If an enharmonic spelling is required while transposing upwards,
         // the new line is the note above it.
@@ -1413,31 +1469,33 @@ MuseScore {
         // may have the same step offset, e.g., #v = ^ = +1)
         // e.g. key signature has Cv, the new note is set to Cb^ instead,
         //      this will make Cb^ be spelt as Cv instead.
-        if (parms.keySig[newBaseNote].steps === newOffset) {
-          newAccidental = parms.keySig[newBaseNote].type;
-          newOffset = parms.keySig[newBaseNote].steps; // this is redundant but OCD lol.
+        if (parms.currKeySig[newBaseNote].steps === newOffset) {
+          newAccidental = parms.currKeySig[newBaseNote].type;
+          newOffset = parms.currKeySig[newBaseNote].steps; // this is redundant but OCD lol.
         }
 
         // check if the enharmonic that's above newBaseNote (if any) has offset exactly that
         // matches the key signature.
         // e.g. key signature has Db, the new note is set to C#^.
         //      this will make C#^ be spelt as Db instead.
-        else if (parms.keySig[nextNoteEnharmonics.above.baseNote].steps === nextNoteEnharmonics.above.offset) {
+        else if (nextNoteEnharmonics.above &&
+                 parms.currKeySig[nextNoteEnharmonics.above.baseNote].steps === nextNoteEnharmonics.above.offset) {
           newBaseNote = nextNoteEnharmonics.above.baseNote;
           newLine -= 1;
-          newAccidental = parms.keySig[nextNoteEnharmonics.above.baseNote].type;
-          newOffset = parms.keySig[nextNoteEnharmonics.above.baseNote].offset;
+          newAccidental = parms.currKeySig[nextNoteEnharmonics.above.baseNote].type;
+          newOffset = parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset;
         }
 
         // check if the enharmonic that's below newBaseNote (if any) has offset exactly that
         // matches the key signature.
         // e.g. key signature has B natural, the new note is set to Cbv.
         //      this will make Cbv be spelt as B instead.
-        else if (parms.keySig[nextNoteEnharmonics.below.baseNote].steps === nextNoteEnharmonics.below.offset) {
+        else if (nextNoteEnharmonics.below &&
+                 parms.currKeySig[nextNoteEnharmonics.below.baseNote].steps === nextNoteEnharmonics.below.offset) {
           newBaseNote = nextNoteEnharmonics.below.baseNote;
           newLine += 1;
-          newAccidental = parms.keySig[nextNoteEnharmonics.below.baseNote].type;
-          newOffset = parms.keySig[nextNoteEnharmonics.below.baseNote].offset;
+          newAccidental = parms.currKeySig[nextNoteEnharmonics.below.baseNote].type;
+          newOffset = parms.currKeySig[nextNoteEnharmonics.below.baseNote].offset;
         }
 
         // Step 1c. If accidental offset of new note exceeds offset on the key signature
@@ -1454,7 +1512,8 @@ MuseScore {
         //       variant of this plugin will have to be inverted.
         // <UP DOWN VARIANT CHECKPOINT>
 
-        if (nextNoteEnharmonics.above.steps > parms.keySig[nextNoteEnharmonics.above.baseNote].steps) {
+        if (nextNoteEnharmonics.above &&
+            nextNoteEnharmonics.above.steps > parms.currKeySig[nextNoteEnharmonics.above.baseNote].steps) {
           newBaseNote = nextNoteEnharmonics.above.baseNote;
           newLine -= 1;
           newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.steps);
@@ -1468,11 +1527,11 @@ MuseScore {
         //          no prior explicit accidentals are in the bar. If so, the new note's accidental can be implicit.
 
 
-        var priorAccOnNewLine = getAccidental(cursor, note.tick, newLine, true, parms);
+        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms);
 
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
-            if (parms.keySig[newBaseNote].type == newAccidental) {
+            if (parms.currKeySig[newBaseNote].type == newAccidental) {
               newAccidental = Accidental.NONE;
             }
           }
@@ -1522,18 +1581,18 @@ MuseScore {
 
         var tickOfNextBar = -1; // if -1, the cursor at the last bar
 
-        for (var i = 0; i < parms.accidental.bars.length; i++) {
+        for (var i = 0; i < parms.accidentals.bars.length; i++) {
           if (parms.accidentals.bars[i] > cursor.tick) {
-            tickOfNextBar = parms.accidental.bars[i];
+            tickOfNextBar = parms.accidentals.bars[i];
             break;
           }
         }
 
         var tickOfThisBar = -1; // this should never be -1
 
-        for (var i = 0; i < parms.accidental.bars.length; i++) {
+        for (var i = 0; i < parms.accidentals.bars.length; i++) {
           if (parms.accidentals.bars[i] <= cursor.tick) {
-            tickOfThisBar = parms.accidental.bars[i];
+            tickOfThisBar = parms.accidentals.bars[i];
           }
         }
 
@@ -1541,15 +1600,15 @@ MuseScore {
         // Loop through all elements until end of bar to find the next following notes
         // that share the same old and new line.
         var thisCursorVoice = cursor.voice;
+        var thisStaffIdx = cursor.staffIdx;
         for (var voice = 0; voice < 4; voice ++) {
-          // go back to start of measure
+          // go to start of this bar
+          cursor.rewind(1);
           cursor.voice = voice;
+          cursor.staffIdx = thisStaffIdx;
+          cursor.rewind(0);
 
-          while (cursor.tick > tickOfThisBar)
-            cursor.prev();
-
-          while (cursor.tick < tickOfThisBar)
-            cursor.next();
+          while (cursor.tick < tickOfThisBar && cursor.nextMeasure());
 
           while (cursor.segment && (tickOfNextBar === -1 || cursor.tick < tickOfNextBar)) {
             if (cursor.element && cursor.element.type == Ms.CHORD) {
@@ -1558,27 +1617,31 @@ MuseScore {
                 // iterate through all grace chords
                 var notes = graceChords[i].notes;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[j].line == note.line && notes[j].tick > note.tick) {
-                    if (!followingOldLine || (followingOldLine && notes[j].tick < followingOldLine.tick))
+                  var ntick = notes[j].parent.parent.tick;
+                  if (notes[j].line == note.line && ntick > pitchData.tick) {
+                    if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
                       followingOldLine = notes[j];
-                    if (!followingOldLineNewSegment || (followingOldLineNewSegment && notes[j].tick < followingOldLineNewSegment.tick))
+                    if (!followingOldLineNewSegment ||
+                        (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
                       followingOldLineNewSegment = notes[j];
                   } else if (usingEnharmonic &&
-                      (!followingNewLine || (followingNewLine && notes[j].tick < followingNewLine.tick)) &&
-                      notes[j].line == newLine && notes[j].tick > note.tick)
+                      (!followingNewLine ||
+                        (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
+                      notes[j].line == newLine && ntick > pitchData.tick)
                     followingNewLine = notes[j];
                 }
               }
               var notes = cursor.element.notes;
               for (var i = 0; i < notes.length; i++) {
-                if (notes[i].line == note.line && notes[i].tick > note.tick) {
-                  if (!followingOldLine || (followingOldLine && notes[i].tick < followingOldLine.tick))
+                var ntick = notes[i].parent.parent.tick;
+                if (notes[i].line == note.line && ntick > pitchData.tick) {
+                  if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
                     followingOldLine = notes[i];
-                  if (!followingOldLineNewSegment || (followingOldLineNewSegment && notes[i].tick < followingOldLineNewSegment.tick))
+                  if (!followingOldLineNewSegment || (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
                     followingOldLineNewSegment = notes[i];
                 } else if (usingEnharmonic &&
-                    (!followingNewLine || (followingNewLine && notes[i].tick < followingNewLine.tick)) &&
-                    notes[i].line == newLine && notes[i].tick > note.tick)
+                    (!followingNewLine || (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
+                    notes[i].line == newLine && ntick > pitchData.tick)
                 followingNewLine = notes[i];
               }
             }
@@ -1586,16 +1649,7 @@ MuseScore {
           }
         }
 
-        cursor.voice = thisCursorVoice;
-        // go back to original cursor position.
-        // XXX: Does this even work???
-        while (cursor.tick !== note.tick ||
-              (!cursor.element || (cursor.element && cursor.element.type !== Ms.CHORD)))
-          cursor.prev();
-
-        // how can this even happen
-        if (cursor.tick < note.tick)
-          console.log('FATAL ERROR: cursor position messed up (1)');
+        setCursorToPosition(cursor, pitchData.tick, thisCursorVoice, thisStaffIdx);
 
         // At this point followingOldLine and followingNewLine would be populated
         // with note objects that would have their pitch value affected if they had
@@ -1606,9 +1660,11 @@ MuseScore {
         //       and both followingNew and followingOld are nullable values.
 
         if (followingOldLine) {
+          console.log('followingOldLine: ' + followingOldLine.line + ' @ ' + followingOldLine.parent.parent.tick +
+                      ', acc: ' + convertAccidentalTypeToName(0 + followingOldLine.accidentalType));
           // Check if explicit accidental can be removed from followingOldLine
           // (this implicitly covers logical case i.)
-          if (followingOldLine.accidentalType !== Accidental.NONE) {
+          if (followingOldLine.accidentalType != Accidental.NONE) {
             // An explicit accidental already exists on the this following note.
 
             // Logical cases iv. AND (v. or vi.) have to be fulfilled in order to justify
@@ -1704,7 +1760,7 @@ MuseScore {
                   //      If there are no explicit accidentals but also no error-causing double-note-line chords,
                   //      then the algorithm can move on to priority 3: key signatures.
 
-                  var recAcc = getAccidental(cursor, note.tick, followingOldLine.line, true, parms);
+                  var recAcc = getAccidental(cursor, pitchData.tick, followingOldLine.line, true, parms);
 
                   if (recAcc === 'botched')
                     botchedDoubleLine = true;
@@ -1755,7 +1811,7 @@ MuseScore {
                   if (accInThisChordOnOldLine === undefined) {
                     // note.tick - 1 is used as accidental state has to be BEFORE current chord.
                     // The current chord contains the botched accidental of the current note.
-                    var recAcc = getAccidental(cursor, note.tick - 1, followingOldLine.line, true, parms);
+                    var recAcc = getAccidental(cursor, pitchData.tick - 1, followingOldLine.line, true, parms);
                     if (recAcc == 'botched')
                       botched = true;
                     else if (recAcc !== null)
@@ -1817,12 +1873,16 @@ MuseScore {
             // to the current and following note has affected both notes.
             var caseIII = usingEnharmonic && pitchData.explicitAccidental === undefined;
 
+            console.log('case ii: ' + caseII);
+            console.log('case iii: ' + caseIII);
+
             if (!caseII && !caseIII) {
               // the implicit accidental on the following line should be made explicit.
               // pitchData contains the implicit accidental of the current note that
               // would be transposed later, so that accidental should be made
               // explicit on the following note to prevent the following note
               // from changing pitch when the current note transposes.
+              console.log(convertAccidentalTypeToName(pitchData.implicitAccidental));
               followingOldLine.accidentalType = pitchData.implicitAccidental;
             }
           }
@@ -1832,7 +1892,7 @@ MuseScore {
           // the presence of followingNewLine also means usingEnharmonic is true by default.
           // this limits which cases would apply.
           if (sameChordNewLine.length == 0 &&
-              followingNewLine.accidental && followingNewLine.accidentalType != AccidentalType.NONE) {
+              followingNewLine.accidental && followingNewLine.accidentalType != Accidental.NONE) {
             // An explicit accidental already exists on the this following note.
 
             // Logical cases iv. AND (v. or vi.) have to be fulfilled in order to justify
@@ -1890,7 +1950,7 @@ MuseScore {
               // would have had an explicit accidental instead of an implicit accidental, which is
               // the case of this clause.
 
-              var accObj = getAccidental(cursor, followingNewLine.tick, followingNewLine.line, false, parms);
+              var accObj = getAccidental(cursor, followingNewLine.parent.parent.tick, followingNewLine.line, false, parms);
 
               var expAcc;
               if (accObj != null)
@@ -1907,9 +1967,9 @@ MuseScore {
           // all of those notes are given an explicit accidental if they don't
           // already have one.
           for (var i = 0; i < sameChordNewLine.length; i++) {
-            let n = sameChordNewLine[i];
+            var n = sameChordNewLine[i];
             if (!n.accidental || n.accidentalType == Accidental.NONE) {
-              var accObj = getAccidental(cursor, n.tick, n.line, false, parms);
+              var accObj = getAccidental(cursor, n.parent.parent.tick, n.line, false, parms);
 
               var expAcc;
               if (accObj != null)
@@ -1931,9 +1991,19 @@ MuseScore {
         // 3. tuning
 
         note.line = newLine;
+
+        // Important to clear the accidental first. If existing accidental type
+        // is a non-standard accidental, and the new assigned accidental type is standard,
+        // the new assigned accidental type would affect the tpc of the note, but
+        // the existing non-standard accidental still displays instead of the new one.
+        note.accidentalType = Accidental.NONE;
         note.accidentalType = newAccidental;
 
-        console.log("Base Note: " + newBaseNote + ", diesis: " + newOffset);
+        console.log('new baseNote: ' + newBaseNote + ', line: ' + newLine +
+                    ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
+                    ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
+
+        console.log('acc: ' + note.accidentalType);
         note.tuning = centOffsets[newBaseNote][newOffset];
         return;
       }
