@@ -88,16 +88,52 @@ The distance between B-C and E-F is 1 step of 22 edo (about 54.5 cents)
 | +3  | ![Sharp](images/s.png) |
 | +4  | ![Sharp up](images/su.png) (double sharps are also +4 for simplicity's sake) |
 
-### Custom key signatures
+### Key signatures support
 
 As MuseScore doesn't completely support
 [custom key signatures](https://musescore.org/en/handbook/key-signatures#custom-key-signatures),
 any custom key signature can't be read by the plugin, at least for now.
 
-Should you want to create a microtonal key signature and have it affect the
+If you want to create a microtonal key signature and have it affect the
 playback, you have to explicitly declare the custom key signature using
 system/staff text containing accidental code, on top of creating and placing
-the visual custom key signature:
+the visual custom key signature.
+
+Also, in order for the up/down step transposition feature to work properly,
+**all** key signatures, even standard ones, must be accompanied with system/staff
+text key signature information.
+
+You can indicate custom key signatures by entering the key signature using
+System Text or Staff Text.
+
+- Use **System Text** (`Ctrl` + `Shift` + `T`) if you want the key signature code to affect
+  all staves from there onwards
+- Use **Staff Text** (`Shift` + `T`) if you only want the code to affect the staff that it is on.
+  This is especially useful when using custom **local** key signatures!
+- Remember to make the custom key signature code invisible! (Press `V` to toggle visibility)
+
+Key signature code syntax:
+
+1. Start with a dot `.`
+2. Put the textual representation of the accidental for the note **C** using the [accidental code](#accidental-code)
+3. Put another dot `.`
+4. Put the required accidental for **D**
+5. Repeat from **C** thru **B**
+
+Finally, you should have be seven dots (`.`) in total.
+
+Natural accidentals are denoted by leaving the space blank, or using any other character
+that does not represent an accidental.
+
+Spaces/newlines can be placed before or after the dots to improve readability.
+
+**Example:**
+Ab-down major in 31 edo's ups-and-downs is written like this: `.v.bv.bv.v.v.bv.bv`
+representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
+
+C major in 22 edo's ups-and-downs is written like this: `.0.0.v.0.0.v.v`
+representing the key signature of C, D, Ev, F, G, Av, Bv. (The `0`s represent placeholders,
+you can also choose to put nothing between the dots)
 
 > Note that explicit accidentals will still take precedence over the
 > declared custom key signature, behaving exactly the same way a key signature
@@ -125,34 +161,6 @@ the visual custom key signature:
 
 ![Staff text custom key sig](images/2018/06/staff-text-custom-key-sig.png)
 
-You can indicate custom key signatures by entering the key signature using
-System Text or Staff Text.
-
-- Use **System Text** (`Ctrl` + `Shift` + `T`) if you want the key signature code to affect
-  all staves from there onwards
-- Use **Staff Text** (`Shift` + `T`) if you only want the code to affect the staff that it is on.
-  This is especially useful when using custom **local** key signatures!
-- Remember to make the custom key signature code invisible! (Press `V` to toggle visibility)
-
-Key signature code syntax:
-
-1. Start with a dot `.`
-2. Put the textual representation of the accidental for the note **C** using the [accidental code](#accidental-code)
-3. Put another dot `.`
-4. Put the required accidental for **D**
-5. Repeat from **C** thru **B**
-
-Finally, you should have be seven dots (`.`) in total,
-
-Natural accidentals are denoted by leaving the space blank, or using any other character
-that does not represent an accidental.
-
-Spaces/newlines can be placed before or after the dots to improve readability.
-
-**For example:**
-Ab-down major in 31 edo's ups-and-downs mode can be denoted like this: `.v.bv.bv.v.v.bv.bv`
-representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
-
 ## Known issues:
 
 - CRITICAL ISSUE: note tuning caps at +/- 200 cents, but 4 steps in 22 edo exceeds this.
@@ -177,11 +185,65 @@ representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
     1. grace notes (in similar fashion to step 2)
     2. For notes in the same chord, left to right, then bottom to top, as they appear in the score.
 
+-------------
+
+## Note to self / developers:
+
+### IMPORTANT basic info on undocumented Plugin API mechanics!
+
+CURSOR REWIND MECHANICS ARE WEIRD!
+  - If rewinding to start of selection `cursor.rewind(1)`, set `cursor.staffIdx` and `cursor.voice` after
+    `rewind(1)`.
+  - If rewinding to start of score, IT IS STILL NECESSARY TO CALL `cursor.rewind(1)`, then set `staffIdx` and `voice`,
+    THEN call `cursor.rewind(0)` AFTERWARDS.
 
 
-### Note to self / developers:
+It is an invalid operation to set cursor voice/staffIdx without rewinding.
 
-- Always set cursor voice (and track) before rewinding!
+
+IMPORTANT! DO NOT USE `===` or `!==` to compare equivalence of accidentalType to Accidental enum values.
+
+
+When assigning `Note.accidentalType` to variables,
+ensure that the value read is in integer format to invoke the getter of the
+integer enumeration instead of the stringified value of the accidental type.
+
+```js
+noteData.explicitAccidental = note.accidentalType;
+console.log(explicitAccidental); // NATURAL_ARROW_UP
+noteData.explicitAccidental = 0 + note.accidentalType;
+console.log(explicitAccidental); // 11 (enumerated value equivalent of NATURAL_ARROW_UP)
+
+console.log(Accidental.NATURAL_ARROW_UP); // 11
+```
+
+
+It's important to clear the accidental first before assigning (in general).
+  - If existing accidental type is a non-standard accidental, and the new assigned accidental type is standard,
+    the new assigned accidental type would affect the tpc of the note, but
+    the existing non-standard accidental still displays instead of the new one.
+
+```js
+note.line = 0;
+note.tpc = 13; // F natural
+note.accidentalType = Accidental.NATURAL_ARROW_UP; // set to non-standard accidental
+note.accidentalType = Accidental.SHARP; // note will still appear with NATURAL_SHARP_UP, but it will sound as SHARP.
+console.log(note.tpc); // 20 (F sharp)
+console.log(note.accidentalType); // it is STILL NATURAL_ARROW_UP...
+
+note.line = 0;
+note.tpc = 13; // F natural
+note.accidentalType = Accidental.NATURAL_ARROW_UP; // set to non-standard accidental
+note.accidentalType = Accidental.NONE; // Clear accidental
+note.accidentalType = Accidental.SHARP; // note will still appear with NATURAL_SHARP_UP, but it will sound as SHARP.
+console.log(note.tpc); // 20 (F sharp)
+console.log(note.accidentalType); // SHARP (correct)
+```
+
+
+
+### Plugin Information
+
 - Transposition plugins is now using stateless accidentals, scanning accidentals on the fly.
   - Works should be done to make the tuning plugins use stateless accidentals too.
     Makes it way easier to think and removes a lot of possible state errors.
@@ -197,7 +259,8 @@ representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 : whereas, accidentalType is a value of the Accidental enumeration!!
 
 `tpc`
-: Tonal pitch class
+: Tonal pitch class. Circle of fifths starting from Fbb with value of -1.
+: Cbb = 0, Gbb = 1, Dbb = 2, etc...
 
 `segment.annotations[idx].textStyleType`
 : 22 if Staff Text,
