@@ -15,15 +15,18 @@ and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 --------
 
-### Accidentals (31 edo)
+## Supported Tuning Systems
 
-#### Ups and Downs notation (diatonic enharmonic equivalent)
+### 31 EDO (Ups and Downs with diatonic enharmonic equivalent)
 
 > Plugin file:
 > https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET.qml
-
-In ups and downs notation mode, these are the accidentals used by the
-plugin. They can be found in the [advanced palette](https://musescore.org/en/handbook/palettes-and-workspaces#workspaces).
+>
+> A4 = 440hz
+> Nominals: C D E F G A B C.
+> Scale steps: LLsLLLs
+> L: 5 steps
+> s: 3 steps
 
 | Diesis steps | Accidental |
 | ---: | :-----:|
@@ -46,10 +49,16 @@ plugin. They can be found in the [advanced palette](https://musescore.org/en/han
 > spelling of notes and chords in all 31 keys as it still supports enharmonic diatonic-tone equivalents
 > by means of the double flat and double sharp accidentals.
 
-#### 1/4-comma meantone approximation (quarter-tone accidentals)
+### 31 EDO (quarter-tone accidentals for 1/4-comma meantone approximation)
 
 > Plugin file:
 > https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml
+>
+> A4 = 440hz
+> Nominals: C D E F G A B C.
+> Scale steps: LLsLLLs
+> L: 5 steps
+> s: 3 steps
 
 When using the meantone version of the plugin, these are the accidentals used by the plugin.
 
@@ -65,16 +74,24 @@ When using the meantone version of the plugin, these are the accidentals used by
 | +3  | ![Sesqui sharp](images/ss.png)  |
 | +4  | ![Double sharp](images/x.png)  |
 
-### Accidentals (22 edo)
-
-#### Superpyth Ups and Downs
+### 22 EDO (Superpythagorean notation)
 
 > Plugin file:
 > https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml
+>
+> A4 = 440hz
+> Nominals: C D E F G A B C.
+> Scale steps: LLsLLLs
+> L: 4 steps
+> s: 1 steps
+>
+> Nominals in this system are tuned to the chain of best fifths F-C-G-D-A-E-B.
+> Each fifth is 13 steps of 22 edo (about 709 cents).
 
-Natural notes in this system are based off the chain of fifths F-C-G-D-A-E-B.
-Each fifth is 13 steps of 22 edo (about 709 cents).
-The distance between B-C and E-F is 1 step of 22 edo (about 54.5 cents)
+**WARNING**: As MuseScore limits the maximum pitch shift on a note to 200 cents, most 4 step
+accidentals will not fit within a 200 cent offset and therefore will sound out of pitch when
+the note is selected and sounded in editing mode. However, when playing back a score (via the normal
+play button), the note will sound correctly.
 
 | Diesis steps | Accidental |
 | ---: | :----- |

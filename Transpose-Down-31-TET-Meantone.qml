@@ -5,8 +5,8 @@ import MuseScore 3.0
 
 MuseScore {
       version:  "2.0.0"
-      description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
-      menuPath: "Plugins.31-TET.31-TET Raise Pitch (Ups and downs)"
+      description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
+      menuPath: "Plugins.31-TET.31-TET Raise Pitch (Meantone)"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
