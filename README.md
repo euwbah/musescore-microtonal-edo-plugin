@@ -204,7 +204,7 @@ It is an invalid operation to set cursor voice/staffIdx without rewinding.
 IMPORTANT! DO NOT USE `===` or `!==` to compare equivalence of accidentalType to Accidental enum values.
 
 
-When assigning `Note.accidentalType` to variables,
+When assigning `Note.accidentalType` to variables or passing it into a function as a parameter,
 ensure that the value read is in integer format to invoke the getter of the
 integer enumeration instead of the stringified value of the accidental type.
 
@@ -215,6 +215,9 @@ noteData.explicitAccidental = 0 + note.accidentalType;
 console.log(explicitAccidental); // 11 (enumerated value equivalent of NATURAL_ARROW_UP)
 
 console.log(Accidental.NATURAL_ARROW_UP); // 11
+
+console.log(note.accidentalType); // NATURAL_ARROW_UP
+console.log(0 + note.accidentalType) // 11
 ```
 
 
@@ -343,15 +346,13 @@ Accidental.FLAT_2              bb
 }
 ```
 
+## [Changelog](./CHANGELOG.md)
 
-## TODO:
+### TODO:
 
 - Handle cross-staff notation (ctrl + shift + up/down in connected staves, e.g. grand staff) where note appears to be in another staff
   other than the cursor's staffIdx. Currently, accidentals in the cross-staff do not work on the notes that came from another staff.
   See Add Courtesy Accidentals plugin for how to do this
 - Implement porcupine notation for 22-edo (D-E-F-G-A-B-C-D = sssLsss)
-- Implement +/- 1 step transposition
 - Implement toggling between enharmonic equivalences
 - Don't hard-code frequencies, just use a dictionary of exponential operations instead
-
-## [Changelog](./CHANGELOG.md)
