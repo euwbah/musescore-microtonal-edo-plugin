@@ -1061,7 +1061,7 @@ MuseScore {
           return result;
         else {
           return {
-            offset: convertAccidentalTypeToSteps(result),
+            offset: convertAccidentalTypeToSteps(0 + result),
             type: result
           };
         }
@@ -1288,12 +1288,16 @@ MuseScore {
         //       returned in the above clause.
         var prevAcc = getAccidental(cursor, noteData.tick, note.line, false, parms);
         if (prevAcc !== null) {
-          noteData.implicitAccidental = prevAcc.type;
+          // The 0 + is necessary here so the type coercion doesn't need to occur
+          // in other places.
+          noteData.implicitAccidental = 0 + prevAcc.type;
           noteData.diesisOffset = prevAcc.offset;
         } else {
           // No accidentals - check key signature.
           var keySig = parms.currKeySig[noteData.baseNote];
-          noteData.implicitAccidental = keySig.type;
+          // The 0 + is necessary here so the type coercion doesn't need to occur
+          // in other places.
+          noteData.implicitAccidental = 0 + keySig.type;
           noteData.diesisOffset = keySig.offset;
         }
 

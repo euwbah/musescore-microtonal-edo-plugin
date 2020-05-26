@@ -1045,7 +1045,7 @@ MuseScore {
           return result;
         else {
           return {
-            offset: convertAccidentalTypeToSteps(result),
+            offset: convertAccidentalTypeToSteps(0 + result),
             type: result
           };
         }
@@ -1272,12 +1272,12 @@ MuseScore {
         //       returned in the above clause.
         var prevAcc = getAccidental(cursor, noteData.tick, note.line, false, parms);
         if (prevAcc !== null) {
-          noteData.implicitAccidental = prevAcc.type;
+          noteData.implicitAccidental = 0 + prevAcc.type;
           noteData.diesisOffset = prevAcc.offset;
         } else {
           // No accidentals - check key signature.
           var keySig = parms.currKeySig[noteData.baseNote];
-          noteData.implicitAccidental = keySig.type;
+          noteData.implicitAccidental = 0 + keySig.type;
           noteData.diesisOffset = keySig.offset;
         }
 
@@ -1319,10 +1319,6 @@ MuseScore {
         var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset);
-        // if (nextNoteEnharmonics.above)
-        //   console.log('above: ' + nextNoteEnharmonics.above.baseNote, nextNoteEnharmonics.above.offset);
-        // if (nextNoteEnharmonics.below)
-        //   console.log('below: ' + nextNoteEnharmonics.below.baseNote, nextNoteEnharmonics.below.offset);
 
         // Step 1b. if the new note fits perfectly into the key signature, use that key signature's accidental instead.
 
