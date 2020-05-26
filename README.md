@@ -247,7 +247,7 @@ console.log(note.accidentalType); // SHARP (correct)
 
 ### Plugin Information
 
-- Transposition plugins is now using stateless accidentals, scanning accidentals on the fly.
+- Transposition plugins are now using stateless accidentals, scanning accidentals on the fly.
   - Works should be done to make the tuning plugins use stateless accidentals too.
     Makes it way easier to think and removes a lot of possible state errors.
 
@@ -255,7 +255,7 @@ console.log(note.accidentalType); // SHARP (correct)
 > in the 31-TET ups and downs notation plugins for both tuning and transposing variants.
 > The rest are variants of the 31 up-downs code with certain constants and values changed.
 
-##### Definitions:
+##### Important properties:
 
 **IMPORTANT `Note.accidental` vs. `Note.accidentalType`**:
 : `accidental` represents the accidental Element object itself,

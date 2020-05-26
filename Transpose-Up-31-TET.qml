@@ -1890,12 +1890,14 @@ MuseScore {
                 nNotesInSameLine++;
             }
 
+            var followingOldIsInNextSegment = parms.noteOnSameOldLineAfter === undefined;
+
             if (nNotesInSameLine === 1 ||
-              (usingEnharmonic && nNotesInSameLine <= 2)) {
+              (!followingOldIsInNextSegment && usingEnharmonic && nNotesInSameLine <= 2)) {
               // case iv. passes
               // note that if the current note is going to be enharmonically spelt,
-              // then it is ok to have 2 notes currently in the same line, because this current
-              // note is going to be moved out of the way.
+              // then it is ok to have 2 notes currently in the same line in the same
+              // chord as the current note, because this current note is going to be moved out of the way.
 
               // testing case v.: new accidental maybeKeySig render the accidental on the next note that is on the line obsolete.
               // right now we're only dealing with non enharmonic spelling - no need to consider the precence of
