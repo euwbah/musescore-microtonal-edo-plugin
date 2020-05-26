@@ -1725,7 +1725,7 @@ MuseScore {
         if (nextNoteEnharmonics.above &&
             nextNoteEnharmonics.above.offset > parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset) {
           newBaseNote = nextNoteEnharmonics.above.baseNote;
-          newLine -= 1;
+          newLine = getNextLine(newLine);
           newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.offset);
           newOffset = nextNoteEnharmonics.above.offset;
         }
