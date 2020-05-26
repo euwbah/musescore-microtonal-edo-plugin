@@ -14,8 +14,7 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       property variant centOffsets: {
         'a': {
-          '-5': 38.70967742 * -5 + 200, // Abb
-          '-4': 38.70967742 * -4,       // Adb
+          '-4': 38.70967742 * -4 + 200, // Adb
           '-3': 38.70967742 * -3,       // Abv
           '-2': 38.70967742 * -2 + 100, // Ab
           '-1': 38.70967742 * -1,       // Av
@@ -23,12 +22,10 @@ MuseScore {
            1: 38.70967742 * 1,         // A^
            2: 38.70967742 * 2 - 100,   // A#
            3: 38.70967742 * 3,         // A#^
-           4: 38.70967742 * 4,         // A#+
-           5: 38.70967742 * 5 - 200    // Ax
+           4: 38.70967742 * 4 - 200    // A#+
         },
         'b': {
-          '-5': 38.70967742 * 0 - 200 + 200,
-          '-4': 38.70967742 * 1 - 200,
+          '-4': 38.70967742 * 1 - 200 + 200,
           '-3': 38.70967742 * 2 - 200,
           '-2': 38.70967742 * 3 - 200 + 100,
           '-1': 38.70967742 * 4 - 200,
@@ -36,12 +33,10 @@ MuseScore {
            1: 38.70967742 * 6 - 200,
            2: 38.70967742 * 7 - 200 - 100,
            3: 38.70967742 * 8 - 200,
-           4: 38.70967742 * 9 - 200,
-           5: 38.70967742 * 10 - 200 - 200
+           4: 38.70967742 * 9 - 200 - 200
         },
         'c': {
-          '-5': 38.70967742 * 3 - 300 + 200,
-          '-4': 38.70967742 * 4 - 300,
+          '-4': 38.70967742 * 4 - 300 + 200,
           '-3': 38.70967742 * 5 - 300,
           '-2': 38.70967742 * 6 - 300 + 100,
           '-1': 38.70967742 * 7 - 300,
@@ -49,12 +44,10 @@ MuseScore {
            1: 38.70967742 * 9 - 300,
            2: 38.70967742 * 10 - 300 - 100,
            3: 38.70967742 * 11 - 300,
-           4: 38.70967742 * 12 - 300,
-           5: 38.70967742 * 13 - 300 - 200
+           4: 38.70967742 * 12 - 300 - 200
         },
         'd': {
-          '-5': 38.70967742 * 8 - 500 + 200,
-          '-4': 38.70967742 * 9 - 500,
+          '-4': 38.70967742 * 9 - 500 + 200,
           '-3': 38.70967742 * 10 - 500,
           '-2': 38.70967742 * 11 - 500 + 100,
           '-1': 38.70967742 * 12 - 500,
@@ -62,12 +55,10 @@ MuseScore {
            1: 38.70967742 * 14 - 500,
            2: 38.70967742 * 15 - 500 - 100,
            3: 38.70967742 * 16 - 500,
-           4: 38.70967742 * 17 - 500,
-           5: 38.70967742 * 18 - 500 - 200
+           4: 38.70967742 * 17 - 500 - 200
         },
         'e': {
-          '-5': 38.70967742 * 13 - 700 + 200,
-          '-4': 38.70967742 * 14 - 700,
+          '-4': 38.70967742 * 14 - 700 + 200,
           '-3': 38.70967742 * 15 - 700,
           '-2': 38.70967742 * 16 - 700 + 100,
           '-1': 38.70967742 * 17 - 700,
@@ -75,12 +66,10 @@ MuseScore {
            1: 38.70967742 * 19 - 700,
            2: 38.70967742 * 20 - 700 - 100,
            3: 38.70967742 * 21 - 700,
-           4: 38.70967742 * 22 - 700,
-           5: 38.70967742 * 23 - 700 - 200
+           4: 38.70967742 * 22 - 700 - 200
         },
         'f': {
-          '-5': 38.70967742 * 16 - 800 + 200,
-          '-4': 38.70967742 * 17 - 800,
+          '-4': 38.70967742 * 17 - 800 + 200,
           '-3': 38.70967742 * 18 - 800,
           '-2': 38.70967742 * 19 - 800 + 100,
           '-1': 38.70967742 * 20 - 800,
@@ -88,12 +77,10 @@ MuseScore {
            1: 38.70967742 * 22 - 800,
            2: 38.70967742 * 23 - 800 - 100,
            3: 38.70967742 * 24 - 800,
-           4: 38.70967742 * 25 - 800,
-           5: 38.70967742 * 26 - 800 - 200
+           4: 38.70967742 * 25 - 800 - 100
         },
         'g': {
-          '-5': 38.70967742 * 21 - 1000 + 200,
-          '-4': 38.70967742 * 22 - 1000,
+          '-4': 38.70967742 * 22 - 1000 + 200,
           '-3': 38.70967742 * 23 - 1000,
           '-2': 38.70967742 * 24 - 1000 + 100,
           '-1': 38.70967742 * 25 - 1000,
@@ -101,8 +88,7 @@ MuseScore {
            1: 38.70967742 * 27 - 1000,
            2: 38.70967742 * 28 - 1000 - 100,
            3: 38.70967742 * 29 - 1000,
-           4: 38.70967742 * 30 - 1000,
-           5: 38.70967742 * 31 - 1000 - 200
+           4: 38.70967742 * 30 - 1000 - 200
         }
       }
 
@@ -110,29 +96,23 @@ MuseScore {
       function convertAccidentalToSteps(acc) {
         switch(acc.trim()) {
         case 'bb':
-          return -5;
-        case 'db':
           return -4;
-        case 'bv':
+        case 'db':
           return -3;
         case 'b':
           return -2;
-        case 'v':
-        case 'b^':
+        case 'd':
           return -1;
         case '':
           return 0;
-        case '^':
-        case '#v':
+        case '+':
           return 1;
         case '#':
           return 2;
-        case '#^':
-          return 3;
         case '#+':
-          return 4;
+          return 3;
         case 'x':
-          return 5;
+          return 4;
         default:
           return 0;
         }
@@ -177,29 +157,23 @@ MuseScore {
       function convertAccidentalTypeToSteps(accType) {
         switch (accType) {
         case Accidental.FLAT2:
-          return -5;
-        case Accidental.MIRRORED_FLAT2:
           return -4;
-        case Accidental.FLAT_ARROW_DOWN:
+        case Accidental.MIRRORED_FLAT2:
           return -3;
         case Accidental.FLAT:
           return -2;
-        case Accidental.NATURAL_ARROW_DOWN:
-        case Accidental.FLAT_ARROW_UP:
+        case Accidental.MIRRORED_FLAT:
           return -1;
         case Accidental.NATURAL:
           return 0;
-        case Accidental.NATURAL_ARROW_UP:
-        case Accidental.SHARP_ARROW_DOWN:
+        case Accidental.SHARP_SLASH:
           return 1;
         case Accidental.SHARP:
           return 2;
-        case Accidental.SHARP_ARROW_UP:
-          return 3;
         case Accidental.SHARP_SLASH4:
-          return 4;
+          return 3;
         case Accidental.SHARP2:
-          return 5;
+          return 4;
         default:
           return null;
         }
@@ -214,27 +188,23 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertStepsToAccidentalType(steps) {
         switch(steps) {
-        case -5:
-          return Accidental.FLAT2;
         case -4:
-          return Accidental.MIRRORED_FLAT2;
+          return Accidental.FLAT2;
         case -3:
-          return Accidental.FLAT_ARROW_DOWN;
+          return Accidental.MIRRORED_FLAT2;
         case -2:
           return Accidental.FLAT;
         case -1:
-          return Accidental.FLAT_ARROW_UP; // NOTE: in downwards variant, use NATURAL_ARROW_DOWN instead
+          return Accidental.MIRRORED_FLAT; // NOTE: in downwards variant, use NATURAL_ARROW_DOWN instead
         case 0:
           return Accidental.NATURAL;
         case 1:
-          return Accidental.NATURAL_ARROW_UP; // NOTE: in downwards variant, use SHARP_ARROW_DOWN instead
+          return Accidental.SHARP_SLASH; // NOTE: in downwards variant, use SHARP_ARROW_DOWN instead
         case 2:
           return Accidental.SHARP;
         case 3:
-          return Accidental.SHARP_ARROW_UP;
-        case 4:
           return Accidental.SHARP_SLASH4;
-        case 5:
+        case 4:
           return Accidental.SHARP2;
         default:
           return null;
@@ -290,22 +260,16 @@ MuseScore {
         case Accidental.FLAT2:
           return Accidental.MIRRORED_FLAT2;
         case Accidental.MIRRORED_FLAT2:
-          return Accidental.FLAT_ARROW_DOWN;
-        case Accidental.FLAT_ARROW_DOWN:
           return Accidental.FLAT;
         case Accidental.FLAT:
-          return Accidental.FLAT_ARROW_UP;
-        case Accidental.FLAT_ARROW_UP:
-        case Accidental.NATURAL_ARROW_DOWN:
+          return Accidental.MIRRORED_FLAT;
+        case Accidental.MIRRORED_FLAT:
           return Accidental.NATURAL;
         case Accidental.NATURAL:
-          return Accidental.NATURAL_ARROW_UP;
-        case Accidental.NATURAL_ARROW_UP:
-        case Accidental.SHARP_ARROW_DOWN:
+          return Accidental.SHARP_SLASH;
+        case Accidental.SHARP_SLASH:
           return Accidental.SHARP;
         case Accidental.SHARP:
-          return Accidental.SHARP_ARROW_UP;
-        case Accidental.SHARP_ARROW_UP:
           return Accidental.SHARP_SLASH4;
         case Accidental.SHARP_SLASH4:
           return Accidental.SHARP2;
@@ -340,9 +304,9 @@ MuseScore {
         case 'f':
         case 'g':
         case 'a':
-          return Accidental.NATURAL_ARROW_UP;
+          return Accidental.NATURAL;
         default:
-          return Accidental.SHARP_ARROW_UP;
+          return Accidental.SHARP;
         }
       }
 

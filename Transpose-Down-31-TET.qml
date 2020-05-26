@@ -236,6 +236,8 @@ MuseScore {
           return Accidental.SHARP_SLASH4;
         case 5:
           return Accidental.SHARP2;
+        default:
+          return null;
         }
       }
 
