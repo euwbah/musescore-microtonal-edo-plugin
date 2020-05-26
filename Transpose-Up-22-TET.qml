@@ -189,7 +189,7 @@ MuseScore {
           return 2;
         case Accidental.SHARP:
           return 3;
-        case Accidental.SHARP_SLASH4:
+        case Accidental.SHARP_ARROW_UP:
         case Accidental.SHARP2:
           return 4;
         default:
@@ -1648,6 +1648,7 @@ MuseScore {
 
         // diesis offset of the accidental of the next base note at this point in time.
         var newOffset = convertAccidentalTypeToSteps(newAccidental);
+        console.log('newOffset: ' + newOffset);
 
         // If an enharmonic spelling is required while transposing upwards,
         // the new line is the note above it.
@@ -1657,6 +1658,10 @@ MuseScore {
         var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset);
+        if (nextNoteEnharmonics.above)
+          console.log('above: ' + nextNoteEnharmonics.above.baseNote, nextNoteEnharmonics.above.offset);
+        if (nextNoteEnharmonics.below)
+          console.log('below: ' + nextNoteEnharmonics.below.baseNote, nextNoteEnharmonics.below.offset);
 
         // Step 1b. if the new note fits perfectly into the key signature, use that key signature's accidental instead.
 

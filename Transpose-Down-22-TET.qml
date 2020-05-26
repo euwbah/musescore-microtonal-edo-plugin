@@ -189,7 +189,7 @@ MuseScore {
           return 2;
         case Accidental.SHARP:
           return 3;
-        case Accidental.SHARP_SLASH4:
+        case Accidental.SHARP_ARROW_UP:
         case Accidental.SHARP2:
           return 4;
         default:
