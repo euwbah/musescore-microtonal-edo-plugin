@@ -1086,6 +1086,7 @@ MuseScore {
         noteData.tpc = note.tpc;
         noteData.tick = note.parent.parent.tick;
 
+        // <TUNING SYSTEM VARIANT CHECKPOINT>
         switch(note.tpc) {
         case -1: //Fbb
           noteData.baseNote = 'f';
@@ -1473,19 +1474,8 @@ MuseScore {
         //         These notes, if present, take the place of the notes other following chord segments
         //         that share the same line as the note lines before or after transposing, as it would have come first.
 
-        // 2. Check for the first subsequent note in the same bar that shares the same note.line propeerty value
-        //    with the note to-be-transposed
-        //    AND if the note to-be-transposed would be shifted to a new line position
-        //    (e.g. moving from A# to Bb, rather than A# to A#^), BOTH the
-        //    note.line values of the transposed note before and after transposing
-        //    has to be accounted for.
-        //
-        //    The first note that shares the same note.line (i.e. note alphabet & octave) on the staff
-        //    as the transposed note (both before and after transposing) would have had their
-        //    accidental history affected by the transposition of the current note.
-        //
-        //    Thus, it is required to append / remove accidentals on these 1 or 2 notes that would
-        //    otherwise have changed its implicit accidental as a result of the transposition of this prior note.
+        // 2. Determine when corrective explicit accidentals have to be added before altering the main note.
+        //    Register which explicit accidentals can be made implicit AFTER the main note is transposed.
         //
         //
         //    WARNING: The following scenarios represents solutions assuming the user would want
@@ -1632,9 +1622,12 @@ MuseScore {
         //        new accidental from affecting the notes after it.
         //
         //    accidentals will be removed:
-        //      - If the new tranposed note causes up to two following notes' accidentals to become implicit
+        //      - WARNING: NEVER! The accidentals to be made implicit will only have their accidentals removed after the main
+        //                 note is changed!
 
         // 3. Set the curent note's line, accidental and tuning in that order.
+
+        // 4. Remove accidentals on notes registered to have their accidentals removed.
 
         // DONE!
 
@@ -1791,6 +1784,8 @@ MuseScore {
         // IGNORE THIS IF usingEnharmonic is false!!
         var sameChordNewLine = parms.notesOnSameNewLine;
 
+        var toRemoveAccidentals = [];
+
         var tickOfNextBar = -1; // if -1, the cursor at the last bar
 
         for (var i = 0; i < parms.bars.length; i++) {
@@ -1905,7 +1900,7 @@ MuseScore {
               // right now we're only dealing with non enharmonic spelling - no need to consider the precence of
               // other notes sharing the same line as the new spelling as the notes are arranged in a predictable order.
               if (!usingEnharmonic && newAccidental == followingOldLine.accidentalType) {
-                followingOldLine.accidentalType = Accidental.NONE;
+                toRemoveAccidentals.push(followingOldLine);
               } else if (usingEnharmonic) {
 
                 // testing case vi.: transposed note is enharmonic, moves out of the way, and
@@ -1992,14 +1987,12 @@ MuseScore {
                   priorAccidental = keySigAcc;
                 }
 
-                console.log(priorAccidental);
-
                 // Finallly if not botched double line, use the priorAccidental value to determine
                 // whether or not to make the followingOldLine note's accidental implicit.
 
                 if (!botchedDoubleLine) {
                   if (priorAccidental !== undefined && followingOldLine.accidentalType == priorAccidental) {
-                    followingOldLine.accidentalType = Accidental.NONE;
+                    toRemoveAccidentals.push(followingOldLine);
                   }
                 }
                 // end of test for case vi.
@@ -2045,7 +2038,7 @@ MuseScore {
                     // the transposed note un-botches a line which gives way to an accidental which matches
                     // that of the following note in a subsequent segment in the same line as the note prior
                     // to transposition, and thus the following note's accidental can be made implicit.
-                    followingOldLineNewSegment.accidentalType = Accidental.NONE;
+                    toRemoveAccidentals.push(followingOldLineNewSegment);
                   }
                 }
               }
@@ -2059,31 +2052,10 @@ MuseScore {
 
             // logical case ii. if the new accidental matches the immediate note on the line
             // it's on, there's no need to make the followingOldLine explicit.
-            var caseII = false;
-
-            if (!usingEnharmonic) {
-              // As this check is for accidentals on followingOldLine, enharmonic tranpositions
-              // are not covered in this clause.
-              var newAccMatchFollowingLine = newAccidental == followingOldLine.accidentalType;
-
-              // except if multiple notes share the line in the chord of followingOldLine
-              var ns = followingOldLine.parent.notes;
-              var nSameLineFollowing = 0;
-              for (var i = 0; i < ns.length; i++) {
-                if (ns[i].line === followingOldLine.line)
-                  nSameLineFollowing ++;
-              }
-
-              // except if multiple notes share the line in the current chord
-              var ns = note.parent.notes;
-              var nSameLineCurrent = 0;
-              for (var i = 0; i < ns.length; i++) {
-                if (ns[i].line === note.line)
-                  nSameLineCurrent ++;
-              }
-
-              caseII = newAccMatchFollowingLine && nSameLineFollowing == 1 && nSameLineCurrent == 1;
-            }
+            //
+            // This case will never be true.
+            // When the following note has no accidental, any change to the current note's
+            // accidental will affect the next note.
 
             // case iii. if current note is prior to transposition is implicit AND is
             // moving out of the way (usingEnharmonic), thus the following note does
@@ -2091,16 +2063,14 @@ MuseScore {
             // to the current and following note has affected both notes.
             var caseIII = usingEnharmonic && pitchData.explicitAccidental === undefined;
 
-            console.log('case ii: ' + caseII);
             console.log('case iii: ' + caseIII);
 
-            if (!caseII && !caseIII) {
+            if (!caseIII) {
               // the implicit accidental on the following line should be made explicit.
               // pitchData contains the implicit accidental of the current note that
               // would be transposed later, so that accidental should be made
               // explicit on the following note to prevent the following note
               // from changing pitch when the current note transposes.
-              console.log(convertAccidentalTypeToName(pitchData.implicitAccidental));
               followingOldLine.accidentalType = pitchData.implicitAccidental;
             }
           }
@@ -2127,7 +2097,7 @@ MuseScore {
             // will cause the accidental to be indeterminate.
             // This check has already been made in the above `sameChordNewLine.length == 0`
             if (newAccidental == followingNewLine.accidentalType) {
-              followingNewLine.accidentalType = Accidental.NONE;
+              toRemoveAccidentals.push(followingNewLine);
             }
 
             // NOTE: case vi. and vii. do not apply to the note on the new line.
@@ -2142,6 +2112,9 @@ MuseScore {
 
             // case ii. if the new accidental matches the immediate note on the line
             // it's on, there's no need to make the followingNewLine explicit.
+            // NOTE: The only situation in which this happens is if newAccidental has
+            //       NO accidental. That is the only time it will match with the following
+            //       accidentalType.
 
             var newAccMatchFollowingLine = newAccidental == followingNewLine.accidentalType;
 
@@ -2221,8 +2194,15 @@ MuseScore {
                     ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
 
-        console.log('acc: ' + note.accidentalType);
         note.tuning = centOffsets[newBaseNote][newOffset];
+
+
+        // Step 4. Remove accidentals on all marked notes.
+
+        for (var i = 0; i < toRemoveAccidentals.length; i++) {
+          toRemoveAccidentals[i].accidentalType = Accidental.NONE;
+        }
+
         return;
       }
 

@@ -1050,6 +1050,7 @@ MuseScore {
         noteData.tpc = note.tpc;
         noteData.tick = note.parent.parent.tick;
 
+        // <TUNING SYSTEM VARIANT CHECKPOINT>
         switch(note.tpc) {
         case -1: //Fbb
           noteData.baseNote = 'f';
@@ -1265,345 +1266,6 @@ MuseScore {
 
       function tuneNote(note, segment, parms, cursor) {
 
-        // See: https://musescore.org/en/node/305667
-        // setting accidentalType property calls Score::changeAccidental(), which
-        // uses the line number attribute to derive the tpc value,
-        // then, the tpc is overwritten.
-
-        // In order to change the pitch of an existing note, the correct order of operations would be
-        // 1. set Line number
-        // 2. set accidental
-        // 3. set tuning
-
-        // Definitions:
-        // 'enharmonic' means that the current note is going to be spelt with a new letter
-        //              after transposition
-
-        // 'line': the note.line property. Represents vertical height of the note on the staff.
-        //         As it increases, the pitch of the note goes DOWN diatonically.
-        //         F5 on the treble clef (middle of top staff line) is represented by the number 0
-
-        // 'double line note': two, or more, notes sharing the same line in the same chord.
-        //                     this is a cause of many problems that this plugin has to deal with.
-
-
-        // Process:
-        //
-        // 0. Identify exactly what this note WAS. Remember and save it.
-        //     - alphabet
-        //     - Line
-        //     - accidental type (even if it is implicit)
-        //
-        // 1. Evaluate what this note is going to be at after transposing
-        //     - which line
-        //     - which accidental
-        //
-        //    a. Next, determine how the new note would be spelt according to normal standards if there are
-        //       no key signatures.
-        //
-        //       31 ups and downs:
-        //          upwards: bb, db, bv, b, b^, natural, ^, #, #^, #+, x
-        //          downwards: x, #+, #^, #, #v, natural, v, b, bv, db, bb
-        //
-        //       31 meantone:
-        //          upwards / downwards: bb, db, b, d, natural, +, #, #+, x (same in both directions)
-        //
-        //       22 super:
-        //          upwards / downwards: bv, b, b^, v, natural, ^, #v, #, #^ (same both directions)
-        //
-
-        //       the following clauses, c. and d. outlines when it is necessary to shift to a different
-        //       enharmonic spelling of the interval.
-        //
-        //    b. First. identify if the new note fits exactly into an existing key signature.
-        //       Key signatures would take precedence over all enharmonic equivalences.
-        //         | Sadly, default non-custom key signatures are NOT detectable by this plugin,
-        //         | so in order for this feature to work properly, ALL key signatures, custom or default
-        //         | should come with a textual annotation describing the key signature to the plugin.
-        //
-        //       e.g. if the key signature has an Eb, and the note to be transposed up is D#.
-        //            By right, transposing up should favour accidentals representing upward movements,
-        //            thus the new note should be D#^.
-        //            However, because the key signature contains an Eb, and Eb is the enharmonic equivalent of D#^,
-        //            the new transposed note should be an Eb instead.
-        //
-
-        //    c. Next, if the new note would have had an enharmonic equivalent that EXCEEDS the pitch
-        //       (in the direction that it is being tranposed) of the following line's key signature,
-        //       PLEASE move it to the next line.
-        //       No one would want to read a D that sounds higher than an E.
-        //
-        //       e.g. if the key signature has a Cb, and the note to be transposed up is B#,
-        //            the new note would be B#^ (which is enharmonically C natural), which is
-        //            higher in pitch than Cb. In fact, B# is already higher than Cb and this
-        //            scenario would only happen if someone explicitly placed a sharp on the B.
-        //            The B#^ would be spelt as a C instead.
-        //
-
-        //    d. And conversely to c., if the new note would have had an enharmonic equivalent that
-        //       doesn't exceed the pitch of the following line's key signature,
-        //       do NOT move to the next line unless absolutely neccessary, e.g. when there are no more
-        //       enharmonics available on the current line.
-        //
-        //       e.g. if the key signature has a Cb and a Bdb, and the note to be tranposed down is
-        //            C, the new note should be spelt as Cv, and not B#, as B# is not lower than
-        //            the pitch of Bdb.
-        //
-        //            However, if the note to be transposed down is Cbb already (which is enharmonically Bb),
-        //            then the new note has to be spelt Bbv as per clause b. as there are no
-        //            notes below Cbb that are spelt with C.
-        //
-
-        //    e. If there is no accidental history within this bar for this particular note line,
-        //       check if this note's ACCIDENTAL TYPE (not offset!) coincides with the key signature,
-        //       and if it does, it is not necessary to create an explicit accidental for this note.
-        //       (Set to Accidental.NONE)
-
-        //    f. Finally check if amongst the accidental list if the accidental that this new
-        //       note would've had would coincide with an accidental that already previously existed somewhere
-        //       prior to this one in the same bar, and if so, it is not necessary to create an explicit
-        //       accidental for this note. (Set to Accidental.NONE)
-
-        //    At this stage, the new transposed note is FINALIZED. However, DO NOT
-        //    update the note properties just yet, as it would affect the perceived pitches of the following notes,
-        //    should they coincide with the same 1 or 2 staff lines that the transposition of the note affects.
-        //
-        //    If the accidentals were to be updated before checking for the following notes,
-        //    there would be no way to check what the original pitch values of the following notes were,
-        //    in the event that they would have been affected by the addition of an accidental on the
-        //    current note.
-
-        //    XXX: Behavior of multiple notes on the same line & sharing the same stem (tick position) is
-        //         VERY JANKY. The plugin should try to mitigate any unwanted behavior as much as possible.
-        //
-        //         The plugin should read successive notes on the same line in the order that they appear in
-        //         the Chord.notes array. The first note in the array is the one to the left, the second and subsequent ones
-        //         are the ones to the right.
-        //         If there are successive notes on the same line sharing the same stem,
-        //         they have to be treated as subsequent notes just as how two notes of the same line
-        //         just as two notes on the same line across different tick time values.
-        //
-        //         The following scenarios represent notes in succession that may or may not
-        //         share the same tick values, but notes are always fed to the
-        //         plugin API in the same order they are displayed, which would mean
-        //         using the index of which the note appears in the Chord.notes array
-        //         to determine which note (in the same chord and line) comes first is
-        //         perfectly ok.
-        //
-        //         Musescore orders the notes in the Chord.notes array from left to right, then bottom to top,
-        //         in terms of how they are displayed, which ensures all the notes on the same line are
-        //         adjacent elements in the note array, which this algorithm uses to its advantage.
-        //
-        //         Experiements are done to prove that musescore does not tamper with note index order within
-        //         the Chord.notes array whilst pitches / lines are being edited. Even when the cursor
-        //         is moved back and forth between segments, the indices of all the notes hold their correlation
-        //         no matter the new pitch and displayed order of notes.
-        //
-        //         HOWEVER, there is no way of predicting whether a note tranposed up to a new line
-        //         will appear before or after notes that already exist in that line.
-        //         XXX: This causes a HUGE problem because there's no way to determine whether
-        //         a note on the same line in a following chord segment will have its accidental
-        //         affected or not. As such, if a note is enharmonically transposing, BOTH same-line notes
-        //         that are within the same chord as the transposed note, AND that are within an
-        //         adjacent chord segment in the same bar will have to be given EXPLICIT accidentals.
-        //         This is as much for machine as it is for human readability.
-        //
-        //         The accidental state at line of which the new note enharmonically transposes to is
-        //         BOTCHED at that particular tick segment and its value is unpredictable and useless.
-        //         The plugin will make a best effort attempt to reinstate the newly transposed note's
-        //         accidental as the most updated accidental state, but there is no telling whether or
-        //         not the transposed note takes precedence and comes after all the other notes in the
-        //         chord that shares the same line, thus the plugin will try to detect double-note lines
-        //         and try its best to avoid making guesses.
-        //
-        //         So far, the botched the accidental state problem affects case vi. of step 2,
-        //         and also the accidental state required in steps 1e. and 1f.
-        //
-        //         THIS ISSUE HAS BEEN SOLVED by introducing STATELESS accidental evaluation.
-        //         This plugin now reads accidentals from the score directly in a best-effort attempt
-        //         to prevent making dumb guesses.
-        //
-        //         In addition, a few key notes are populated and updated into parms for each
-        //         note to be operated on:
-        //
-        //         the parms.noteOnSameOldLineAfter value contains the first
-        //         note element object after the note to be transposed note that is of the same
-        //         chord and line as the transposed note before transposing, respectively.
-        //
-        //         Similarly, notesOnSameNewLine contains ALL the notes that the new transposed note
-        //         would share the same line with after transposition has taken place.
-        //         This value is HYPOTHETICAL as it only applies if the transposed note is enharmonically spelt.
-        //
-        //         These notes, if present, take the place of the notes other following chord segments
-        //         that share the same line as the note lines before or after transposing, as it would have come first.
-
-        // 2. Check for the first subsequent note in the same bar that shares the same note.line propeerty value
-        //    with the note to-be-transposed
-        //    AND if the note to-be-transposed would be shifted to a new line position
-        //    (e.g. moving from A# to Bb, rather than A# to A#^), BOTH the
-        //    note.line values of the transposed note before and after transposing
-        //    has to be accounted for.
-        //
-        //    The first note that shares the same note.line (i.e. note alphabet & octave) on the staff
-        //    as the transposed note (both before and after transposing) would have had their
-        //    accidental history affected by the transposition of the current note.
-        //
-        //    Thus, it is required to append / remove accidentals on these 1 or 2 notes that would
-        //    otherwise have changed its implicit accidental as a result of the transposition of this prior note.
-        //
-        //
-        //    WARNING: The following scenarios represents solutions assuming the user would want
-        //             ALL redundant explicit accidentals to be removed from following notes.
-        //
-        //             However, it is definitely possible that certain users would rather
-        //             explicit accidentals to be kept intact and perhaps a different
-        //             set of plugins altogether which favours this behavior needs to be
-        //             created.
-        //
-        //             MuseScore is able to resolve this issue for standard accidentals
-        //             as it is able to differentiate an explicit user-placed accidental
-        //             from an accidental that appears explicit due to it's innate tpc value
-        //             caused by means of stepwise transposition or other means.
-        //
-        //             However, the plugin API endpoint does not expose this feature,
-        //             furthermore, as microtonal accidentals have no first-class support,
-        //             it is impossible for the plugin to differentiate between when the
-        //             micorotnal accidentals are added explicitly and when they are added
-        //             by stepwise transposition without holding some form of extraneous
-        //             score state of its own, which could possibly be an addition to the
-        //             feature set of the plugin in the future.
-        //
-        //
-        //    Scenario 1: D is tranposed up. Nothing needs to be done, no notes share the same line.
-        //      C D E -> C D^ E
-        //
-        //    Scenario 2: D transposed up. Nothing needs to be done,
-        //                an explicit accidental already exists on the following note.
-        //      C D D# -> C D^ D#
-        //
-        //    Scenario 3: D tranposed up. The following accidental can be made implicit,
-        //                as it is shared by newly transposed note.
-        //      C D D^ -> C D^ D(implicit ^)
-        //
-        //    Scenario 4: D transposed up. Accidental has to be explicitly added to prevent side effects.
-        //      C D D -> C D^ D natural
-        //
-        //    Scenario 5: D#^ transposed up (in 31 ups/downs). Two accidentals has to be explcitly added
-        //                for both the D line and the E line.
-        //      C D#^ D(implicit #+) E(implicit natural) -> C Ev D#+ Enatural
-        //
-        //    Scenario 6: D#^ transposed up. One accidental has to be explcitly added and one can be made implicit
-        //      C D#^ D(implicit #^) Ev => C Ev D#^ E(implicit v)
-        //
-        //    Scenario 7: D#^ with implicit accidentals transposed up. Nothing has to be done although a D follows, as
-        //                the transposed note moves out of the way for a prior D#^ to still take effect in the following D.
-        //      D#^ D(implicit #^) D(implicit #^) => D#^ Ev D(implicit #^)
-        //
-        //    Scenario 8: D#^ transposed up to Ev. Two following accidentals can be made implicit.
-        //                This scenario assumses the key signature has an Ev, and an explicit courtesy Ev is
-        //                placed by the user on the last note.
-        //      C D# Eb D#^ D# E^ => C D# Eb E(implicit key signature ^) D(implicit #) E(implicit ^)
-        //
-        //    This boils down to the following logic:
-        //      An explicit accidental is ALWAYS added on the immediate notes within the same bar unless:
-        //      i.    an explicit accidental already exists on them
-        //              OR
-        //      ii.   the tranposed note after transposition shares the same accidental as the immmediate note
-        //            on the transposed note's new line.
-        //            EXCEPT if the note is spelt enharmonically and after transposition it ends up sharing
-        //                   its line with other notes in the same chord, then all immediate notes have to
-        //                   be made explicit,
-        //                   OR
-        //                   if the immediate note shares the same line as another note in its chord.
-        //              OR
-        //      iii.  the note to be transposed was implicit (prior to tranposition) AND moving out
-        //            of the way (changing to a new line).
-        //
-        //            By logical deduction, this means that a prior explicit accidental has been
-        //            affecting both the transposed note and the immediate note following on the same
-        //            line, thus it doesn't matter whether or not what the prior explicit accidental
-        //            was, and it needn't be evaluated.
-        //
-        //      WARNING: If the note after transposition is enharmonically spelt, the defintion of
-        //               immediate notes in cases i. - iii. includes:
-        //                 - the array of notes in the same chord as the
-        //                   transposed note that would share the same NEW line as the note post-transposition,
-        //                 - the immediate following note in a subsequent chord segment in the same bar
-        //                   sharing the same NEW line.
-        //                 - the immediate following note in a subsequent chord segment in the same bar
-        //                   sharing the same OLD line as the note prior to transposition.
-        //
-        //      An accidental can be made implicit on the immediate notes with when:
-        //      iv. The immediate note DOES NOT share the same line as another note in its chord.
-        //          All notes that share the same line MUST have explicit accidentals, for
-        //          clarity for both human and machine.
-        //        AND
-        //         | v.   The newly transposed note has an explicit accidental that renders
-        //         |      the explicitly following accidental on the post-transpose line redundant.
-        //         |      AND, if the transposed note is enharmonically spelt, it does NOT share
-        //         |      a line with other notes in its chord after it has been transposed.
-        //         |      (this is the converse of the logic implied in the warning in cases i. - iii.)
-        //         |           OR
-        //         | vi.  The newly transposed note is enharmonically spelled and moves out of the way
-        //         |      for an accidental prior to the transposed note to affect the following note, thus
-        //         |      making an explicit accidental on the following note redundant.
-        //         |      This case only applies to the following note on the old line before transposition has
-        //         |      taken place, followingOldLine.
-        //         |           OR
-        //         | vii. The newly transposed note is enharmonically spelled and was sharing its line
-        //                with another note prior to transposition.
-        //                Once the newly transposed note is transposed, it removes ambiguity of the
-        //                accidental on the old line, (and registerAccidental should be called to
-        //                reinstate proper accidental state), and thus it can be determined
-        //                if the following note on the old line can have its accidental made implicit
-        //                or not by checking for the 'prior accidental' (see below for definition) as of the current tick,
-        //                and the accidental of the singular note on the old line in the current chord.
-        //
-        //           NOTE: Cases vi and vii only apply to followingOldLine.
-        //
-        //      WARNING: in cases vi and vii, the definition of the 'prior accidental' is very specific.
-        //
-        //               It is sourced from the following sources, from highest to lowest precedence:
-        //
-        //               1. parms.accOnSameLineBefore
-        //               2. most updated accidental state as of the tick of the previous note
-        //               3. key signature
-        //
-        //               In a simple scenario, it would be defined as the accidental state
-        //               at the tick time of the previous chord segment, or if no accidentals
-        //               exist on that line in that bar, then it will source the accidental from
-        //
-        //               However, thanks to the possibility of having multiple notes
-        //               that share the same line within the same chord, the most recent note
-        //               that has an explicit accidental before the current transposed note
-        //               may just be from the same chord as well, and hence would not be reflected
-        //               in the accidental state, as it can only contain one accidental per line per tick,
-        //               and would have been overriden.
-        //
-        //               As such, parms.accOnSameLineBefore is provided, holding the value of the accidental type
-        //               of the most recent note that shares the same line within the same chord as the tuning note,
-        //               if it exists, and would take precedence over the accidental state of the segment prior
-        //               to the current segment of the transposed note.
-        //
-        //      NOTE: Cases v and vi could be turned off in another version of this plugin where all explicit
-        //            accidentals will always be kept by default, which would be helpful for serialist music.
-        //
-        //    Whenever accidentals on immediate notes are created or destroyed on the following notes,
-        //    registerAccidental and removeAccidental should be called to update accidental state.
-        //
-        //    accidentals will be created:
-        //      - for the accidentals created after the new transposed note to prevent the new transposed note's
-        //        new accidental from affecting the notes after it.
-        //
-        //    accidentals will be removed:
-        //      - If the new tranposed note causes up to two following notes' accidentals to become implicit
-
-        // 3. Set the curent note's line, accidental and tuning in that order.
-
-        // DONE!
-
-
-
         // Step 0
         var pitchData = getNotePitchData(cursor, note, parms);
 
@@ -1755,6 +1417,8 @@ MuseScore {
         // IGNORE THIS IF usingEnharmonic is false!!
         var sameChordNewLine = parms.notesOnSameNewLine;
 
+        var toRemoveAccidentals = [];
+
         var tickOfNextBar = -1; // if -1, the cursor at the last bar
 
         for (var i = 0; i < parms.bars.length; i++) {
@@ -1869,7 +1533,7 @@ MuseScore {
               // right now we're only dealing with non enharmonic spelling - no need to consider the precence of
               // other notes sharing the same line as the new spelling as the notes are arranged in a predictable order.
               if (!usingEnharmonic && newAccidental == followingOldLine.accidentalType) {
-                followingOldLine.accidentalType = Accidental.NONE;
+                toRemoveAccidentals.push(followingOldLine);
               } else if (usingEnharmonic) {
 
                 // testing case vi.: transposed note is enharmonic, moves out of the way, and
@@ -1956,14 +1620,12 @@ MuseScore {
                   priorAccidental = keySigAcc;
                 }
 
-                console.log(priorAccidental);
-
                 // Finallly if not botched double line, use the priorAccidental value to determine
                 // whether or not to make the followingOldLine note's accidental implicit.
 
                 if (!botchedDoubleLine) {
                   if (priorAccidental !== undefined && followingOldLine.accidentalType == priorAccidental) {
-                    followingOldLine.accidentalType = Accidental.NONE;
+                    toRemoveAccidentals.push(followingOldLine);
                   }
                 }
                 // end of test for case vi.
@@ -2009,7 +1671,7 @@ MuseScore {
                     // the transposed note un-botches a line which gives way to an accidental which matches
                     // that of the following note in a subsequent segment in the same line as the note prior
                     // to transposition, and thus the following note's accidental can be made implicit.
-                    followingOldLineNewSegment.accidentalType = Accidental.NONE;
+                    toRemoveAccidentals.push(followingOldLineNewSegment);
                   }
                 }
               }
@@ -2023,31 +1685,7 @@ MuseScore {
 
             // logical case ii. if the new accidental matches the immediate note on the line
             // it's on, there's no need to make the followingOldLine explicit.
-            var caseII = false;
-
-            if (!usingEnharmonic) {
-              // As this check is for accidentals on followingOldLine, enharmonic tranpositions
-              // are not covered in this clause.
-              var newAccMatchFollowingLine = newAccidental == followingOldLine.accidentalType;
-
-              // except if multiple notes share the line in the chord of followingOldLine
-              var ns = followingOldLine.parent.notes;
-              var nSameLineFollowing = 0;
-              for (var i = 0; i < ns.length; i++) {
-                if (ns[i].line === followingOldLine.line)
-                  nSameLineFollowing ++;
-              }
-
-              // except if multiple notes share the line in the current chord
-              var ns = note.parent.notes;
-              var nSameLineCurrent = 0;
-              for (var i = 0; i < ns.length; i++) {
-                if (ns[i].line === note.line)
-                  nSameLineCurrent ++;
-              }
-
-              caseII = newAccMatchFollowingLine && nSameLineFollowing == 1 && nSameLineCurrent == 1;
-            }
+            // N/A
 
             // case iii. if current note is prior to transposition is implicit AND is
             // moving out of the way (usingEnharmonic), thus the following note does
@@ -2055,16 +1693,14 @@ MuseScore {
             // to the current and following note has affected both notes.
             var caseIII = usingEnharmonic && pitchData.explicitAccidental === undefined;
 
-            console.log('case ii: ' + caseII);
             console.log('case iii: ' + caseIII);
 
-            if (!caseII && !caseIII) {
+            if (!caseIII) {
               // the implicit accidental on the following line should be made explicit.
               // pitchData contains the implicit accidental of the current note that
               // would be transposed later, so that accidental should be made
               // explicit on the following note to prevent the following note
               // from changing pitch when the current note transposes.
-              console.log(convertAccidentalTypeToName(pitchData.implicitAccidental));
               followingOldLine.accidentalType = pitchData.implicitAccidental;
             }
           }
@@ -2091,7 +1727,7 @@ MuseScore {
             // will cause the accidental to be indeterminate.
             // This check has already been made in the above `sameChordNewLine.length == 0`
             if (newAccidental == followingNewLine.accidentalType) {
-              followingNewLine.accidentalType = Accidental.NONE;
+              toRemoveAccidentals.push(followingNewLine);
             }
 
             // NOTE: case vi. and vii. do not apply to the note on the new line.
@@ -2185,8 +1821,15 @@ MuseScore {
                     ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
 
-        console.log('acc: ' + note.accidentalType);
         note.tuning = centOffsets[newBaseNote][newOffset];
+
+
+        // Step 4. Remove accidentals on all marked notes.
+
+        for (var i = 0; i < toRemoveAccidentals.length; i++) {
+          toRemoveAccidentals[i].accidentalType = Accidental.NONE;
+        }
+
         return;
       }
 
