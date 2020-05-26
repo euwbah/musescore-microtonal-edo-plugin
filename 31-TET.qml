@@ -6,7 +6,7 @@ import MuseScore 3.0
 MuseScore {
       version:  "1.3.7"
       description: "Retune selection to 31-TET in Enharmonic Ups & Downs mode (Dbb is C), or whole score if nothing selected."
-      menuPath: "Plugins.31-TET.Retune 31-TET (Enharmonic Ups and Downs)"
+      menuPath: "Plugins.31-TET (Ups-Downs).Tune"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
