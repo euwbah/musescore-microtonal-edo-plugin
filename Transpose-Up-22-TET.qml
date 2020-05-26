@@ -6,7 +6,7 @@ import MuseScore 3.0
 MuseScore {
       version:  "2.0.0"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 22 EDO."
-      menuPath: "Plugins.31-TET.22-TET Raise Pitch"
+      menuPath: "Plugins.22-TET.Raise Pitch By 1 Step"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -1658,10 +1658,10 @@ MuseScore {
         var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset);
-        if (nextNoteEnharmonics.above)
-          console.log('above: ' + nextNoteEnharmonics.above.baseNote, nextNoteEnharmonics.above.offset);
-        if (nextNoteEnharmonics.below)
-          console.log('below: ' + nextNoteEnharmonics.below.baseNote, nextNoteEnharmonics.below.offset);
+        // if (nextNoteEnharmonics.above)
+        //   console.log('above: ' + nextNoteEnharmonics.above.baseNote, nextNoteEnharmonics.above.offset);
+        // if (nextNoteEnharmonics.below)
+        //   console.log('below: ' + nextNoteEnharmonics.below.baseNote, nextNoteEnharmonics.below.offset);
 
         // Step 1b. if the new note fits perfectly into the key signature, use that key signature's accidental instead.
 
@@ -1728,10 +1728,11 @@ MuseScore {
         //          no prior explicit accidentals are in the bar. If so, the new note's accidental can be implicit.
 
 
-        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms);
+        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true);
 
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
+            console.log('no prior acc', parms.currKeySig[newBaseNote].type, newAccidental);
             if (parms.currKeySig[newBaseNote].type == newAccidental) {
               newAccidental = Accidental.NONE;
             }

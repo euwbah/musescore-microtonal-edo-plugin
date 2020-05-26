@@ -6,7 +6,7 @@ import MuseScore 3.0
 MuseScore {
       version:  "2.0.0"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
-      menuPath: "Plugins.31-TET.31-TET Raise Pitch (Meantone)"
+      menuPath: "Plugins.31-TET (Meantone).Raise Pitch By 1 Step"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -1703,7 +1703,7 @@ MuseScore {
         //          no prior explicit accidentals are in the bar. If so, the new note's accidental can be implicit.
 
 
-        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms);
+        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true);
 
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
