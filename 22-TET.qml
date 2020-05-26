@@ -203,6 +203,9 @@ MuseScore {
         console.log(startStaff + " - " + endStaff + " - " + endTick + ', fullscore: '+ fullScore);
         // -------------- Actual thing here -----------------------
 
+        // Note.playEvents must be adjusted when tuning notes with absolute offset greater than 200 cents.
+        curScore.createPlayEvents();
+
 
         for (var staff = startStaff; staff <= endStaff; staff++) {
 
@@ -564,7 +567,19 @@ MuseScore {
           }
 
           console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
-          note.tuning = centOffsets[baseNote][stepsFromBaseNote];
+          var tuning = centOffsets[baseNote][stepsFromBaseNote];
+
+          for (var i = 0; i < note.playEvents.length; i++) {
+            if (tuning > 200)
+              note.playEvents[i].pitch += Math.floor(tuning / 100);
+            else if (tuning < -200)
+              note.playEvents[i].pitch = Math.ceil(tuning / 100);
+          }
+
+          if (tuning < -200 || tuning > 200)
+            note.tuning = tuning % 100;
+          else
+            note.tuning = tuning;
         }
 
         return;

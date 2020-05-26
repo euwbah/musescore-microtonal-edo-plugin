@@ -5,8 +5,8 @@ import MuseScore 3.0
 
 MuseScore {
       version:  "2.0.0"
-      description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
-      menuPath: "Plugins.31-TET.31-TET Raise Pitch (Ups and downs)"
+      description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 22 EDO."
+      menuPath: "Plugins.31-TET.22-TET Raise Pitch"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -2206,7 +2206,18 @@ MuseScore {
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
 
         console.log('acc: ' + note.accidentalType);
-        note.tuning = centOffsets[newBaseNote][newOffset];
+        var tuning = centOffsets[newBaseNote][newOffset];
+        for (var i = 0; i < note.playEvents.length; i++) {
+          if (tuning > 200)
+            note.playEvents[i].pitch += Math.floor(tuning / 100);
+          else if (tuning < -200)
+            note.playEvents[i].pitch = Math.ceil(tuning / 100);
+        }
+
+        if (tuning < -200 || tuning > 200)
+          note.tuning = tuning % 100;
+        else
+          note.tuning = tuning;
         return;
       }
 
