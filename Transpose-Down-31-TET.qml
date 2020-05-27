@@ -1731,7 +1731,7 @@ MuseScore {
                   var botched = false;
                   if (accInThisChordOnOldLine === undefined) {
                     if (cursor.measure.firstSegment.tick != pitchData.tick) {
-                      var recAcc = getAccidental(cursor, note.tick, followingOldLine.line, true, parms, true);
+                      var recAcc = getAccidental(cursor, note.parent.parent.tick, followingOldLine.line, true, parms, true);
                       if (recAcc == 'botched')
                         botched = true;
                       else if (recAcc !== null)

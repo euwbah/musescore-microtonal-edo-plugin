@@ -541,6 +541,8 @@ MuseScore {
 
                 console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
 
+                var measureCount = 0;
+
                 while (true) {
                   if (cursor.segment) {
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
@@ -556,7 +558,6 @@ MuseScore {
                       }
                     }
 
-                    var measureCount = 0;
 
                     if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0 && staff === 0) {
                       if (!parms.bars)
@@ -681,13 +682,14 @@ MuseScore {
 
               console.log("processing custom key signatures staff: " + staff + ", voice: " + voice);
 
+              var measureCount = 0;
+
               // NOTE: Initial key signature state and barring state scan covers the entire score.
               //       This is required as it is now possible to selecting individual notes across
               //       different bars (Alt + click) instead of just a monolithic phrase selection.
               //       (Also required to fix tickOfNextBar showing -1 if at end of selection, but
               //        a following bar exists.)
               while (true) {
-
                 if (cursor.segment) {
                   // Check for StaffText key signature changes, then update staffKeySigHistory
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
@@ -703,7 +705,6 @@ MuseScore {
                     }
                   }
 
-                  var measureCount = 0;
 
                   if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
                     // once new bar is reached, denote new bar in the parms.bars object
@@ -1615,7 +1616,7 @@ MuseScore {
                 //       on that line.
                 var priorAccidental = parms.accOnSameLineBefore;
 
-                console.log(priorAccidental);
+                console.log('priorAcc: ' + priorAccidental);
 
                 // NOTE: if case iv. passes showing that there's only up to 2 notes in this line,
                 // the nullability of accOnSameLineBefore and noteOnSameOldLineAfter is
@@ -1719,7 +1720,7 @@ MuseScore {
                   var botched = false;
                   if (accInThisChordOnOldLine === undefined) {
                     if (cursor.measure.firstSegment.tick != pitchData.tick) {
-                      var recAcc = getAccidental(cursor, note.tick, followingOldLine.line, true, parms, true);
+                      var recAcc = getAccidental(cursor, note.parent.parent.tick, followingOldLine.line, true, parms, true);
                       if (recAcc == 'botched')
                         botched = true;
                       else if (recAcc !== null)
