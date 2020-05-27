@@ -1735,6 +1735,9 @@ MuseScore {
         // Step 1e. Check if new accidental corresponds exactly to the key signature accidental type and
         //          no prior explicit accidentals are in the bar. If so, the new note's accidental can be implicit.
 
+        // before making the final explicit accidental NONE when it can be made implicit, store
+        // the accidental it should represent. Used for Step 2. v. followingOldLine
+        var newImplicitAccidental = newAccidental;
 
         var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true);
 
@@ -1903,7 +1906,7 @@ MuseScore {
               // testing case v.: new accidental maybeKeySig render the accidental on the next note that is on the line obsolete.
               // right now we're only dealing with non enharmonic spelling - no need to consider the precence of
               // other notes sharing the same line as the new spelling as the notes are arranged in a predictable order.
-              if (!usingEnharmonic && newAccidental == followingOldLine.accidentalType) {
+              if (!usingEnharmonic && newImplicitAccidental == followingOldLine.accidentalType) {
                 toRemoveAccidentals.push(followingOldLine);
               } else if (usingEnharmonic) {
 
