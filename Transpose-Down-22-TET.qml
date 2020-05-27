@@ -887,13 +887,14 @@ MuseScore {
         var thisStaffIdx = cursor.staffIdx;
         var mostRecentExplicitAcc;
         var mostRecentExplicitAccTick = -1;
+        var mostRecentPossiblyBotchedAccTick = -1;
         var mostRecentDoubleLineTick = -1;
 
         if (tickOfNextBar == -1)
           tickOfNextBar = cursor.score.lastSegment.tick;
 
         console.log('called getMostRecentAcc: tick: ' + noteTick + ', line: ' + line + ', thisBar: ' + tickOfThisBar +
-                    ', nextBar: ' + tickOfNextBar + ', botched: ' + botchedCheck);
+                    ', nextBar: ' + tickOfNextBar + ', botchedCheck: ' + botchedCheck + ', before: ' + before);
 
         for (var voice = 0; voice < 4; voice ++) {
           cursor.rewind(1);
@@ -916,22 +917,47 @@ MuseScore {
               var notes = cursor.element.notes;
               var nNotesInSameLine = 0;
               var explicitAccidental = undefined;
+              var explicitPossiblyBotchedAccidental = undefined;
               for (var i = 0; i < notes.length; i++) {
                 if (notes[i].line === line) {
                   nNotesInSameLine ++;
 
-                  if(notes[i].accidental)
+                  // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
+                  //             ', tick: ' + notes[i].parent.parent.tick + ', tpc: ' + notes[i].tpc);
+
+                  // Note: this behemoth is necessary due to this issue: https://musescore.org/en/node/305977
+                  // "Note.accidental and Note.accidentalType not updated in new cursor instance after setting to regular accidental."
+                  // Note that this is a hacky workaround, using the note's tpc to assume the presence of an explicit accidental
+                  // when its accidental properties gets erased due to a pitch update.
+                  // (If no pitch update was done performed on the note, any explicit accidental will still be registered as such)
+                  //
+                  // However, using this hack, there is no way to ascertain that the note indeed has an explicit accidental or not,
+                  // but for solely the purposes of retrieving accidental state, this is a perfectly fine solution.
+                  if(notes[i].accidental) {
                     explicitAccidental = notes[i].accidentalType;
+                    console.log('found explicitAccidental: ' + explicitAccidental);
+                  } else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
+                    explicitPossiblyBotchedAccidental = Accidental.FLAT2;
+                  else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
+                    explicitPossiblyBotchedAccidental = Accidental.FLAT;
+                  else if (notes[i].tpc <= 26 && notes[i].tpc >= 20)
+                    explicitPossiblyBotchedAccidental = Accidental.SHARP;
+                  else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
+                    explicitPossiblyBotchedAccidental = Accidental.SHARP2;
                 }
               }
 
-              if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentExplicitAccTick) {
+              if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
                 mostRecentExplicitAcc = explicitAccidental;
                 mostRecentExplicitAccTick = cursor.tick;
+                mostRecentPossiblyBotchedAccTick = cursor.tick;
                 break;
               } else if (nNotesInSameLine > 1 && cursor.tick > mostRecentDoubleLineTick) {
                 mostRecentDoubleLineTick = cursor.tick;
                 break;
+              } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
+                mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                mostRecentPossiblyBotchedAccTick = cursor.tick;
               }
 
               var graceChords = cursor.element.graceNotes;
@@ -946,16 +972,28 @@ MuseScore {
 
                     if(notes[i].accidental)
                       explicitAccidental = notes[i].accidentalType;
+                    else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
+                     explicitPossiblyBotchedAccidental = Accidental.FLAT2;
+                    else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
+                     explicitPossiblyBotchedAccidental = Accidental.FLAT;
+                    else if (notes[i].tpc <= 26 && notes[i].tpc >= 20)
+                     explicitPossiblyBotchedAccidental = Accidental.SHARP;
+                    else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
+                     explicitPossiblyBotchedAccidental = Accidental.SHARP2;
                   }
                 }
 
-                if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentExplicitAccTick) {
+                if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
                   mostRecentExplicitAcc = explicitAccidental;
                   mostRecentExplicitAccTick = cursor.tick;
+                  mostRecentPossiblyBotchedAccTick = cursor.tick;
                   break;
                 } else if (nNotesInSameLine > 1 && cursor.tick > mostRecentDoubleLineTick) {
                   mostRecentDoubleLineTick = cursor.tick;
                   break;
+                } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
+                  mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                  mostRecentPossiblyBotchedAccTick = cursor.tick;
                 }
               }
             }
@@ -1320,6 +1358,8 @@ MuseScore {
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset);
 
+        console.log('raw newAccidental: ' + convertAccidentalTypeToName(newAccidental));
+
         // Step 1b. if the new note fits perfectly into the key signature, use that key signature's accidental instead.
 
         // check if the current newBaseNote has an offset exactly that of the
@@ -1356,6 +1396,7 @@ MuseScore {
           newOffset = parms.currKeySig[nextNoteEnharmonics.below.baseNote].offset;
         }
 
+
         // Step 1c. If accidental offset of new note exceeds offset on the key signature
         //          of the enharmonic equivalent above/below (depending of the direction of the plugin)
         //          the new note, in the direction that the plugin is transposing,
@@ -1378,6 +1419,7 @@ MuseScore {
           newOffset = nextNoteEnharmonics.below.offset;
         }
 
+
         // Step 1d is a converse of clause 1c, it is implicitly implemented in the implementation
         // of the above clauses. YAY!
 
@@ -1391,6 +1433,7 @@ MuseScore {
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
             if (parms.currKeySig[newBaseNote].type == newAccidental) {
+              console.log('no prior acc, key sig match');
               newAccidental = Accidental.NONE;
             }
           }
@@ -1401,6 +1444,7 @@ MuseScore {
           else if (newAccidental == priorAccOnNewLine.type) {
             // TODO: Is it really ok to do this even if the note now shares its line with other notes
             //       in the same chord?
+            console.log('prior acc match')
             newAccidental = Accidental.NONE;
           }
         }
