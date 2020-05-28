@@ -1,6 +1,6 @@
 # 31/22 EDO Retuner plugin for Musescore 2 / 3
 
-Musescore plugin to automatically retune notes in [31-EDO](https://en.wikipedia.org/wiki/31_equal_temperament)
+Musescore plugin to retune and pitch up notes in [31-EDO](https://en.wikipedia.org/wiki/31_equal_temperament)
 and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 
@@ -9,9 +9,9 @@ and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 - Download the QML files and put them in the plugins folder.
 
-- To retune the entire score as is, run the plugin located in Plugins > 31-TET / 22-TET.
+- [Install & Activate the plugins](https://musescore.org/en/handbook/plugins#windows)
 
-- To only retune selected notes, make a selection before running the plugin.
+- For each tuning system, there will be 3 
 
 --------
 
