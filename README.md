@@ -18,7 +18,7 @@ and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 - The microtonal accidentals this plugin uses are Gould Arrow Quartertone accidentals for ups and downs arrow notation
   and Stein-Zimmermann quartertone accidentals for 31 EDO 1/4-comma meantone quartertone accidental notation.
-  - The Gould Arrow accidentals not to be confused with the similar looking Helmholtz-Ellis Just Intonation accidentals
+  - The Gould Arrow accidentals are not to be confused with the similar looking Helmholtz-Ellis Just Intonation accidentals
     that have thinner and smaller arrows (![Helmholtz syntonic up](images/helmholtz.png)) than the
     Gould accidentals (![Up](images/u.png)). If you hover over the accidental in the palatte and it says 'syntonic comma' in the name,
     **that is the wrong accidental**.
