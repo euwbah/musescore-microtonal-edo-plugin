@@ -109,10 +109,11 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertAccidentalToSteps(acc) {
         switch(acc.trim()) {
-        case 'bb':
+        case 'bbv':
           return -5;
-        case 'db':
+        case 'bb':
           return -4;
+        case 'bb^':
         case 'bv':
           return -3;
         case 'b':
@@ -128,10 +129,11 @@ MuseScore {
         case '#':
           return 2;
         case '#^':
+        case 'xv':
           return 3;
-        case '#+':
-          return 4;
         case 'x':
+          return 4;
+        case 'x^':
           return 5;
         default:
           return 0;
@@ -140,8 +142,12 @@ MuseScore {
 
       function convertAccidentalTextToAccidentalType(accStr) {
         switch(accStr.trim()) {
+        case 'bbv':
+          return Accidental.FLAT2_ARROW_DOWN;
         case 'bb':
           return Accidental.FLAT2;
+        case 'bb^':
+          return Accidental.FLAT2_ARROW_UP;
         case 'db':
           return Accidental.MIRRORED_FLAT2;
         case 'bv':
@@ -166,8 +172,12 @@ MuseScore {
           return Accidental.SHARP_ARROW_UP;
         case '#+':
           return Accidental.SHARP_SLASH4;
+        case 'xv':
+          return Accidental.SHARP2_ARROW_DOWN;
         case 'x':
           return Accidental.SHARP2;
+        case 'x^':
+          return Accidental.SHARP2_ARROW_UP;
         default:
           return Accidental.NATURAL;
         }
@@ -176,11 +186,12 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertAccidentalTypeToSteps(accType) {
         switch (accType) {
-        case Accidental.FLAT2:
+        case Accidental.FLAT2_ARROW_DOWN:
           return -5;
-        case Accidental.MIRRORED_FLAT2:
+        case Accidental.FLAT2:
           return -4;
         case Accidental.FLAT_ARROW_DOWN:
+        case Accidental.FLAT2_ARROW_UP:
           return -3;
         case Accidental.FLAT:
           return -2;
@@ -195,10 +206,11 @@ MuseScore {
         case Accidental.SHARP:
           return 2;
         case Accidental.SHARP_ARROW_UP:
+        case Accidental.SHARP2_ARROW_DOWN:
           return 3;
-        case Accidental.SHARP_SLASH4:
-          return 4;
         case Accidental.SHARP2:
+          return 4;
+        case Accidental.SHARP2_ARROW_UP:
           return 5;
         default:
           return null;
@@ -215,9 +227,9 @@ MuseScore {
       function convertStepsToAccidentalType(steps) {
         switch(steps) {
         case -5:
-          return Accidental.FLAT2;
+          return Accidental.FLAT2_ARROW_DOWN;
         case -4:
-          return Accidental.MIRRORED_FLAT2;
+          return Accidental.FLAT2;
         case -3:
           return Accidental.FLAT_ARROW_DOWN;
         case -2:
@@ -231,11 +243,11 @@ MuseScore {
         case 2:
           return Accidental.SHARP;
         case 3:
-          return Accidental.SHARP_ARROW_UP;
+          return Accidental.SHARP2_ARROW_DOWN;
         case 4:
-          return Accidental.SHARP_SLASH4;
-        case 5:
           return Accidental.SHARP2;
+        case 5:
+          return Accidental.SHARP2_ARROW_UP;
         default:
           return null;
         }
@@ -243,8 +255,12 @@ MuseScore {
 
       function convertAccidentalTypeToName(accType) {
         switch(accType) {
+        case Accidental.FLAT2_ARROW_DOWN:
+          return 'bbv';
         case Accidental.FLAT2:
           return 'bb';
+        case Accidental.FLAT2_ARROW_UP:
+          return 'bb^';
         case Accidental.MIRRORED_FLAT2:
           return 'db';
         case Accidental.FLAT_ARROW_DOWN:
@@ -271,8 +287,12 @@ MuseScore {
           return '#^';
         case Accidental.SHARP_SLASH4:
           return '#+';
+        case Accidental.SHARP2_ARROW_DOWN:
+          return 'xv';
         case Accidental.SHARP2:
           return 'x';
+        case Accidental.SHARP2_ARROW_UP:
+          return 'x^';
         case Accidental.NONE:
           return 'none';
         default:
@@ -287,12 +307,13 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function getNextAccidental(acc) {
         switch(acc) {
-        case Accidental.FLAT2:
+        case Accidental.FLAT2_ARROW_DOWN:
           return null;
-        case Accidental.MIRRORED_FLAT2:
-          return Accidental.FLAT2
+        case Accidental.FLAT2:
+          return Accidental.FLAT2_ARROW_DOWN;
         case Accidental.FLAT_ARROW_DOWN:
-          return Accidental.MIRRORED_FLAT2;
+        case Accidental.FLAT2_ARROW_UP:
+          return Accidental.FLAT2;
         case Accidental.FLAT:
           return Accidental.FLAT_ARROW_DOWN;
         case Accidental.FLAT_ARROW_UP:
@@ -306,11 +327,12 @@ MuseScore {
         case Accidental.SHARP:
           return Accidental.SHARP_ARROW_DOWN;
         case Accidental.SHARP_ARROW_UP:
+        case Accidental.SHARP2_ARROW_DOWN:
           return Accidental.SHARP;
-        case Accidental.SHARP_SLASH4:
-          return Accidental.SHARP_ARROW_UP;
         case Accidental.SHARP2:
-          return Accidental.SHARP_SLASH4;
+          return Accidental.SHARP_ARROW_UP;
+        case Accidental.SHARP2_ARROW_UP:
+          return Accidental.SHARP2;
         default:
           return null;
         }
@@ -1128,37 +1150,37 @@ MuseScore {
         switch(note.tpc) {
         case -1: //Fbb
           noteData.baseNote = 'f';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 0: //Cbb
           noteData.baseNote = 'c';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 1: //Gbb
           noteData.baseNote = 'g';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 2: //Dbb
           noteData.baseNote = 'd';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 3: //Abb
           noteData.baseNote = 'a';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 4: //Ebb
           noteData.baseNote = 'e';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 5: //Bbb
           noteData.baseNote = 'b';
-          noteData.diesisOffset = -5;
+          noteData.diesisOffset = -4;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
 
@@ -1236,37 +1258,37 @@ MuseScore {
 
         case 27: //Fx
           noteData.baseNote = 'f';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 28: //Cx
           noteData.baseNote = 'c';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 29: //Gx
           noteData.baseNote = 'g';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 30: //Dx
           noteData.baseNote = 'd';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 31: //Ax
           noteData.baseNote = 'a';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 32: //Ex
           noteData.baseNote = 'e';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 33: //Bx
           noteData.baseNote = 'b';
-          noteData.diesisOffset = 5;
+          noteData.diesisOffset = 4;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         }
