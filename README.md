@@ -63,9 +63,9 @@ and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 ### 31 EDO (Ups and Downs)
 
 > Plugin files:\
-> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET.qml\
-> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET.qml\
-> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET.qml\
+> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET.qml \
+> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET.qml \
+> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET.qml \
 >
 > A4 = 440hz\
 > Nominals: C D E F G A B (C)\
@@ -91,9 +91,9 @@ and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 ### 31 EDO (quarter-tone accidentals for 1/4-comma meantone approximation)
 
 > Plugin files:
-> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml\
-> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET-Meantone.qml\
-> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET-Meantone.qml\
+> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml \
+> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET-Meantone.qml \
+> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET-Meantone.qml \
 >
 > A4 = 440hz\
 > Nominals: C D E F G A B (C)\
@@ -117,9 +117,9 @@ and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 ### 22 EDO (Superpythagorean notation)
 
 > Plugin files:
-> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml\
-> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-22-TET.qml\
-> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-22-TET.qml\
+> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml \
+> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-22-TET.qml \
+> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-22-TET.qml \
 >
 > A4 = 440hz\
 > Nominals: C D E F G A B (C)\
