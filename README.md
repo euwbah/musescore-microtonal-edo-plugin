@@ -1,7 +1,7 @@
 # 31/22 EDO Retuner plugin for Musescore 3
 
-Musescore plugin to retune and pitch up notes in [31-EDO](https://en.wikipedia.org/wiki/31_equal_temperament)
-and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
+Musescore plugin to retune and pitch up notes in [31 edo](https://en.wikipedia.org/wiki/31_equal_temperament)
+and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 
 
