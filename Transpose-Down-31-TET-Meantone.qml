@@ -120,8 +120,12 @@ MuseScore {
 
       function convertAccidentalTextToAccidentalType(accStr) {
         switch(accStr.trim()) {
+        case 'bbv':
+          return Accidental.FLAT2_ARROW_DOWN;
         case 'bb':
           return Accidental.FLAT2;
+        case 'bb^':
+          return Accidental.FLAT2_ARROW_UP;
         case 'db':
           return Accidental.MIRRORED_FLAT2;
         case 'bv':
@@ -146,8 +150,12 @@ MuseScore {
           return Accidental.SHARP_ARROW_UP;
         case '#+':
           return Accidental.SHARP_SLASH4;
+        case 'xv':
+          return Accidental.SHARP2_ARROW_DOWN;
         case 'x':
           return Accidental.SHARP2;
+        case 'x^':
+          return Accidental.SHARP2_ARROW_UP;
         default:
           return Accidental.NATURAL;
         }
@@ -213,8 +221,12 @@ MuseScore {
 
       function convertAccidentalTypeToName(accType) {
         switch(accType) {
+        case Accidental.FLAT2_ARROW_DOWN:
+          return 'bbv';
         case Accidental.FLAT2:
           return 'bb';
+        case Accidental.FLAT2_ARROW_UP:
+          return 'bb^';
         case Accidental.MIRRORED_FLAT2:
           return 'db';
         case Accidental.FLAT_ARROW_DOWN:
@@ -241,8 +253,12 @@ MuseScore {
           return '#^';
         case Accidental.SHARP_SLASH4:
           return '#+';
+        case Accidental.SHARP2_ARROW_DOWN:
+          return 'xv';
         case Accidental.SHARP2:
           return 'x';
+        case Accidental.SHARP2_ARROW_UP:
+          return 'x^';
         case Accidental.NONE:
           return 'none';
         default:
