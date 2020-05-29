@@ -298,7 +298,10 @@ console.log(note.tpc); // 20 (F sharp)
 console.log(note.accidentalType); // SHARP (correct)
 ```
 
-
+`Note.accidental` and `Note.accidentalType` properties of transposed notes that contain new accidental values of standardized
+accidentals are not present in a new cursor instance. The plugin uses tpc as a workaround, but it makes it impossible to
+determine if a prior note's accidental was implicit or explicit.\
+[See this forum post here.](https://musescore.org/en/node/305977)
 
 ### Plugin Information
 
