@@ -14,7 +14,8 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       property variant centOffsets: {
         'a': {
-          '-5': 54.5454545454 * -4 + 200, // Abb (enharmonical equivalent of Abv, but needs to be handled diff cuz tpc is G)
+          '-6': 54.5454545454 * -6 + 200, // Abb
+          '-5': 54.5454545454 * -5,       // Abb^
           '-4': 54.5454545454 * -4,       // Abv
           '-3': 54.5454545454 * -3 + 100, // Ab
           '-2': 54.5454545454 * -2,       // Ab^
@@ -23,86 +24,99 @@ MuseScore {
            1: 54.5454545454 * 1,          // A^
            2: 54.5454545454 * 2,          // A#v
            3: 54.5454545454 * 3 - 100,    // A#
-           4: 54.5454545454 * 4,          // A#^ (Ax will be handled as C)
-           5: 54.5454545454 * 4 - 200     // Ax (enh eq. of A#v, but tpc is B)
+           4: 54.5454545454 * 4,          // A#^
+           5: 54.5454545454 * 5,          // Axv
+           6: 54.5454545454 * 6 - 200     // Axv
         },
         'b': {
-          '-5': 54.5454545454 * 0 - 200 + 200,
-          '-4': 54.5454545454 * 0 - 200,
-          '-3': 54.5454545454 * 1 - 200 + 100,
-          '-2': 54.5454545454 * 2 - 200,
-          '-1': 54.5454545454 * 3 - 200,
-           0: 54.5454545454 * 4 - 200,
-           1: 54.5454545454 * 5 - 200,
-           2: 54.5454545454 * 6 - 200,
-           3: 54.5454545454 * 7 - 200 - 100,
-           4: 54.5454545454 * 8 - 200,
-           5: 54.5454545454 * 8 - 200 - 200
+          '-6': - 200 + 54.5454545454 * -2 + 200,
+          '-5': - 200 + 54.5454545454 * -1,
+          '-4': - 200 + 54.5454545454 * 0,
+          '-3': - 200 + 54.5454545454 * 1 + 100,
+          '-2': - 200 + 54.5454545454 * 2,
+          '-1': - 200 + 54.5454545454 * 3,
+           0: - 200 + 54.5454545454 * 4,
+           1: - 200 + 54.5454545454 * 5,
+           2: - 200 + 54.5454545454 * 6,
+           3: - 200 + 54.5454545454 * 7 - 100,
+           4: - 200 + 54.5454545454 * 8,
+           5: - 200 + 54.5454545454 * 9,
+           6: - 200 + 54.5454545454 * 10 - 200
         },
         'c': {
-          '-5': 54.5454545454 * 1 - 300 + 200,
-          '-4': 54.5454545454 * 1 - 300,
-          '-3': 54.5454545454 * 2 - 300 + 100,
-          '-2': 54.5454545454 * 3 - 300,
-          '-1': 54.5454545454 * 4 - 300,
-           0: 54.5454545454 * 5 - 300,
-           1: 54.5454545454 * 6 - 300,
-           2: 54.5454545454 * 7 - 300,
-           3: 54.5454545454 * 8 - 300 - 100,
-           4: 54.5454545454 * 9 - 300,
-           5: 54.5454545454 * 10 - 300 - 200
+          '-6': - 300 + 54.5454545454 * -1 + 200,
+          '-5': - 300 + 54.5454545454 * 0,
+          '-4': - 300 + 54.5454545454 * 1,
+          '-3': - 300 + 54.5454545454 * 2 + 100,
+          '-2': - 300 + 54.5454545454 * 3,
+          '-1': - 300 + 54.5454545454 * 4,
+           0: - 300 + 54.5454545454 * 5,
+           1: - 300 + 54.5454545454 * 6,
+           2: - 300 + 54.5454545454 * 7,
+           3: - 300 + 54.5454545454 * 8 - 100,
+           4: - 300 + 54.5454545454 * 9,
+           5: - 300 + 54.5454545454 * 10,
+           6: - 300 + 54.5454545454 * 11 - 200
         },
         'd': {
-          '-5': 54.5454545454 * 5 - 500 + 200,
-          '-4': 54.5454545454 * 5 - 500,
-          '-3': 54.5454545454 * 6 - 500 + 100,
-          '-2': 54.5454545454 * 7 - 500,
-          '-1': 54.5454545454 * 8 - 500,
-           0: 54.5454545454 * 9 - 500,
-           1: 54.5454545454 * 10 - 500,
-           2: 54.5454545454 * 11 - 500,
-           3: 54.5454545454 * 12 - 500 - 100,
-           4: 54.5454545454 * 13 - 500,
-           5: 54.5454545454 * 14 - 500 - 200
+          '-6': - 500 + 54.5454545454 * 3 + 200,
+          '-5': - 500 + 54.5454545454 * 4,
+          '-4': - 500 + 54.5454545454 * 5,
+          '-3': - 500 + 54.5454545454 * 6 + 100,
+          '-2': - 500 + 54.5454545454 * 7,
+          '-1': - 500 + 54.5454545454 * 8,
+           0: - 500 + 54.5454545454 * 9,
+           1: - 500 + 54.5454545454 * 10,
+           2: - 500 + 54.5454545454 * 11,
+           3: - 500 + 54.5454545454 * 12 - 100,
+           4: - 500 + 54.5454545454 * 13,
+           5: - 500 + 54.5454545454 * 14,
+           6: - 500 + 54.5454545454 * 15 - 200
         },
         'e': {
-          '-5': 54.5454545454 * 9 - 700 + 200,
-          '-4': 54.5454545454 * 9 - 700,
-          '-3': 54.5454545454 * 10 - 700 + 100,
-          '-2': 54.5454545454 * 11 - 700,
-          '-1': 54.5454545454 * 12 - 700,
-           0: 54.5454545454 * 13 - 700,
-           1: 54.5454545454 * 14 - 700,
-           2: 54.5454545454 * 15 - 700,
-           3: 54.5454545454 * 16 - 700 - 100,
-           4: 54.5454545454 * 17 - 700,
-           5: 54.5454545454 * 17 - 700 - 200
+          '-6': - 700 + 54.5454545454 * 7 + 200,
+          '-5': - 700 + 54.5454545454 * 8,
+          '-4': - 700 + 54.5454545454 * 9,
+          '-3': - 700 + 54.5454545454 * 10 + 100,
+          '-2': - 700 + 54.5454545454 * 11,
+          '-1': - 700 + 54.5454545454 * 12,
+           0: - 700 + 54.5454545454 * 13,
+           1: - 700 + 54.5454545454 * 14,
+           2: - 700 + 54.5454545454 * 15,
+           3: - 700 + 54.5454545454 * 16 - 100,
+           4: - 700 + 54.5454545454 * 17,
+           5: - 700 + 54.5454545454 * 18,
+           6: - 700 + 54.5454545454 * 19 - 200
         },
         'f': {
-          '-5': 54.5454545454 * 10 - 800 + 200,
-          '-4': 54.5454545454 * 10 - 800,
-          '-3': 54.5454545454 * 11 - 800 + 100,
-          '-2': 54.5454545454 * 12 - 800,
-          '-1': 54.5454545454 * 13 - 800,
-           0: 54.5454545454 * 14 - 800,
-           1: 54.5454545454 * 15 - 800,
-           2: 54.5454545454 * 16 - 800,
-           3: 54.5454545454 * 17 - 800 - 100,
-           4: 54.5454545454 * 18 - 800,
-           5: 54.5454545454 * 18 - 800 - 200
+          '-6': - 800 + 54.5454545454 * 8 + 200,
+          '-5': - 800 + 54.5454545454 * 9,
+          '-4': - 800 + 54.5454545454 * 10,
+          '-3': - 800 + 54.5454545454 * 11 + 100,
+          '-2': - 800 + 54.5454545454 * 12,
+          '-1': - 800 + 54.5454545454 * 13,
+           0: - 800 + 54.5454545454 * 14,
+           1: - 800 + 54.5454545454 * 15,
+           2: - 800 + 54.5454545454 * 16,
+           3: - 800 + 54.5454545454 * 17 - 100,
+           4: - 800 + 54.5454545454 * 18,
+           5: - 800 + 54.5454545454 * 19,
+           6: - 800 + 54.5454545454 * 20 - 200
         },
         'g': {
-          '-5': 54.5454545454 * 14 - 1000 + 200,
-          '-4': 54.5454545454 * 14 - 1000,
-          '-3': 54.5454545454 * 15 - 1000 + 100,
-          '-2': 54.5454545454 * 16 - 1000,
-          '-1': 54.5454545454 * 17 - 1000,
-           0: 54.5454545454 * 18 - 1000,
-           1: 54.5454545454 * 19 - 1000,
-           2: 54.5454545454 * 20 - 1000,
-           3: 54.5454545454 * 21 - 1000 - 100,
-           4: 54.5454545454 * 22 - 1000,
-           5: 54.5454545454 * 22 - 1000 - 200
+          '-6': - 1000 + 54.5454545454 * 12 + 200,
+          '-5': - 1000 + 54.5454545454 * 13,
+          '-4': - 1000 + 54.5454545454 * 14,
+          '-3': - 1000 + 54.5454545454 * 15 + 100,
+          '-2': - 1000 + 54.5454545454 * 16,
+          '-1': - 1000 + 54.5454545454 * 17,
+           0: - 1000 + 54.5454545454 * 18,
+           1: - 1000 + 54.5454545454 * 19,
+           2: - 1000 + 54.5454545454 * 20,
+           3: - 1000 + 54.5454545454 * 21 - 100,
+           4: - 1000 + 54.5454545454 * 22,
+           5: - 1000 + 54.5454545454 * 23,
+           6: - 1000 + 54.5454545454 * 24 - 200
         }
       }
 
@@ -110,6 +124,9 @@ MuseScore {
       function convertAccidentalToSteps(acc) {
         switch(acc.trim()) {
         case 'bb':
+          return -6;
+        case 'bb^':
+          return -5;
         case 'bv':
           return -4;
         case 'b':
@@ -127,8 +144,11 @@ MuseScore {
         case '#':
           return 3;
         case '#^':
-        case 'x':
           return 4;
+        case 'xv':
+          return 5;
+        case 'x':
+          return 6;
         default:
           return 0;
         }
@@ -136,8 +156,12 @@ MuseScore {
 
       function convertAccidentalTextToAccidentalType(accStr) {
         switch(accStr.trim()) {
+        case 'bbv':
+          return Accidental.FLAT2_ARROW_DOWN;
         case 'bb':
           return Accidental.FLAT2;
+        case 'bb^':
+          return Accidental.FLAT2_ARROW_UP;
         case 'db':
           return Accidental.MIRRORED_FLAT2;
         case 'bv':
@@ -162,8 +186,12 @@ MuseScore {
           return Accidental.SHARP_ARROW_UP;
         case '#+':
           return Accidental.SHARP_SLASH4;
+        case 'xv':
+          return Accidental.SHARP2_ARROW_DOWN;
         case 'x':
           return Accidental.SHARP2;
+        case 'x^':
+          return Accidental.SHARP2_ARROW_UP;
         default:
           return Accidental.NATURAL;
         }
@@ -173,6 +201,9 @@ MuseScore {
       function convertAccidentalTypeToSteps(accType) {
         switch (accType) {
         case Accidental.FLAT2:
+          return -6;
+        case Accidental.FLAT2_ARROW_UP:
+          return -5;
         case Accidental.FLAT_ARROW_DOWN:
           return -4;
         case Accidental.FLAT:
@@ -190,8 +221,11 @@ MuseScore {
         case Accidental.SHARP:
           return 3;
         case Accidental.SHARP_ARROW_UP:
-        case Accidental.SHARP2:
           return 4;
+        case Accidental.SHARP2_ARROW_DOWN:
+          return 5;
+        case Accidental.SHARP2:
+          return 6;
         default:
           return null;
         }
@@ -206,6 +240,10 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertStepsToAccidentalType(steps) {
         switch(steps) {
+        case -6:
+          return Accidental.FLAT2;
+        case -5:
+          return Accidental.FLAT2_ARROW_UP;
         case -4:
           return Accidental.FLAT_ARROW_DOWN;
         case -3:
@@ -213,17 +251,21 @@ MuseScore {
         case -2:
           return Accidental.FLAT_ARROW_UP;
         case -1:
-          return Accidental.NATURAL_ARROW_DOWN; // NOTE: in downwards variant, use NATURAL_ARROW_DOWN instead
+          return Accidental.NATURAL_ARROW_DOWN;
         case 0:
           return Accidental.NATURAL;
         case 1:
-          return Accidental.NATURAL_ARROW_UP; // NOTE: in downwards variant, use SHARP_ARROW_DOWN instead
+          return Accidental.NATURAL_ARROW_UP;
         case 2:
           return Accidental.SHARP_ARROW_DOWN;
         case 3:
           return Accidental.SHARP;
         case 4:
           return Accidental.SHARP_ARROW_UP;
+        case 5:
+          return Accidental.SHARP2_ARROW_DOWN;
+        case 6:
+          return Accidental.SHARP2;
         default:
           return null;
         }
@@ -231,8 +273,12 @@ MuseScore {
 
       function convertAccidentalTypeToName(accType) {
         switch(accType) {
+        case Accidental.FLAT2_ARROW_DOWN:
+          return 'bbv';
         case Accidental.FLAT2:
           return 'bb';
+        case Accidental.FLAT2_ARROW_UP:
+          return 'bb^';
         case Accidental.MIRRORED_FLAT2:
           return 'db';
         case Accidental.FLAT_ARROW_DOWN:
@@ -259,8 +305,12 @@ MuseScore {
           return '#^';
         case Accidental.SHARP_SLASH4:
           return '#+';
+        case Accidental.SHARP2_ARROW_DOWN:
+          return 'xv';
         case Accidental.SHARP2:
           return 'x';
+        case Accidental.SHARP2_ARROW_UP:
+          return 'x^';
         case Accidental.NONE:
           return 'none';
         default:
@@ -276,6 +326,9 @@ MuseScore {
       function getNextAccidental(acc) {
         switch(acc) {
         case Accidental.FLAT2:
+          return Accidental.FLAT2_ARROW_UP;
+        case Accidental.FLAT2_ARROW_UP:
+          return Accidental.FLAT_ARROW_DOWN;
         case Accidental.FLAT_ARROW_DOWN:
           return Accidental.FLAT;
         case Accidental.FLAT:
@@ -293,6 +346,9 @@ MuseScore {
         case Accidental.SHARP:
           return Accidental.SHARP_ARROW_UP;
         case Accidental.SHARP_ARROW_UP:
+          return Accidental.SHARP2_ARROW_DOWN;
+        case Accidental.SHARP2_ARROW_DOWN:
+          return Accidental.SHARP2;
         case Accidental.SHARP2:
           return null;
         default:
@@ -1112,37 +1168,37 @@ MuseScore {
         switch(note.tpc) {
         case -1: //Fbb
           noteData.baseNote = 'f';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 0: //Cbb
           noteData.baseNote = 'c';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 1: //Gbb
           noteData.baseNote = 'g';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 2: //Dbb
           noteData.baseNote = 'd';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 3: //Abb
           noteData.baseNote = 'a';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 4: //Ebb
           noteData.baseNote = 'e';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 5: //Bbb
           noteData.baseNote = 'b';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -6;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
 
@@ -1220,37 +1276,37 @@ MuseScore {
 
         case 27: //Fx
           noteData.baseNote = 'f';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 28: //Cx
           noteData.baseNote = 'c';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 29: //Gx
           noteData.baseNote = 'g';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 30: //Dx
           noteData.baseNote = 'd';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 31: //Ax
           noteData.baseNote = 'a';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 32: //Ex
           noteData.baseNote = 'e';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 33: //Bx
           noteData.baseNote = 'b';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 6;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         }

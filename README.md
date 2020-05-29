@@ -64,16 +64,18 @@ and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 > Plugin files:\
 > tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET.qml\
-> transpose up: 
+> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET.qml\
+> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET.qml\
 >
 > A4 = 440hz\
 > Nominals: C D E F G A B (C)\
 > Scale steps: LLsLLLs\
 > L: 5 steps\
 > s: 3 steps\
+> sharp-2
 
 | Diesis steps | Accidental |
-| ---: | :-----:|
+| ---: | :----- |
 | -5  | ![Double flat down](images/bbd.png) |
 | -4  | ![Double flat](images/bb.png)  |
 | -3  | ![Flat down](images/bd.png) or ![Double flat up](images/bbu.png) |
@@ -88,19 +90,20 @@ and [22-edo](https://en.wikipedia.org/wiki/22_equal_temperament)
 
 ### 31 EDO (quarter-tone accidentals for 1/4-comma meantone approximation)
 
-> Plugin file:
-> https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml
+> Plugin files:
+> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml\
+> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET-Meantone.qml\
+> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET-Meantone.qml\
 >
 > A4 = 440hz\
 > Nominals: C D E F G A B (C)\
 > Scale steps: LLsLLLs\
 > L: 5 steps\
 > s: 3 steps\
-
-When using the meantone version of the plugin, these are the accidentals used by the plugin.
+> sharp-2
 
 | Diesis steps | Accidental |
-| ---: | :-----:|
+| ---: | :----- |
 | -4  | ![Double flat](images/bb.png) |
 | -3  | ![Sesqui flat](images/db.png)  |
 | -2  | ![Flat](images/b.png)  |
@@ -113,26 +116,29 @@ When using the meantone version of the plugin, these are the accidentals used by
 
 ### 22 EDO (Superpythagorean notation)
 
-> Plugin file:
-> https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml
+> Plugin files:
+> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml\
+> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-22-TET.qml\
+> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-22-TET.qml\
 >
-> A4 = 440hz
-> Nominals: C D E F G A B (C)
-> Scale steps: LLsLLLs
-> L: 4 steps
-> s: 1 steps
->
-> Nominals in this system are tuned to the chain of best fifths F-C-G-D-A-E-B.
-> Each fifth is 13 steps of 22 edo (about 709 cents).
+> A4 = 440hz\
+> Nominals: C D E F G A B (C)\
+> Scale steps: LLsLLLs\
+> L: 4 steps\
+> s: 1 steps\
+> sharp-3
 
 **WARNING**: As MuseScore limits the maximum pitch shift on a note to 200 cents, most 4 step
-accidentals, and all 5-6 step accidentals will not fit within a 200 cent offset and therefore will sound several semitones out of pitch when
-the note is selected and sounded in editing mode. However, when playing back a score (via the normal
-play button), the note will sound in the correct pitch.
+accidentals, and all 5-6 step accidentals will not fit within a 200 cent offset
+and therefore will sound several semitones out of pitch when the note is selected
+and sounded in editing mode.\
+However, when playing back a score (via the play button / spacebar), the note will sound in the correct pitch.
 
 | Diesis steps | Accidental |
 | ---: | :----- |
-| -4  | ![Flat down](images/bd.png) (double flats are also -4 for simplicity's sake)  |
+| -6  | ![Double flat](images/bb.png) |
+| -5  | ![Double flat up](images/bbu.png) |
+| -4  | ![Flat down](images/bd.png) |
 | -3  | ![Flat](images/b.png)  |
 | -2  | ![Flat up](images/bu.png)  |
 | -1  | ![Down](images/d.png) |
@@ -140,15 +146,17 @@ play button), the note will sound in the correct pitch.
 | +1  | ![Up](images/u.png) |
 | +2  | ![Sharp down](images/sd.png)  |
 | +3  | ![Sharp](images/s.png) |
-| +4  | ![Sharp up](images/su.png) (double sharps are also +4 for simplicity's sake) |
+| +4  | ![Sharp up](images/su.png) |
+| +5  | ![Double sharp down](images/xd.png) |
+| +6  | ![Double sharp](images/x.png) |
 
 ### Key signatures support
 
-As MuseScore doesn't completely support
+MuseScore doesn't recognize accidentals in
 [custom key signatures](https://musescore.org/en/handbook/key-signatures#custom-key-signatures),
-any custom key signature can't be read by the plugin, at least for now.
+and MuseScore plugins are not yet able to detect the contents of a key signature element.
 
-If you want to create a microtonal key signature and have it affect the
+As such, if you want to create a microtonal key signature and have it affect the
 playback, you have to explicitly declare the key signature using
 system/staff text annotations containing accidental code.
 
@@ -170,14 +178,10 @@ Key signature code syntax:
 4. Put the required accidental for **D**
 5. Repeat from notes **C** thru **B**
 
-Finally, you should have be seven dots (`.`) in total.
-
 Natural accidentals are denoted by leaving the space blank, or using any other character
 that does not represent an accidental.
 
-Spaces/newlines can be placed before or after the dots to improve readability.
-
-**Example:**
+**Examples:**
 Ab-down major in 31 edo's ups-and-downs is written like this: `.v.bv.bv.v.v.bv.bv`
 representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 
@@ -192,8 +196,10 @@ you can also choose to put nothing between the dots)
 #### Accidental Code
 
 | Accidental | Textual representation |
-| ----: | :----: |
-| ![Flat down](images/bb.png) | `bb` |
+| ----: | :---- |
+| ![Double flat down](images/bbd.png) | `bbv` |
+| ![Double flat](images/bb.png) | `bb` |
+| ![Double flat up](images/bbu.png) | `bb^` |
 | ![Sesqui flat](images/db.png) | `db`  |
 | ![Flat down](images/bd.png) | `bv`  |
 | ![Flat](images/b.png)   | `b`  |
@@ -206,15 +212,14 @@ you can also choose to put nothing between the dots)
 | ![Sharp down](images/sd.png) | `#v` |
 | ![Sharp](images/s.png) | `#`  |
 | ![Sharp up](images/su.png) | `#^`  |
-| ![Sesqui sharp](images/ss.png) | `#+`  |
-| ![Double sharp](images/x.png) | `x`  |
+| ![Sesqui sharp](images/ss.png) | `#+` |
+| ![Double sharp down](images/xd.png) | `xv` |
+| ![Double sharp](images/x.png) | `x` |
+| ![Double sharp up](images/xu.png) | `x^` |
 
-![Staff text custom key sig](images/2018/06/staff-text-custom-key-sig.png)
+![Staff text custom key sig](images/key-sig-example.png)
 
 ## Known issues:
-
-- CRITICAL ISSUE: note tuning caps at +/- 200 cents, but 4 steps in 22 edo exceeds this.
-  TODO: alter PlayEvents to transpose notes in steps of 100 cents to fix this. Will fix soon.
 
 - Cross staff notation doesn't work properly, the accidentals in the staff that the notes are transferred to
   do not affect the notes that originally belonged in that staff that the notes were transferred to.

@@ -3,7 +3,9 @@
 ### 2.0.0 (in testing)
 - Added stepwise note transposition feature for edostep to replace up/down arrow keys
   function.
-- Refactored accidentals system into a stateless function.
+- Refactored accidental state reading to be stateless.
+- Fixed up/downs notation accidentals to follow best-fifths convention as per [NOTATION GUIDE FOR EDOS 5-72](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf).
+- Handle playback for notes exceeding offset bounds of +/-200 cents.
 
 ### 1.3.7
 - Fixed custom key signatures before selection not being applied to selection.
