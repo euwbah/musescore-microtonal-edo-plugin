@@ -338,7 +338,9 @@ console.log(note.accidentalType); // SHARP (correct)
 
 ```
 Accidental.none                (no explicit accidental)
+Accidental.SHARP2_ARROW_UP     x^
 Accidental.SHARP2              x
+Accidental.SHARP2_ARROW_DOWN   xv
 Accidental.SHARP_SLASH4        #+
 Accidental.SHARP_ARROW_UP      #^
 Accidental.SHARP               #
@@ -352,7 +354,9 @@ Accidental.FLAT_ARROW_UP       b^
 Accidental.FLAT                b
 Accidental.FLAT_ARROW_DOWN     bv
 Accidental.MIRRORED_FLAT2      db
-Accidental.FLAT_2              bb
+Accidental.FLAT2_ARROW_UP      bb^
+Accidental.FLAT2               bb
+Accidental.FLAT2_ARROW_DOWN    bbv
 ```
 
 #### Custom object types in up/down step transposition plugins
