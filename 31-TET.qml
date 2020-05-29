@@ -107,10 +107,11 @@ MuseScore {
 
       function convertAccidentalToSteps(acc) {
         switch(acc.trim()) {
-        case 'bb':
+        case 'bbv':
           return -5;
-        case 'db':
+        case 'bb':
           return -4;
+        case 'bb^':
         case 'bv':
           return -3;
         case 'b':
@@ -126,10 +127,11 @@ MuseScore {
         case '#':
           return 2;
         case '#^':
+        case 'xv':
           return 3;
-        case '#+':
-          return 4;
         case 'x':
+          return 4;
+        case 'x^':
           return 5;
         default:
           return 0;
@@ -137,10 +139,11 @@ MuseScore {
       }
       function convertAccidentalToStepsOrNull(acc) {
         switch(acc.trim()) {
-        case 'bb':
+        case 'bbv':
           return -5;
-        case 'db':
+        case 'bb':
           return -4;
+        case 'bb^':
         case 'bv':
           return -3;
         case 'b':
@@ -156,10 +159,11 @@ MuseScore {
         case '#':
           return 2;
         case '#^':
+        case 'xv':
           return 3;
-        case '#+':
-          return 4;
         case 'x':
+          return 4;
+        case 'x^':
           return 5;
         default:
           return null;
@@ -434,32 +438,32 @@ MuseScore {
         /*
           ^   #v   v   b^       -> 1 diesis
           #        b            -> 2 diesis
-          #^       bv           -> 3 diesis
-          #+       db           -> 4 diesis
-          x        bb           -> 5 diesis
+          #^  xv   bv  bb^      -> 3 diesis
+          x        bb           -> 4 diesis
+          x^       bbv          -> 5 diesis
         */
         if (!scanOnly) {
           switch(tpc) {
           case -1: //Fbb
-            note.tuning = centOffsets['f'][-5]
+            note.tuning = centOffsets['f'][-4]
             return;
           case 0: //Cbb
-            note.tuning = centOffsets['c'][-5]
+            note.tuning = centOffsets['c'][-4]
             return;
           case 1: //Gbb
-            note.tuning = centOffsets['g'][-5]
+            note.tuning = centOffsets['g'][-4]
             return;
           case 2: //Dbb
-            note.tuning = centOffsets['d'][-5]
+            note.tuning = centOffsets['d'][-4]
             return;
           case 3: //Abb
-            note.tuning = centOffsets['a'][-5]
+            note.tuning = centOffsets['a'][-4]
             return;
           case 4: //Ebb
-            note.tuning = centOffsets['e'][-5]
+            note.tuning = centOffsets['e'][-4]
             return;
           case 5: //Bbb
-            note.tuning = centOffsets['b'][-5]
+            note.tuning = centOffsets['b'][-4]
             return;
 
           case 6: //Fb
@@ -507,25 +511,25 @@ MuseScore {
             return;
 
           case 27: //Fx
-            note.tuning = centOffsets['f'][5]
+            note.tuning = centOffsets['f'][4]
             return;
           case 28: //Cx
-            note.tuning = centOffsets['c'][5]
+            note.tuning = centOffsets['c'][4]
             return;
           case 29: //Gx
-            note.tuning = centOffsets['g'][5]
+            note.tuning = centOffsets['g'][4]
             return;
           case 30: //Dx
-            note.tuning = centOffsets['d'][5]
+            note.tuning = centOffsets['d'][4]
             return;
           case 31: //Ax
-            note.tuning = centOffsets['a'][5]
+            note.tuning = centOffsets['a'][4]
             return;
           case 32: //Ex
-            note.tuning = centOffsets['e'][5]
+            note.tuning = centOffsets['e'][4]
             return;
           case 33: //Bx
-            note.tuning = centOffsets['b'][5]
+            note.tuning = centOffsets['b'][4]
             return;
           }
         }
@@ -565,9 +569,10 @@ MuseScore {
         if (note.accidental) {
           console.log('Note: ' + baseNote + ', Line: ' + note.line +
                       ', Special Accidental: ' + note.accidentalType);
-          if (note.accidentalType == Accidental.MIRRORED_FLAT2)
-            accOffset = -4;
-          else if (note.accidentalType == Accidental.FLAT_ARROW_DOWN)
+          if (note.accidentalType == Accidental.FLAT2_ARROW_DOWN)
+            accOffset = -5;
+          else if (note.accidentalType == Accidental.FLAT_ARROW_DOWN ||
+                   note.accidentalType == Accidental.FLAT2_ARROW_UP)
             accOffset = -3;
           else if (note.accidentalType == Accidental.NATURAL_ARROW_DOWN ||
                    note.accidentalType == Accidental.FLAT_ARROW_UP)
@@ -577,10 +582,11 @@ MuseScore {
           else if (note.accidentalType == Accidental.NATURAL_ARROW_UP ||
                    note.accidentalType == Accidental.SHARP_ARROW_DOWN)
             accOffset = 1;
-          else if (note.accidentalType == Accidental.SHARP_ARROW_UP)
+          else if (note.accidentalType == Accidental.SHARP_ARROW_UP ||
+                   note.accidentalType == Accidental.SHARP2_ARROW_DOWN)
             accOffset = 3;
-          else if (note.accidentalType == Accidental.SHARP_SLASH4)
-            accOffset = 4;
+          else if (note.accidentalType == Accidental.SHARP2_ARROW_UP)
+            accOffset = 5;
 
           if (accOffset !== null) {
             registerAccidental(note.line, segment.tick, accOffset, parms);
