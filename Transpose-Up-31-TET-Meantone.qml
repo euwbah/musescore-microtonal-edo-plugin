@@ -918,7 +918,8 @@ MuseScore {
       // returns an Accidental enum vale if an explicit accidental exists,
       // or the string 'botched' if botchedCheck is true and it is impossible to determine what the exact accidental is
       // or null, if there are no explicit accidentals, and it is determinable.
-      function getMostRecentAccidentalInBar(cursor, noteTick, line, tickOfThisBar, tickOfNextBar, botchedCheck, before) {
+      function getMostRecentAccidentalInBar(cursor, noteTick, line, tickOfThisBar, tickOfNextBar, botchedCheck, before)
+        var originalCursorTick = cursor.tick;
         var thisCursorVoice = cursor.voice;
         var thisStaffIdx = cursor.staffIdx;
         var mostRecentExplicitAcc;
@@ -960,7 +961,7 @@ MuseScore {
                   nNotesInSameLine ++;
 
                   // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
-                  //             ', tick: ' + notes[i].parent.parent.tick + ', tpc: ' + notes[i].tpc);
+                  //             ', tick: ' + getTick(notes[i]) + ', tpc: ' + notes[i].tpc);
 
                   // Note: this behemoth is necessary due to this issue: https://musescore.org/en/node/305977
                   // "Note.accidental and Note.accidentalType not updated in new cursor instance after setting to regular accidental."
@@ -1016,22 +1017,22 @@ MuseScore {
                 var explicitPossiblyBotchedAccidental = undefined;
                 var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[i].line === line) {
+                  if (notes[j].line === line) {
                     nNotesInSameLine ++;
 
-                    if(notes[i].accidental)
-                      explicitAccidental = notes[i].accidentalType;
-                    else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
+                    if(notes[j].accidental)
+                      explicitAccidental = notes[j].accidentalType;
+                    else if (notes[j].tpc <= 5 && notes[j].tpc >= -1)
                      explicitPossiblyBotchedAccidental = Accidental.FLAT2;
-                    else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
+                    else if (notes[j].tpc <= 12 && notes[j].tpc >= 6)
                      explicitPossiblyBotchedAccidental = Accidental.FLAT;
-                    else if (notes[i].tpc <= 26 && notes[i].tpc >= 20)
+                    else if (notes[j].tpc <= 26 && notes[j].tpc >= 20)
                      explicitPossiblyBotchedAccidental = Accidental.SHARP;
-                    else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
+                    else if (notes[j].tpc <= 33 && notes[j].tpc >= 27)
                      explicitPossiblyBotchedAccidental = Accidental.SHARP2;
 
-                    if (notes[i].tpc <= 12 || notes[i].tpc >= 20)
-                      implicitExplicitNote = notes[i];
+                    if (notes[j].tpc <= 12 || notes[j].tpc >= 20)
+                      implicitExplicitNote = notes[j];
                   }
                 }
 
@@ -1056,7 +1057,8 @@ MuseScore {
           }
         }
 
-        setCursorToPosition(cursor, noteTick, thisCursorVoice, thisStaffIdx);
+        console.log('orig cursor tick: ' + originalCursorTick);
+        setCursorToPosition(cursor, originalCursorTick, thisCursorVoice, thisStaffIdx);
 
         if (botchedCheck && mostRecentDoubleLineTick !== -1 && mostRecentDoubleLineTick >= mostRecentExplicitAccTick) {
           return 'botched';
@@ -1065,7 +1067,7 @@ MuseScore {
         } else {
           return null;
         }
-      }
+
 
       // returns the accidental in effect at the given tick and noteLine, of the
       // cursor track index. All 4 voices in the track are accounted for.
