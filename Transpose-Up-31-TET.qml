@@ -956,6 +956,7 @@ MuseScore {
               var nNotesInSameLine = 0;
               var explicitAccidental = undefined;
               var explicitPossiblyBotchedAccidental = undefined;
+              var implicitExplicitNote = undefined; // the note that has `explicitPossiblyBotchedAccidental`
               for (var i = 0; i < notes.length; i++) {
                 if (notes[i].line === line) {
                   nNotesInSameLine ++;
@@ -974,7 +975,8 @@ MuseScore {
                   if(notes[i].accidental) {
                     explicitAccidental = notes[i].accidentalType;
                     console.log('found explicitAccidental: ' + explicitAccidental);
-                  } else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
+                  }
+                  else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
                     explicitPossiblyBotchedAccidental = Accidental.FLAT2;
                   else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
                     explicitPossiblyBotchedAccidental = Accidental.FLAT;
@@ -982,6 +984,10 @@ MuseScore {
                     explicitPossiblyBotchedAccidental = Accidental.SHARP;
                   else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
                     explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+
+
+                  if (notes[i].tpc <= 12 || notes[i].tpc >= 20)
+                    implicitExplicitNote = notes[i];
                 }
               }
 
@@ -994,8 +1000,13 @@ MuseScore {
                 mostRecentDoubleLineTick = cursor.tick;
                 break;
               } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
-                mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
-                mostRecentPossiblyBotchedAccTick = cursor.tick;
+                // NOTE: the 'explicit' implicit accidental must not have a tie that goes back to a previous bar.
+                //       otherwise, the accidental it represents is void and is of the previous bar, and not
+                //       the current.
+                if (implicitExplicitNote.firstTiedNote.parent.parent.tick >= tickOfThisBar) {
+                  mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                  mostRecentPossiblyBotchedAccTick = cursor.tick;
+                }
               }
 
               var graceChords = cursor.element.graceNotes;
@@ -1004,6 +1015,8 @@ MuseScore {
                 var notes = graceChords[i].notes;
                 var nNotesInSameLine = 0;
                 var explicitAccidental = undefined;
+                var explicitPossiblyBotchedAccidental = undefined;
+                var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
                   if (notes[i].line === line) {
                     nNotesInSameLine ++;
@@ -1018,6 +1031,9 @@ MuseScore {
                      explicitPossiblyBotchedAccidental = Accidental.SHARP;
                     else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
                      explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+
+                    if (notes[i].tpc <= 12 || notes[i].tpc >= 20)
+                      implicitExplicitNote = notes[i];
                   }
                 }
 
@@ -1030,8 +1046,10 @@ MuseScore {
                   mostRecentDoubleLineTick = cursor.tick;
                   break;
                 } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
-                  mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
-                  mostRecentPossiblyBotchedAccTick = cursor.tick;
+                  if (implicitExplicitNote.firstTiedNote.parent.parent.tick >= tickOfThisBar) {
+                    mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                    mostRecentPossiblyBotchedAccTick = cursor.tick;
+                  }
                 }
               }
             }
