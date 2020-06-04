@@ -511,7 +511,7 @@ MuseScore {
             if (selectedNotes.length == 0) {
               console.log('no selected note elements, defaulting to pitch-up/pitch-down shortcuts');
               // <UP DOWN VARIANT CHECKPOINT>
-              cmd('pitch-down');
+              cmd('pitch-up');
               Qt.quit();
             }
 
@@ -574,8 +574,31 @@ MuseScore {
 
             // Run transpose operation on all note elements.
 
+            // contains list of notes that have already been transposed
+            // this is to prevent repeat transposition in the event that
+            // 2 notes tied to each other are individually selected.
+            var affected = [];
+
             for (var i = 0; i < selectedNotes.length; i++) {
               var note = selectedNotes[i];
+
+              // handle transposing the firstTiedNote in the event that a non-first tied note
+              // is selected.
+              note = note.firstTiedNote;
+
+              var alreadyTrans = false;
+              for (var j = 0; j < affected.length; j++) {
+                if (affected[j].is(note)) {
+                  alreadyTrans = true;
+                  break;
+                }
+              }
+
+              if (alreadyTrans)
+                continue;
+
+              affected.push(note);
+
               var notes = note.parent.notes; // represents the notes in the chord of the selected note.
               var noteChordIndex = -1; // Index of note in notes array
               for (var j = 0; j < notes.length; j++) {
