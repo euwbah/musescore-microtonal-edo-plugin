@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "1.3.7"
+      version:  "2.0.0"
       description: "Retune selection to 22-TET in Superpyth ups and downs mode, or whole score if nothing selected."
       menuPath: "Plugins.22-TET.Tune"
 
@@ -593,17 +593,7 @@ MuseScore {
           console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
           var tuning = centOffsets[baseNote][stepsFromBaseNote];
 
-          for (var i = 0; i < note.playEvents.length; i++) {
-            if (tuning > 200)
-              note.playEvents[i].pitch += Math.floor(tuning / 100);
-            else if (tuning < -200)
-              note.playEvents[i].pitch = Math.ceil(tuning / 100);
-          }
-
-          if (tuning < -200 || tuning > 200)
-            note.tuning = tuning % 100;
-          else
-            note.tuning = tuning;
+          note.tuning = tuning;
         }
 
         return;

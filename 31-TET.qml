@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "1.3.7"
+      version:  "2.0.0"
       description: "Retune selection to 31-TET in Ups & Downs mode, or whole score if nothing selected."
       menuPath: "Plugins.31-TET (Ups-Downs).Tune"
 

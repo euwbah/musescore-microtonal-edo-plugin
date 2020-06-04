@@ -1,11 +1,13 @@
 ## Changelog
 
-### 2.0.0 (in testing)
+### 2.0.0
 - Added stepwise note transposition feature for edostep to replace up/down arrow keys
   function.
-- Refactored accidental state reading to be stateless.
+- Refactored accidental state reading to be stateless. (for transposition plugins)
 - Fixed up/downs notation accidentals to follow best-fifths convention as per [NOTATION GUIDE FOR EDOS 5-72](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf).
-- Handle playback for notes exceeding offset bounds of +/-200 cents.
+- ~~Handle playback for notes exceeding offset bounds of +/-200 cents.~~ (Unnecessary,
+  [pitch offset may exceed 200/300 cents even if not reflected in UI](https://www.reddit.com/r/microtonal/comments/gssrnk/made_this_31_22_edo_microtonal_plugin_for/fs7frcg?utm_source=share&utm_medium=web2x))
+- Support for ties in transposition
 
 ### 1.3.7
 - Fixed custom key signatures before selection not being applied to selection.
