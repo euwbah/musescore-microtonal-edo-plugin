@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.0.1
+- Fixed reading accidentals for transposition doesn't work when accidentals are in
+  the last bar.
+
 ### 2.0.0
 - Added stepwise note transposition feature for edostep to replace up/down arrow keys
   function.

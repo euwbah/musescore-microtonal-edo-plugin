@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "2.0.0"
+      version:  "2.0.1"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
       menuPath: "Plugins.31-TET (Ups-Downs).Lower Pitch By 1 Step"
 
@@ -971,13 +971,14 @@ MuseScore {
           cursor.rewind(0);
 
           // move cursor to the segment at noteTick
-          while (cursor.tick < tickOfNextBar && cursor.nextMeasure());
-          while (cursor.tick > noteTick && cursor.prev());
+          while (cursor.tick < tickOfThisBar && cursor.nextMeasure());
+          while (cursor.tick < noteTick && cursor.next());
 
           // if before is true, move cursor to the segment BEFORE noteTick.
           if (before) {
             while (cursor.tick >= noteTick && cursor.prev());
           }
+          console.log('cur tick: ' + cursor.tick);
 
           while (tickOfThisBar !== -1 && cursor.segment && cursor.tick >= tickOfThisBar) {
             if (cursor.element && cursor.element.type == Ms.CHORD) {
@@ -991,8 +992,8 @@ MuseScore {
                 if (notes[i].line === line) {
                   nNotesInSameLine ++;
 
-                  // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
-                  //             ', tick: ' + notes[i].parent.parent.tick + ', tpc: ' + notes[i].tpc);
+                  console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
+                              ', tick: ' + notes[i].parent.parent.tick + ', tpc: ' + notes[i].tpc);
 
                   // Note: this behemoth is necessary due to this issue: https://musescore.org/en/node/305977
                   // "Note.accidental and Note.accidentalType not updated in new cursor instance after setting to regular accidental."
@@ -1514,6 +1515,9 @@ MuseScore {
 
         var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true);
 
+        if (priorAccOnNewLine)
+          console.log(priorAccOnNewLine.type);
+        console.log(priorAccOnNewLine);
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
             if (parms.currKeySig[newBaseNote].type == newAccidental) {

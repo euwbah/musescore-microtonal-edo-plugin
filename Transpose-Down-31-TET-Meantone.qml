@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "2.0.0"
+      version:  "2.0.1"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
       menuPath: "Plugins.31-TET (Meantone).Lower Pitch By 1 Step"
 
@@ -926,8 +926,8 @@ MuseScore {
           cursor.rewind(0);
 
           // move cursor to the segment at noteTick
-          while (cursor.tick < tickOfNextBar && cursor.nextMeasure());
-          while (cursor.tick > noteTick && cursor.prev());
+          while (cursor.tick < tickOfThisBar && cursor.nextMeasure());
+          while (cursor.tick < noteTick && cursor.next());
 
           // if before is true, move cursor to the segment BEFORE noteTick.
           if (before) {
