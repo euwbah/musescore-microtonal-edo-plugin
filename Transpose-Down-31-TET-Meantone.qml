@@ -749,7 +749,9 @@ MuseScore {
                       var notes = graceChords[i].notes;
                       parms.accOnSameLineBefore = undefined;
                       for (var j = 0; j < notes.length; j++) {
-
+                        // skip notes that are tied to previous notes.
+                        if (notes[j].tieBack)
+                          continue;
                         // Used in step 2. case vii. for determining which notes
                         // exist in the same line as the current note that is NOT the current
                         // note itself.
@@ -797,7 +799,9 @@ MuseScore {
                     for (var i = 0; i < notes.length; i++) {
                       // documentation for all these is found above in the section dealing with grace notes.
                       var note = notes[i];
-
+                      // skip notes that are tied to previous notes.
+                      if (note.tieBack)
+                        continue;
                       parms.chordExcludingSelf = [];
                       for (var j = 0; j < notes.length; j++) {
                         if (j != noteChordIndex)
@@ -1368,7 +1372,7 @@ MuseScore {
         var newLine = usingEnharmonic ? getNextLine(pitchData.line) : pitchData.line;
 
         // <UP DOWN VARIANT CHECKPOINT> (use getPrevNote for downwards transposition)
-        var newBaseNote = usingEnharmonic ? getPrevNote(pitchData.baseNote) : pitchData.baseNote;
+        var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset);
 
@@ -1422,12 +1426,12 @@ MuseScore {
         //       variant of this plugin will have to be inverted.
         // <UP DOWN VARIANT CHECKPOINT>
 
-        if (nextNoteEnharmonics.below &&
-            nextNoteEnharmonics.below.offset < parms.currKeySig[nextNoteEnharmonics.below.baseNote].offset) {
-          newBaseNote = nextNoteEnharmonics.below.baseNote;
+        if (nextNoteEnharmonics.above &&
+            nextNoteEnharmonics.above.offset > parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset) {
+          newBaseNote = nextNoteEnharmonics.above.baseNote;
           newLine = getNextLine(newLine);
-          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.below.offset);
-          newOffset = nextNoteEnharmonics.below.offset;
+          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.offset);
+          newOffset = nextNoteEnharmonics.above.offset;
         }
 
         // Step 1d is a converse of clause 1c, it is implicitly implemented in the implementation
@@ -1436,6 +1440,8 @@ MuseScore {
         // Step 1e. Check if new accidental corresponds exactly to the key signature accidental type and
         //          no prior explicit accidentals are in the bar. If so, the new note's accidental can be implicit.
 
+        // before making the final explicit accidental NONE when it can be made implicit, store
+        // the accidental it should represent. Used for Step 2. v. followingOldLine
         var newImplicitAccidental = newAccidental;
 
         var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true);
@@ -1531,31 +1537,35 @@ MuseScore {
                 var notes = graceChords[i].notes;
                 for (var j = 0; j < notes.length; j++) {
                   var ntick = notes[j].parent.parent.tick;
-                  if (notes[j].line == note.line && ntick > pitchData.tick) {
-                    if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
-                      followingOldLine = notes[j];
-                    if (!followingOldLineNewSegment ||
-                        (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
-                      followingOldLineNewSegment = notes[j];
-                  } else if (usingEnharmonic &&
-                      (!followingNewLine ||
-                        (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
-                      notes[j].line == newLine && ntick > pitchData.tick)
-                    followingNewLine = notes[j];
+                  if (!notes[j].tieBack) {
+                    if (notes[j].line == note.line && ntick > pitchData.tick) {
+                      if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
+                        followingOldLine = notes[j];
+                      if (!followingOldLineNewSegment ||
+                          (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
+                        followingOldLineNewSegment = notes[j];
+                    } else if (usingEnharmonic &&
+                        (!followingNewLine ||
+                          (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
+                        notes[j].line == newLine && ntick > pitchData.tick)
+                        followingNewLine = notes[j];
+                  }
                 }
               }
               var notes = cursor.element.notes;
               for (var i = 0; i < notes.length; i++) {
                 var ntick = notes[i].parent.parent.tick;
-                if (notes[i].line == note.line && ntick > pitchData.tick) {
-                  if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
-                    followingOldLine = notes[i];
-                  if (!followingOldLineNewSegment || (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
-                    followingOldLineNewSegment = notes[i];
-                } else if (usingEnharmonic &&
-                    (!followingNewLine || (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
-                    notes[i].line == newLine && ntick > pitchData.tick)
-                followingNewLine = notes[i];
+                if (!notes[i].tieBack) {
+                  if (notes[i].line == note.line && ntick > pitchData.tick) {
+                    if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
+                      followingOldLine = notes[i];
+                    if (!followingOldLineNewSegment || (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
+                      followingOldLineNewSegment = notes[i];
+                  } else if (usingEnharmonic &&
+                      (!followingNewLine || (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
+                      notes[i].line == newLine && ntick > pitchData.tick)
+                      followingNewLine = notes[i];
+                }
               }
             }
             cursor.next();
@@ -1758,7 +1768,10 @@ MuseScore {
 
             // logical case ii. if the new accidental matches the immediate note on the line
             // it's on, there's no need to make the followingOldLine explicit.
-            // N/A
+            //
+            // This case will never be true.
+            // When the following note has no accidental, any change to the current note's
+            // accidental will affect the next note.
 
             // case iii. if current note is prior to transposition is implicit AND is
             // moving out of the way (usingEnharmonic), thus the following note does
@@ -1815,6 +1828,9 @@ MuseScore {
 
             // case ii. if the new accidental matches the immediate note on the line
             // it's on, there's no need to make the followingNewLine explicit.
+            // NOTE: The only situation in which this happens is if newAccidental has
+            //       NO accidental. That is the only time it will match with the following
+            //       accidentalType.
 
             var newAccMatchFollowingLine = newAccidental == followingNewLine.accidentalType;
 

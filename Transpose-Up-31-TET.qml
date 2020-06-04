@@ -792,6 +792,10 @@ MuseScore {
                       parms.accOnSameLineBefore = undefined;
                       for (var j = 0; j < notes.length; j++) {
 
+                        // skip notes that are tied to previous notes.
+                        if (notes[j].tieBack)
+                          continue;
+
                         // Used in step 2. case vii. for determining which notes
                         // exist in the same line as the current note that is NOT the current
                         // note itself.
@@ -839,6 +843,10 @@ MuseScore {
                     for (var i = 0; i < notes.length; i++) {
                       // documentation for all these is found above in the section dealing with grace notes.
                       var note = notes[i];
+
+                      // skip notes that are tied to previous notes.
+                      if (note.tieBack)
+                        continue;
 
                       parms.chordExcludingSelf = [];
                       for (var j = 0; j < notes.length; j++) {
@@ -1613,6 +1621,18 @@ MuseScore {
         //      C D# Eb D#^ D# E^ => C D# Eb E(implicit key signature ^) D(implicit #) E(implicit ^)
         //
         //    This boils down to the following logic:
+        //
+        //      An immediate note represents:
+        //        - If the note is not enharmonically tranposed, the first note within the
+        //          same bar on the same line as the transposing note prior to tranposing,
+        //          that is after the lastTiedNote of the transposing note.
+        //        - If the note is enharmonically tranposed, the first note within the same
+        //          bar on the same line as the tranposing note after enharmonically transposing,
+        //          that is after the lastTiedNote of the transposing note. (rep by followingNewLine)
+        //         AND
+        //          the first note that does not have tieBack within the bar on the same line as the
+        //          transposing note prior to transposing.
+        //
         //      An explicit accidental is ALWAYS added on the immediate notes within the same bar unless:
         //      i.    an explicit accidental already exists on them
         //              OR
@@ -1910,31 +1930,35 @@ MuseScore {
                 var notes = graceChords[i].notes;
                 for (var j = 0; j < notes.length; j++) {
                   var ntick = notes[j].parent.parent.tick;
-                  if (notes[j].line == note.line && ntick > pitchData.tick) {
-                    if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
-                      followingOldLine = notes[j];
-                    if (!followingOldLineNewSegment ||
-                        (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
-                      followingOldLineNewSegment = notes[j];
-                  } else if (usingEnharmonic &&
-                      (!followingNewLine ||
-                        (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
-                      notes[j].line == newLine && ntick > pitchData.tick)
-                    followingNewLine = notes[j];
+                  if (!notes[j].tieBack) {
+                    if (notes[j].line == note.line && ntick > pitchData.tick) {
+                      if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
+                        followingOldLine = notes[j];
+                      if (!followingOldLineNewSegment ||
+                          (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
+                        followingOldLineNewSegment = notes[j];
+                    } else if (usingEnharmonic &&
+                        (!followingNewLine ||
+                          (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
+                        notes[j].line == newLine && ntick > pitchData.tick)
+                        followingNewLine = notes[j];
+                  }
                 }
               }
               var notes = cursor.element.notes;
               for (var i = 0; i < notes.length; i++) {
                 var ntick = notes[i].parent.parent.tick;
-                if (notes[i].line == note.line && ntick > pitchData.tick) {
-                  if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
-                    followingOldLine = notes[i];
-                  if (!followingOldLineNewSegment || (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
-                    followingOldLineNewSegment = notes[i];
-                } else if (usingEnharmonic &&
-                    (!followingNewLine || (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
-                    notes[i].line == newLine && ntick > pitchData.tick)
-                followingNewLine = notes[i];
+                if (!notes[i].tieBack) {
+                  if (notes[i].line == note.line && ntick > pitchData.tick) {
+                    if (!followingOldLine || (followingOldLine && ntick < followingOldLine.parent.parent.tick))
+                      followingOldLine = notes[i];
+                    if (!followingOldLineNewSegment || (followingOldLineNewSegment && ntick < followingOldLineNewSegment.parent.parent.tick))
+                      followingOldLineNewSegment = notes[i];
+                  } else if (usingEnharmonic &&
+                      (!followingNewLine || (followingNewLine && ntick < followingNewLine.parent.parent.tick)) &&
+                      notes[i].line == newLine && ntick > pitchData.tick)
+                      followingNewLine = notes[i];
+                }
               }
             }
             cursor.next();
