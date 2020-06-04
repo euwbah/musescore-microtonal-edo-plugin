@@ -1976,7 +1976,7 @@ MuseScore {
                     followingOldLineNewSegment = g;
                 }
                 else if (usingEnharmonic && !followingNewLine && g.line == newLine)
-                  followingNewLine = notes[j];
+                  followingNewLine = g;
               }
             }
           }
@@ -1984,16 +1984,16 @@ MuseScore {
           // check parent chord for any notes on same line.
           for (var i = 0; i < chordObj.notes.length; i ++) {
             var n = chordObj.notes[i];
-            
-            if (!g.tieBack) {
-              if (g.line == note.line) {
+
+            if (!n.tieBack) {
+              if (n.line == note.line) {
                 if (!followingOldLine)
-                  followingOldLine = g;
+                  followingOldLine = n;
                 if (!followingOldLineNewSegment)
-                  followingOldLineNewSegment = g;
+                  followingOldLineNewSegment = n;
               }
-              else if (usingEnharmonic && !followingNewLine && g.line == newLine)
-                followingNewLine = notes[j];
+              else if (usingEnharmonic && !followingNewLine && n.line == newLine)
+                followingNewLine = n;
             }
           }
         }
