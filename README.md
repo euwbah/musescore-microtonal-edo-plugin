@@ -250,7 +250,8 @@ CURSOR REWIND MECHANICS ARE WEIRD!
   - If rewinding to start of selection `cursor.rewind(1)`, set `cursor.staffIdx` and `cursor.voice` after
     `rewind(1)`.
   - If rewinding to start of score, IT IS STILL NECESSARY TO CALL `cursor.rewind(1)`, then set `staffIdx` and `voice`,
-    THEN call `cursor.rewind(0)` AFTERWARDS.
+    THEN call `cursor.rewind(0)` AFTERWARDS. \
+    Apparently, based on the (add courtesy accidentals)[https://github.com/heuchi/courtesyAccidentals/blob/master/addCourtesyAccidentals.qml#L160] plugin, `cursor.track` has to be set to 0 in order for `cursor.rewind(0)` to work.
 
 
 It is an invalid operation to set cursor voice/staffIdx without rewinding.

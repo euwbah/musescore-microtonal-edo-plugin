@@ -958,10 +958,14 @@ MuseScore {
       //
       // if `before` flag is true, only returns accidentals BEFORE the cursor.tick value.
       //
+      // if 'graceChord' is not undefined, contains the grace chord that the plugin is current processing.
+      // If the plugin is processing a grace chord, only accidentals that are on/before the grace chord should
+      // take effect, and not any sibling grace chords after the grace chord, nor the main chord itself.
+      //
       // returns an Accidental enum vale if an explicit accidental exists,
       // or the string 'botched' if botchedCheck is true and it is impossible to determine what the exact accidental is
       // or null, if there are no explicit accidentals, and it is determinable.
-      function getMostRecentAccidentalInBar(cursor, noteTick, line, tickOfThisBar, tickOfNextBar, botchedCheck, before) {
+      function getMostRecentAccidentalInBar(cursor, noteTick, line, tickOfThisBar, tickOfNextBar, botchedCheck, before, graceChord) {
         var originalCursorTick = cursor.tick;
         var thisCursorVoice = cursor.voice;
         var thisStaffIdx = cursor.staffIdx;
@@ -977,6 +981,7 @@ MuseScore {
                     ', nextBar: ' + tickOfNextBar + ', botchedCheck: ' + botchedCheck + ', before: ' + before);
 
         for (var voice = 0; voice < 4; voice ++) {
+
           cursor.rewind(1);
           cursor.voice = voice;
           cursor.staffIdx = thisStaffIdx;
@@ -988,71 +993,149 @@ MuseScore {
 
           // if before is true, move cursor to the segment BEFORE noteTick.
           if (before) {
+            // but before that, ensure accidentals of grace notes attached to the current chord are picked up
+            // as they constitute as 'before' the current chord.
+            if (cursor.element && cursor.element.type == Ms.CHORD) {
+              var graces = cursor.element.graceNotes;
+              var beforeCurrent = graceChord === undefined;
+              for (var i = graces.length - 1; i >= 0; i--) {
+                if (!beforeCurrent) {
+                  if (graces[i].is(graceChord))
+                    beforeCurrent = true;
+                  continue;
+                }
+                var nNotesInSameLine = 0;
+                var explicitAccidental = undefined;
+                var explicitPossiblyBotchedAccidental = undefined;
+                var implicitExplicitNote = undefined; // the note that has `explicitPossiblyBotchedAccidental`
+                for (var j = 0; j < graces[i].notes.length; j++) {
+                  var note = graces[i].notes[j];
+                  var isGraceBefore = note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
+                                      note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
+                                      note.noteType == NoteType.GRACE32;
+
+                  if (isGraceBefore) {
+                    if (note.line === line) {
+                      nNotesInSameLine ++;
+                      if(note.accidental) {
+                        explicitAccidental = note.accidentalType;
+                        console.log('found explicitAccidental (grace): ' + explicitAccidental);
+                      }
+                      else if (note.tpc <= 5 && note.tpc >= -1)
+                        explicitPossiblyBotchedAccidental = Accidental.FLAT2;
+                      else if (note.tpc <= 12 && note.tpc >= 6)
+                        explicitPossiblyBotchedAccidental = Accidental.FLAT;
+                      else if (note.tpc <= 26 && note.tpc >= 20)
+                        explicitPossiblyBotchedAccidental = Accidental.SHARP;
+                      else if (note.tpc <= 33 && note.tpc >= 27)
+                        explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+
+                      if (note.tpc <= 12 || note.tpc >= 20)
+                        implicitExplicitNote = note;
+                    }
+                  }
+                }
+                if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
+                  mostRecentExplicitAcc = explicitAccidental;
+                  mostRecentExplicitAccTick = cursor.tick;
+                  mostRecentPossiblyBotchedAccTick = cursor.tick;
+                  break;
+                } else if (nNotesInSameLine > 1 && cursor.tick > mostRecentDoubleLineTick) {
+                  mostRecentDoubleLineTick = cursor.tick;
+                  break;
+                } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental &&
+                          getTick(implicitExplicitNote.firstTiedNote) > mostRecentPossiblyBotchedAccTick) {
+                  if (getTick(implicitExplicitNote.firstTiedNote) >= tickOfThisBar) {
+                    mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                    mostRecentPossiblyBotchedAccTick = getTick(implicitExplicitNote.firstTiedNote);
+                  }
+                }
+              }
+            }
+
+            // then move cursor to segment before noteTick
             while (cursor.tick >= noteTick && cursor.prev());
-          }
+
+          } // end of 'before' processing
 
           while (tickOfThisBar !== -1 && cursor.segment && cursor.tick >= tickOfThisBar) {
             if (cursor.element && cursor.element.type == Ms.CHORD) {
-              // because this is backwards-traversing, it should look at notes first before grace chords.
+              // because this is backwards-traversing, it should look at the main chord first before grace chords.
               var notes = cursor.element.notes;
               var nNotesInSameLine = 0;
               var explicitAccidental = undefined;
               var explicitPossiblyBotchedAccidental = undefined;
               var implicitExplicitNote = undefined; // the note that has `explicitPossiblyBotchedAccidental`
-              for (var i = 0; i < notes.length; i++) {
-                if (notes[i].line === line) {
-                  nNotesInSameLine ++;
 
-                  // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
-                  //             ', tick: ' + getTick(notes[i]) + ', tpc: ' + notes[i].tpc);
+              // processing main chord. skip this if graceChord is provided and the current tick is that
+              // of the grace chord's parent chord's tick
 
-                  // Note: this behemoth is necessary due to this issue: https://musescore.org/en/node/305977
-                  // "Note.accidental and Note.accidentalType not updated in new cursor instance after setting to regular accidental."
-                  // Note that this is a hacky workaround, using the note's tpc to assume the presence of an explicit accidental
-                  // when its accidental properties gets erased due to a pitch update.
-                  // (If no pitch update was done performed on the note, any explicit accidental will still be registered as such)
-                  //
-                  // However, using this hack, there is no way to ascertain that the note indeed has an explicit accidental or not,
-                  // but for solely the purposes of retrieving accidental state, this is a perfectly fine solution.
-                  if(notes[i].accidental) {
-                    explicitAccidental = notes[i].accidentalType;
-                    console.log('found explicitAccidental: ' + explicitAccidental);
+              var searchGraces = false;
+              if (graceChord !== undefined && graceChord.parent.parent.tick == cursor.tick)
+                searchGraces = true;
+
+              if (!searchGraces) {
+                for (var i = 0; i < notes.length; i++) {
+                  if (notes[i].line === line) {
+                    nNotesInSameLine ++;
+
+                    // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
+                    //             ', tick: ' + getTick(notes[i]) + ', tpc: ' + notes[i].tpc);
+
+                    // Note: this behemoth is necessary due to this issue: https://musescore.org/en/node/305977
+                    // "Note.accidental and Note.accidentalType not updated in new cursor instance after setting to regular accidental."
+                    // Note that this is a hacky workaround, using the note's tpc to assume the presence of an explicit accidental
+                    // when its accidental properties gets erased due to a pitch update.
+                    // (If no pitch update was done performed on the note, any explicit accidental will still be registered as such)
+                    //
+                    // However, using this hack, there is no way to ascertain that the note indeed has an explicit accidental or not,
+                    // but for solely the purposes of retrieving accidental state, this is a perfectly fine solution.
+                    if(notes[i].accidental) {
+                      explicitAccidental = notes[i].accidentalType;
+                      console.log('found explicitAccidental: ' + explicitAccidental);
+                    }
+                    else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
+                      explicitPossiblyBotchedAccidental = Accidental.FLAT2;
+                    else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
+                      explicitPossiblyBotchedAccidental = Accidental.FLAT;
+                    else if (notes[i].tpc <= 26 && notes[i].tpc >= 20)
+                      explicitPossiblyBotchedAccidental = Accidental.SHARP;
+                    else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
+                      explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+
+                    if (notes[i].tpc <= 12 || notes[i].tpc >= 20)
+                      implicitExplicitNote = notes[i];
                   }
-                  else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
-                    explicitPossiblyBotchedAccidental = Accidental.FLAT2;
-                  else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
-                    explicitPossiblyBotchedAccidental = Accidental.FLAT;
-                  else if (notes[i].tpc <= 26 && notes[i].tpc >= 20)
-                    explicitPossiblyBotchedAccidental = Accidental.SHARP;
-                  else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
-                    explicitPossiblyBotchedAccidental = Accidental.SHARP2;
-
-
-                  if (notes[i].tpc <= 12 || notes[i].tpc >= 20)
-                    implicitExplicitNote = notes[i];
                 }
-              }
 
-              if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
-                mostRecentExplicitAcc = explicitAccidental;
-                mostRecentExplicitAccTick = cursor.tick;
-                mostRecentPossiblyBotchedAccTick = cursor.tick;
-                break;
-              } else if (nNotesInSameLine > 1 && cursor.tick > mostRecentDoubleLineTick) {
-                mostRecentDoubleLineTick = cursor.tick;
-                break;
-              } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
-                // NOTE: the 'explicit' implicit accidental must not have a tie that goes back to a previous bar.
-                //       otherwise, the accidental it represents is void and is of the previous bar, and not
-                //       the current.
-                if (getTick(implicitExplicitNote.firstTiedNote) >= tickOfThisBar) {
-                  mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                if (nNotesInSameLine === 1 && explicitAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
+                  mostRecentExplicitAcc = explicitAccidental;
+                  mostRecentExplicitAccTick = cursor.tick;
                   mostRecentPossiblyBotchedAccTick = cursor.tick;
+                  break;
+                } else if (nNotesInSameLine > 1 && cursor.tick > mostRecentDoubleLineTick) {
+                  mostRecentDoubleLineTick = cursor.tick;
+                  break;
+                } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental &&
+                           getTick(implicitExplicitNote.firstTiedNote) > mostRecentPossiblyBotchedAccTick) {
+                  // NOTE: the 'explicit' implicit accidental must not have a tie that goes back to a previous bar.
+                  //       otherwise, the accidental it represents is void and is of the previous bar, and not
+                  //       the current.
+                  if (getTick(implicitExplicitNote.firstTiedNote) >= tickOfThisBar) {
+                    mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
+                    mostRecentPossiblyBotchedAccTick = getTick(implicitExplicitNote.firstTiedNote);
+                  }
                 }
               }
 
               var graceChords = cursor.element.graceNotes;
+              var beforeCurrent = !searchGraces;
               for (var i = graceChords.length - 1; i >= 0; i--) {
+                if (!beforeCurrent) {
+                  if (graceChords[i].is(graceChord))
+                    beforeCurrent = true;
+                  continue;
+                }
                 // iterate through all grace chords
                 var notes = graceChords[i].notes;
                 var nNotesInSameLine = 0;
@@ -1087,10 +1170,11 @@ MuseScore {
                 } else if (nNotesInSameLine > 1 && cursor.tick > mostRecentDoubleLineTick) {
                   mostRecentDoubleLineTick = cursor.tick;
                   break;
-                } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental && cursor.tick > mostRecentPossiblyBotchedAccTick) {
+                } else if (nNotesInSameLine === 1 && explicitPossiblyBotchedAccidental &&
+                          getTick(implicitExplicitNote.firstTiedNote) > mostRecentPossiblyBotchedAccTick) {
                   if (getTick(implicitExplicitNote.firstTiedNote) >= tickOfThisBar) {
                     mostRecentExplicitAcc = explicitPossiblyBotchedAccidental;
-                    mostRecentPossiblyBotchedAccTick = cursor.tick;
+                    mostRecentPossiblyBotchedAccTick = getTick(implicitExplicitNote.firstTiedNote);
                   }
                 }
               }
@@ -1139,7 +1223,11 @@ MuseScore {
       //               in order to prevent making wild guesses that would cause unwanted side effects.
       //
       // before: (Optional) set to true if only accidentals BEFORE the tick should take effect.
-      //         If the explicit accidental lies during the tick itself, it will not be accounted for.
+      //         If the explicit accidental is positioned at the tick itself, it will not be accounted for.
+      //
+      // graceChord: (Optional) if the plugin is currently processing a grace note, set this value to be the note's parent.
+      //             This ensures that only accidentals on/before this grace chord are accounted for, and not those
+      //             after, as all grace chords have the same tick value as its parent chord segment.
       //
       // If no accidental, returns null.
       // If accidental is botched and botchedCheck is enabled, returns the string 'botched'.
@@ -1154,7 +1242,7 @@ MuseScore {
       // NOTE: If an accidental was botched before but an explicit accidental
       //       is found MORE RECENT than the time of botching, the final result is NOT
       //       botched.
-      function getAccidental(cursor, tick, noteLine, botchedCheck, parms, before) {
+      function getAccidental(cursor, tick, noteLine, botchedCheck, parms, before, graceChord) {
 
         var tickOfNextBar = -1; // if -1, the cursor at the last bar
 
@@ -1176,7 +1264,8 @@ MuseScore {
         if (before === undefined)
           before = false;
 
-        var result = getMostRecentAccidentalInBar(cursor, tick, noteLine, tickOfThisBar, tickOfNextBar, botchedCheck, before)
+        var result =
+          getMostRecentAccidentalInBar(cursor, tick, noteLine, tickOfThisBar, tickOfNextBar, botchedCheck, before, graceChord);
 
         if (result === null || result === 'botched')
           return result;
@@ -1407,7 +1496,15 @@ MuseScore {
         //       automatically affix an explicit accidental to the affected note,
         //       and the getAccidental check would run as the function would have
         //       returned in the above clause.
-        var prevAcc = getAccidental(cursor, noteData.tick, note.line, false, parms);
+
+        var graceChord = undefined;
+        if (note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
+            note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
+            note.noteType == NoteType.GRACE32) {
+          graceChord = note.parent;
+        }
+
+        var prevAcc = getAccidental(cursor, noteData.tick, note.line, false, parms, false, graceChord);
         if (prevAcc !== null) {
           // The 0 + is necessary here so the type coercion doesn't need to occur
           // in other places.
@@ -1772,12 +1869,21 @@ MuseScore {
 
 
         // Step 0
+
+        var graceChord = undefined;
+        if (note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
+            note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
+            note.noteType == NoteType.GRACE32) {
+          graceChord = note.parent;
+        }
+
         var pitchData = getNotePitchData(cursor, note, parms);
 
         console.log('pitchData: note: ' + pitchData.baseNote +
                   ', acc: ' + convertAccidentalTypeToName(pitchData.implicitAccidental) +
                   ', explicit: ' + (pitchData.explicitAccidental != undefined ? convertAccidentalTypeToName(pitchData.explicitAccidental) : 'none') +
                   ', line: ' + pitchData.line + ', offset: ' + pitchData.diesisOffset);
+
 
         // step 1a. determine naive pitch and accidental of new tranposed note
         // the mutable newAccidental, newOffset, newLine, and newBaseNote
@@ -1873,7 +1979,7 @@ MuseScore {
         // the accidental it should represent. Used for Step 2. v. followingOldLine
         var newImplicitAccidental = newAccidental;
 
-        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true);
+        var priorAccOnNewLine = getAccidental(cursor, pitchData.tick, newLine, true, parms, true, graceChord);
 
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
@@ -1944,20 +2050,17 @@ MuseScore {
           }
         }
 
-        // If this note is a grace note, check other grace notes and the chord element itself
+        // If this note is a grace note, check other grace notes and the parent chord element itself
         // for following notes first
-        var isGrace = note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
-                      note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
-                      note.noteType == NoteType.GRACE33;
 
-        if (isGrace) {
+        if (graceChord !== undefined) {
           var chordObj = note.parent.parent; // main chord object
           var graces = chordObj.graceNotes; // array of chord objects
           var followingCurrent = false;
           // run through all grace notes in order of left to right.
           for (var i = 0; i < graces.length; i++) {
             if (!followingCurrent) {
-              if (graces[i].is(note.parent)) {
+              if (graces[i].is(graceChord)) {
                 // we've reached the current grace note's chord.
                 followingCurrent = true;
                 // no need to check for same line in same chord, should have already been present in parms.
@@ -2038,16 +2141,16 @@ MuseScore {
               for (var i = 0; i < notes.length; i++) {
                 var ntick = getTick(notes[i]);
                 if (!notes[i].tieBack) {
-                  // if current note is grace note, allow notes in other voices at the same tick position
+                  // if current note is grace note, allow standard notes in all voices at the same tick position
                   // to be candidates, as the grace notes would come before them.
-                  if (notes[i].line == note.line && (ntick > pitchData.tick || (isGrace && ntick >= pitchData.tick))) {
+                  if (notes[i].line == note.line && (ntick > pitchData.tick || ((graceChord !== undefined) && ntick >= pitchData.tick))) {
                     if (!followingOldLine || (followingOldLine && ntick < getTick(followingOldLine)))
                       followingOldLine = notes[i];
                     if (!followingOldLineNewSegment || (followingOldLineNewSegment && ntick < getTick(followingOldLineNewSegment)))
                       followingOldLineNewSegment = notes[i];
                   } else if (usingEnharmonic &&
                       (!followingNewLine || (followingNewLine && ntick < getTick(followingNewLine))) &&
-                      notes[i].line == newLine && ntick > pitchData.tick)
+                      notes[i].line == newLine && (ntick > pitchData.tick || ((graceChord !== undefined) && ntick >= pitchData.tick)))
                       followingNewLine = notes[i];
                 }
               }
@@ -2171,7 +2274,7 @@ MuseScore {
                   //      If there are no explicit accidentals but also no error-causing double-note-line chords,
                   //      then the algorithm can move on to priority 3: key signatures.
 
-                  var recAcc = getAccidental(cursor, pitchData.tick, followingOldLine.line, true, parms, true);
+                  var recAcc = getAccidental(cursor, pitchData.tick, followingOldLine.line, true, parms, true, graceChord);
 
                   if (recAcc === 'botched')
                     botchedDoubleLine = true;
@@ -2220,13 +2323,11 @@ MuseScore {
                   }
                   var botched = false;
                   if (accInThisChordOnOldLine === undefined) {
-                    if (cursor.measure.firstSegment.tick != pitchData.tick) {
-                      var recAcc = getAccidental(cursor, getTick(note), followingOldLine.line, true, parms, true);
-                      if (recAcc == 'botched')
-                        botched = true;
-                      else if (recAcc !== null)
-                        accInThisChordOnOldLine = recAcc.type;
-                      }
+                    var recAcc = getAccidental(cursor, pitchData.tick, followingOldLine.line, true, parms, true, graceChord);
+                    if (recAcc == 'botched')
+                      botched = true;
+                    else if (recAcc !== null)
+                      accInThisChordOnOldLine = recAcc.type;
                   }
 
                   if (!botched && accInThisChordOnOldLine === undefined) {
@@ -2341,7 +2442,15 @@ MuseScore {
               // would have had an explicit accidental instead of an implicit accidental, which is
               // the case of this clause.
 
-              var accObj = getAccidental(cursor, getTick(followingNewLine), followingNewLine.line, false, parms);
+              var fnlType = followingNewLine.noteType;
+              var fnlGC = undefined;
+              if (fnlType == NoteType.ACCIACCATURA || fnlType == NoteType.APPOGGIATURE ||
+                  fnlType == NoteType.GRACE4 || fnlType == NoteType.GRACE16 ||
+                  fnlType == NoteType.GRACE32) {
+                fnlGC = note.parent;
+              }
+
+              var accObj = getAccidental(cursor, getTick(followingNewLine), followingNewLine.line, false, parms, fnlGC);
 
               var expAcc;
               if (accObj != null)
@@ -2360,7 +2469,7 @@ MuseScore {
           for (var i = 0; i < sameChordNewLine.length; i++) {
             var n = sameChordNewLine[i];
             if (!n.accidental || n.accidentalType == Accidental.NONE) {
-              var accObj = getAccidental(cursor, getTick(n), n.line, false, parms);
+              var accObj = getAccidental(cursor, pitchData.tick, n.line, false, parms, graceChord);
 
               var expAcc;
               if (accObj != null)
