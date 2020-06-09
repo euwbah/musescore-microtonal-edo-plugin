@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "2.0.2"
+      version:  "2.0.3"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of 31 EDO."
       menuPath: "Plugins.31-TET (Meantone).Lower Pitch By 1 Step"
 
@@ -549,13 +549,16 @@ MuseScore {
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
                       var annotation = cursor.segment.annotations[i];
                       console.log("found annotation type: " + annotation.subtypeName());
-                      var maybeKeySig = scanCustomKeySig(annotation.text);
-                      if (maybeKeySig !== null) {
-                        console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                        staffKeySigHistory.push({
-                          tick: cursor.tick,
-                          keySig: maybeKeySig
-                        });
+                      if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
+                          (annotation.subtypeName() == 'System')) {
+                        var maybeKeySig = scanCustomKeySig(annotation.text);
+                        if (maybeKeySig !== null) {
+                          console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                          staffKeySigHistory.push({
+                            tick: cursor.tick,
+                            keySig: maybeKeySig
+                          });
+                        }
                       }
                     }
 
@@ -721,13 +724,16 @@ MuseScore {
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
                     var annotation = cursor.segment.annotations[i];
                     console.log("found annotation type: " + annotation.subtypeName());
-                    var maybeKeySig = scanCustomKeySig(annotation.text);
-                    if (maybeKeySig !== null) {
-                      console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                      staffKeySigHistory.push({
-                        tick: cursor.tick,
-                        keySig: maybeKeySig
-                      });
+                    if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
+                        (annotation.subtypeName() == 'System')) {
+                      var maybeKeySig = scanCustomKeySig(annotation.text);
+                      if (maybeKeySig !== null) {
+                        console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                        staffKeySigHistory.push({
+                          tick: cursor.tick,
+                          keySig: maybeKeySig
+                        });
+                      }
                     }
                   }
 

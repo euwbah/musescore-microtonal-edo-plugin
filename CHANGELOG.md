@@ -1,13 +1,19 @@
 ## Changelog
 
+### 2.1 (In testing)
+- Implement generic n-EDO plugin.
+
+### 2.0.3
+- Fixed local vs. global key signatures not working.
 
 ### 2.0.2
 - Fixed transposing breaking down on grace notes
   - `note.parent.parent.tick` vs. `note.parent.parent.parent.tick` for grace notes abstracted by `getTick()`
   - Fixed grace notes not regarding sibling grace notes and parent chord notes as possible candidates
     for followingOldLine and followingNewLine.
+  - Fixed accidentals on prior grace notes on the current chord segment not accounted for.
 - Fixed cursor relocation on getAccidental causing havoc. getAccidental will now return cursor to original position.
-- Relocate cursor to individually selected notes to make sure it works properly.
+- Relocate cursor to individually selected notes when transposing
 
 ### 2.0.1
 - Fixed reading accidentals for transposition doesn't work when accidentals are in

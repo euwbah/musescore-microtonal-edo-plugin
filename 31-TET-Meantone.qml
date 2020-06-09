@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "2.0.0"
+      version:  "2.0.3"
       description: "Retune selection to 31-TET in meantone mode (Dbb is C+), or whole score if nothing selected."
       menuPath: "Plugins.31-TET (Meantone).Tune"
 
@@ -221,13 +221,16 @@ MuseScore {
                 for (var i = 0; i < cursor.segment.annotations.length; i++) {
                   var annotation = cursor.segment.annotations[i];
                   console.log("found annotation type: " + annotation.subtypeName());
-                  var maybeKeySig = scanCustomKeySig(annotation.text);
-                  if (maybeKeySig !== null) {
-                    console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
-                    staffKeySigHistory.push({
-                      tick: cursor.tick,
-                      keySig: maybeKeySig
-                    });
+                  if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
+                      (annotation.subtypeName() == 'System')) {
+                    var maybeKeySig = scanCustomKeySig(annotation.text);
+                    if (maybeKeySig !== null) {
+                      console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                      staffKeySigHistory.push({
+                        tick: cursor.tick,
+                        keySig: maybeKeySig
+                      });
+                    }
                   }
                 }
                 if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
