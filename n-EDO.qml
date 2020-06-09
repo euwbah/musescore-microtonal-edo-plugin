@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version:  "2.1"
+      version:  "2.1.0"
       description: "Retune selection to any EDO temperament, or whole score if nothing selected."
       menuPath: "Plugins.n-EDO.Tune"
 
@@ -16,6 +16,9 @@ MuseScore {
       // stepOffset: offset the nominal by this many steps of the EDO
       // edo: how many notes per octave in the tuning system.
       // a4Freq: the frequency in Hz of A4 (by default 440)
+      //
+      // Special credits to @FloraCanou (https://github.com/FloraCanou) for conceiving this method
+      // method edited by @euwbah to set A as the normalised frequency instead of D
       function getCentOffset(noteName, stepOffset, edo, a4Freq) {
         var stepSize = 1200.0 / edo;
         var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
@@ -28,6 +31,9 @@ MuseScore {
         }
 
         var centOffset = -regularAccCentOffset;
+
+        centOffset += 1200.0 * Math.log(a4Freq / 440.0) / Math.log(2);
+
         switch (noteName) {
           case 'f':
             return stepSize*(-4*fifthStep + stepOffset) + 2800 + centOffset;
@@ -46,7 +52,9 @@ MuseScore {
         }
       }
 
-      function convertAccidentalToStepsOrNull(acc) {
+      function convertAccidentalToStepsOrNull(acc, edo) {
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var sharpValue = 7 * fifthStep - 4 * edo;
         switch(acc.trim()) {
         case 'db':
         case 'bd':
@@ -158,7 +166,7 @@ MuseScore {
       // For the natural accidental, blank or whitespace will both work.
       //
       // Assign the key signature object to the parms.currKeySig field!
-      function scanCustomKeySig(str) {
+      function scanCustomKeySig(str, edo) {
         if (typeof(str) !== 'string')
           return null;
         str = str.trim();
@@ -218,9 +226,10 @@ MuseScore {
           // Reset accidentals at the start of every staff.
           parms.accidentals = {};
 
-          // After every staff, reset the currKeySig back to the original keySig
-
+          // After every staff, reset the keySig and tuning states back to default
           parms.currKeySig = parms.keySig;
+          parms.currEdo = 12;
+          parms.currA4Freq = 440;
 
           // Even if system text is used for key sig, the text
           // won't carry over for all voices (if the text was placed on voice 1, only
@@ -230,6 +239,8 @@ MuseScore {
           // need to be aggregated into this array before the notes can be
           // tuned.
           var staffKeySigHistory = [];
+          var staffA4FreqHistory = [];
+          var staffEDOHistory = [];
 
           // initial run to populate custom key signatures
           for (var voice = 0; voice < 4; voice++) {
@@ -250,13 +261,48 @@ MuseScore {
 
             while (true) {
               if (cursor.segment) {
-                // Check for StaffText key signature changes, then update staffKeySigHistory
+                // scan edo & A4 tuning frequency first. key signature parsing is dependant on edo used.
                 for (var i = 0; i < cursor.segment.annotations.length; i++) {
                   var annotation = cursor.segment.annotations[i];
                   console.log("found annotation type: " + annotation.subtypeName());
                   if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
                       (annotation.subtypeName() == 'System')) {
                     var maybeKeySig = scanCustomKeySig(annotation.text);
+                    if (annotation.text.toLowerCase().trim().endsWith('edo')) {
+                      var edo = parseInt(annotation.text.substring(0, annotation.text.length - 3));
+                      if (edo !== NaN || edo !== undefined || edo !== null) {
+                        console.log('found EDO annotation: ' + annotation.text)
+                        staffEDOHistory.push({
+                          tick: cursor.tick,
+                          edo: edo
+                        });
+                      }
+                    } else if (annotation.text.toLowerCase().trim().startsWith('a4:')) {
+                      var txt = annotation.text.toLowerCase().trim();
+                      if (txt.endsWith('hz'))
+                        txt = txt.substring(0, txt.length - 2);
+                      var a4Freq = parseFloat(txt.substring(3));
+                      if (a4Freq !== NaN || a4Freq !== undefined || a4Freq !== null) {
+                        console.log('found A4 frequency annotation: ' + annotation.text)
+                        staffA4FreqHistory.push({
+                          tick: cursor.tick,
+                          a4Freq: a4Freq
+                        });
+                      }
+                    }
+                  }
+                }
+
+                // Check for StaffText key signature changes, then update staffKeySigHistory
+                for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                  var annotation = cursor.segment.annotations[i];
+                  console.log("found annotation type: " + annotation.subtypeName());
+                  if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
+                      (annotation.subtypeName() == 'System')) {
+                    var mostRecentEDO = staffEDOHistory[staffEDOHistory.length - 1];
+                    if (!mostRecentEDO)
+                      mostRecentEDO = 12;
+                    var maybeKeySig = scanCustomKeySig(annotation.text, 12);
                     if (maybeKeySig !== null) {
                       console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
                       staffKeySigHistory.push({
@@ -316,6 +362,19 @@ MuseScore {
                   if (keySig.tick <= cursor.tick)
                     parms.currKeySig = keySig.keySig;
                 }
+
+                for (var i = 0; i < staffEDOHistory.length; i++) {
+                  var edo = staffEDOHistory[i];
+                  if (edo.tick <= cursor.tick)
+                  parms.currEdo = edo.edo;
+                }
+
+                for (var i = 0; i < staffA4FreqHistory.length; i++) {
+                  var a4Freq = staffA4FreqHistory[i];
+                  if (a4Freq.tick <= cursor.tick)
+                    parms.currA4Freq = a4Freq.a4Freq;
+                }
+
 
                 if (cursor.element) {
                   if (cursor.element.type == Ms.CHORD) {
@@ -403,6 +462,8 @@ MuseScore {
       // will note be tuned.
       function tuneNote(note, segment, parms, scanOnly) {
         var tpc = note.tpc;
+        var fifthStep = Math.round(parms.currEdo * Math.log(3/2) / Math.log(2));
+        var sharpValue = 7 * fifthStep - 4 * parms.currEdo;
 
         // If tpc is non-natural, there's no need to go through additional steps,
         // since accidentals and key sig are already taken into consideration
@@ -411,103 +472,94 @@ MuseScore {
         // However, if tpc is natural, it needs to be checked against acc and
         // the key signature to truly determine what note it is.
 
-        /*
-          ^   #v   v   b^       -> 1 diesis
-          #        b            -> 2 diesis
-          #^  xv   bv  bb^      -> 3 diesis
-          x        bb           -> 4 diesis
-          x^       bbv          -> 5 diesis
-        */
-        if (!scanOnly) {
-          switch(tpc) {
-          case -1: //Fbb
-            note.tuning = centOffsets['f'][-4]
-            return;
-          case 0: //Cbb
-            note.tuning = centOffsets['c'][-4]
-            return;
-          case 1: //Gbb
-            note.tuning = centOffsets['g'][-4]
-            return;
-          case 2: //Dbb
-            note.tuning = centOffsets['d'][-4]
-            return;
-          case 3: //Abb
-            note.tuning = centOffsets['a'][-4]
-            return;
-          case 4: //Ebb
-            note.tuning = centOffsets['e'][-4]
-            return;
-          case 5: //Bbb
-            note.tuning = centOffsets['b'][-4]
-            return;
+        switch(tpc) {
+        case -1: //Fbb
+          note.tuning = getCentOffset ('f', -2*sharpValue);
+          return;
+        case 0: //Cbb
+          note.tuning = getCentOffset ('c', -2*sharpValue);
+          return;
+        case 1: //Gbb
+          note.tuning = getCentOffset ('g', -2*sharpValue);
+          return;
+        case 2: //Dbb
+          note.tuning = getCentOffset ('d', -2*sharpValue);
+          return;
+        case 3: //Abb
+          note.tuning = getCentOffset ('a', -2*sharpValue);
+          return;
+        case 4: //Ebb
+          note.tuning = getCentOffset ('e', -2*sharpValue);
+          return;
+        case 5: //Bbb
+          note.tuning = getCentOffset ('b', -2*sharpValue);
+          return;
 
-          case 6: //Fb
-            note.tuning = centOffsets['f'][-2]
-            return;
-          case 7: //Cb
-            note.tuning = centOffsets['c'][-2]
-            return;
-          case 8: //Gb
-            note.tuning = centOffsets['g'][-2]
-            return;
-          case 9: //Db
-            note.tuning = centOffsets['d'][-2]
-            return;
-          case 10: //Ab
-            note.tuning = centOffsets['a'][-2]
-            return;
-          case 11: //Eb
-            note.tuning = centOffsets['e'][-2]
-            return;
-          case 12: //Bb
-            note.tuning = centOffsets['b'][-2]
-            return;
+        case 6: //Fb
+          note.tuning = getCentOffset ('f', -sharpValue);
+          return;
+        case 7: //Cb
+          note.tuning = getCentOffset ('c', -sharpValue);
+          return;
+        case 8: //Gb
+          note.tuning = getCentOffset ('g', -sharpValue);
+          return;
+        case 9: //Db
+          note.tuning = getCentOffset ('d', -sharpValue);
+          return;
+        case 10: //Ab
+          note.tuning = getCentOffset ('a', -sharpValue);
+          return;
+        case 11: //Eb
+          note.tuning = getCentOffset ('e', -sharpValue);
+          return;
+        case 12: //Bb
+          note.tuning = getCentOffset ('b', -sharpValue);
+          return;
 
-          case 20: //F#
-            note.tuning = centOffsets['f'][2]
-            return;
-          case 21: //C#
-            note.tuning = centOffsets['c'][2]
-            return;
-          case 22: //G#
-            note.tuning = centOffsets['g'][2]
-            return;
-          case 23: //D#
-            note.tuning = centOffsets['d'][2]
-            return;
-          case 24: //A#
-            note.tuning = centOffsets['a'][2]
-            return;
-          case 25: //E#
-            note.tuning = centOffsets['e'][2]
-            return;
-          case 26: //B#
-            note.tuning = centOffsets['b'][2]
-            return;
+        case 20: //F#
+          note.tuning = getCentOffset ('f', sharpValue);
+          return;
+        case 21: //C#
+          note.tuning = getCentOffset ('c', sharpValue);
+          return;
+        case 22: //G#
+          note.tuning = getCentOffset ('g', sharpValue);
+          return;
+        case 23: //D#
+          note.tuning = getCentOffset ('d', sharpValue);
+          return;
+        case 24: //A#
+          note.tuning = getCentOffset ('a', sharpValue);
+          return;
+        case 25: //E#
+          note.tuning = getCentOffset ('e', sharpValue);
+          return;
+        case 26: //B#
+          note.tuning = getCentOffset ('b', sharpValue);
+          return;
 
-          case 27: //Fx
-            note.tuning = centOffsets['f'][4]
-            return;
-          case 28: //Cx
-            note.tuning = centOffsets['c'][4]
-            return;
-          case 29: //Gx
-            note.tuning = centOffsets['g'][4]
-            return;
-          case 30: //Dx
-            note.tuning = centOffsets['d'][4]
-            return;
-          case 31: //Ax
-            note.tuning = centOffsets['a'][4]
-            return;
-          case 32: //Ex
-            note.tuning = centOffsets['e'][4]
-            return;
-          case 33: //Bx
-            note.tuning = centOffsets['b'][4]
-            return;
-          }
+        case 27: //Fx
+          note.tuning = getCentOffset ('f', 2*sharpValue);
+          return;
+        case 28: //Cx
+          note.tuning = getCentOffset ('c', 2*sharpValue);
+          return;
+        case 29: //Gx
+          note.tuning = getCentOffset ('g', 2*sharpValue);
+          return;
+        case 30: //Dx
+          note.tuning = getCentOffset ('d', 2*sharpValue);
+          return;
+        case 31: //Ax
+          note.tuning = getCentOffset ('a', 2*sharpValue);
+          return;
+        case 32: //Ex
+          note.tuning = getCentOffset ('e', 2*sharpValue);
+          return;
+        case 33: //Bx
+          note.tuning = getCentOffset ('b', 2*sharpValue);
+          return;
         }
 
         // in the event that tpc is considered natural by
@@ -541,33 +593,133 @@ MuseScore {
 
         //NOTE: Only special accidentals need to be remembered.
         var accOffset = null;
-
         if (note.accidental) {
           console.log('Note: ' + baseNote + ', Line: ' + note.line +
                       ', Special Accidental: ' + note.accidentalType);
-          if (note.accidentalType == Accidental.FLAT2_ARROW_DOWN)
-            accOffset = -5;
-          else if (note.accidentalType == Accidental.FLAT_ARROW_DOWN ||
-                   note.accidentalType == Accidental.FLAT2_ARROW_UP)
-            accOffset = -3;
-          else if (note.accidentalType == Accidental.NATURAL_ARROW_DOWN ||
-                   note.accidentalType == Accidental.FLAT_ARROW_UP)
-            accOffset = -1;
-          else if (note.accidentalType == Accidental.NATURAL)
+          switch(note.accidentalType) {
+          case Accidental.NATURAL:
             accOffset = 0;
-          else if (note.accidentalType == Accidental.NATURAL_ARROW_UP ||
-                   note.accidentalType == Accidental.SHARP_ARROW_DOWN)
-            accOffset = 1;
-          else if (note.accidentalType == Accidental.SHARP_ARROW_UP ||
-                   note.accidentalType == Accidental.SHARP2_ARROW_DOWN)
+            break;
+          case Accidental.SHARP_SLASH4:
+            accOffset = 3*sharpValue/2;
+            break;
+          case Accidental.SHARP_SLASH:
+            accOffset = sharpValue/2;
+            break;
+          case Accidental.MIRRORED_FLAT:
+            accOffset = -sharpValue/2;
+            break;
+          case Accidental.MIRRORED_FLAT2:
+            accOffset = -3*sharpValue/2;
+            break;
+          case Accidental.SHARP2_THREE_ARROWS_UP:
+            accOffset = 2*sharpValue + 3;
+            break;
+          case Accidental.SHARP2_TWO_ARROWS_UP:
+            accOffset = 2*sharpValue + 2;
+            break;
+          case Accidental.SHARP2_ARROW_UP:
+          case Accidental.SHARP2_ONE_ARROW_UP:
+            accOffset = 2*sharpValue + 1;
+            break;
+          case Accidental.SHARP2_ARROW_DOWN:
+          case Accidental.SHARP2_ONE_ARROW_DOWN:
+            accOffset = 2*sharpValue - 1;
+            break;
+          case Accidental.SHARP2_TWO_ARROWS_DOWN:
+            accOffset = 2*sharpValue - 2;
+            break;
+          case Accidental.SHARP2_THREE_ARROWS_DOWN:
+            accOffset = 2*sharpValue - 3;
+            break;
+          case Accidental.SHARP_THREE_ARROWS_UP:
+            accOffset = sharpValue + 3;
+            break;
+          case Accidental.SHARP_TWO_ARROWS_UP:
+            accOffset = sharpValue + 2;
+            break;
+          case Accidental.SHARP_ARROW_UP:
+          case Accidental.SHARP_ONE_ARROW_UP:
+            accOffset = sharpValue + 1;
+            break;
+          case Accidental.SHARP_ARROW_DOWN:
+          case Accidental.SHARP_ONE_ARROW_DOWN:
+            accOffset = sharpValue - 1;
+            break;
+          case Accidental.SHARP_TWO_ARROWS_DOWN:
+            accOffset = sharpValue - 2;
+            break;
+          case Accidental.SHARP_THREE_ARROWS_DOWN:
+            accOffset = sharpValue - 3;
+            break;
+          case Accidental.NATURAL_THREE_ARROWS_UP:
             accOffset = 3;
-          else if (note.accidentalType == Accidental.SHARP2_ARROW_UP)
-            accOffset = 5;
+            break;
+          case Accidental.NATURAL_TWO_ARROWS_UP:
+            accOffset = 2;
+            break;
+          case Accidental.NATURAL_ARROW_UP:
+          case Accidental.NATURAL_ONE_ARROW_UP:
+            accOffset = 1;
+            break;
+          case Accidental.NATURAL_ARROW_DOWN:
+          case Accidental.NATURAL_ONE_ARROW_DOWN:
+            accOffset = -1;
+            break;
+          case Accidental.NATURAL_TWO_ARROWS_DOWN:
+            accOffset = -2;
+            break;
+          case Accidental.NATURAL_THREE_ARROWS_DOWN:
+            accOffset = -3;
+            break;
+          case Accidental.FLAT_THREE_ARROWS_UP:
+            accOffset = -sharpValue + 3;
+            break;
+          case Accidental.FLAT_TWO_ARROWS_UP:
+            accOffset = -sharpValue + 2;
+            break;
+          case Accidental.FLAT_ARROW_UP:
+          case Accidental.FLAT_ONE_ARROW_UP:
+            accOffset = -sharpValue + 1;
+            break;
+          case Accidental.FLAT_ARROW_DOWN:
+          case Accidental.FLAT_ONE_ARROW_DOWN:
+            accOffset = -sharpValue - 1;
+            break;
+          case Accidental.FLAT_TWO_ARROWS_DOWN:
+            accOffset = -sharpValue - 2;
+            break;
+          case Accidental.FLAT_THREE_ARROWS_DOWN:
+            accOffset = -sharpValue - 3;
+            break;
+          case Accidental.FLAT2_THREE_ARROWS_UP:
+            accOffset = -2*sharpValue + 3;
+            break;
+          case Accidental.FLAT2_TWO_ARROWS_UP:
+            accOffset = -2*sharpValue + 2;
+            break;
+          case Accidental.FLAT2_ARROW_UP:
+          case Accidental.FLAT2_ONE_ARROW_UP:
+            accOffset = -2*sharpValue + 1;
+            break;
+          case Accidental.FLAT2_ARROW_DOWN:
+          case Accidental.FLAT2_ONE_ARROW_DOWN:
+            accOffset = -2*sharpValue - 1;
+            break;
+          case Accidental.FLAT2_TWO_ARROWS_DOWN:
+            accOffset = -2*sharpValue - 2;
+            break;
+          case Accidental.FLAT2_THREE_ARROWS_DOWN:
+            accOffset = -2*sharpValue - 3;
+            break;
+          }
+
 
           if (accOffset !== null) {
             registerAccidental(note.line, segment.tick, accOffset, parms);
           }
         }
+
         // Check for prev accidentals first, will be null if not present
         var stepsFromBaseNote = accOffset !== null ? accOffset : getAccidental(note.line, segment.tick, parms);
         if (stepsFromBaseNote === null) {
@@ -575,9 +727,8 @@ MuseScore {
           stepsFromBaseNote = parms.currKeySig[baseNote];
         }
 
-        console.log("Base Note: " + baseNote + ", diesis: " + stepsFromBaseNote);
-        if (!scanOnly)
-          note.tuning = centOffsets[baseNote][stepsFromBaseNote];
+        console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
+        note.tuning = getCentOffset(baseNote, stepsFromBaseNote, parms.currEdo, parms.currA4Freq);
         return;
       }
 
