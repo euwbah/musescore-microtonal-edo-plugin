@@ -2,6 +2,8 @@
 
 ### 2.1.1
 - Fixed formatted StaffText/SystemText causing tuning system parsing to fail
+- Fixed certain accidentals fail to reflect in tuning plugin
+  - Caused by unexpected coercion of accidentalType to string.
 
 ### 2.1.0
 - Implement generic n-EDO plugin for flat-2 to sharp-8 EDOs. (Most EDOs from 5 to 72 are covered, except 59, 66, and 71)

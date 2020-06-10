@@ -609,7 +609,7 @@ MuseScore {
         if (note.accidental) {
           console.log('Note: ' + baseNote + ', Line: ' + note.line +
                       ', Special Accidental: ' + note.accidentalType);
-          switch(note.accidentalType) {
+          switch(0 + note.accidentalType) {
           case Accidental.NATURAL:
             accOffset = 0;
             break;
@@ -726,7 +726,6 @@ MuseScore {
             accOffset = -2*sharpValue - 3;
             break;
           }
-
 
           if (accOffset !== null) {
             registerAccidental(note.line, segment.tick, accOffset, parms);
