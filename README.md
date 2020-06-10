@@ -6,7 +6,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 [Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
 
-<a href="https://ibb.co/nCtJ0tj"><img src="https://i.ibb.co/nCtJ0tj/microtonal-plugin-screenshot.png" alt="microtonal-plugin-screenshot" border="0"></a>
+![screenshot](images/microtonal-plugin-screenshot.png)
 
 ## Features
 - Retuning note cent offsets based on edo of choice
