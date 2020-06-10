@@ -6,6 +6,8 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 [Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
 
+![Screenshot](https://ibb.co/nCtJ0tj)
+
 ## Features
 - Retuning note cent offsets based on edo of choice
   - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for
