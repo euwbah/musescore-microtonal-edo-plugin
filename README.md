@@ -1,52 +1,37 @@
-# 31/22 EDO Retuner plugin for Musescore 3
+# n-EDO Retuner plugin for Musescore 3
 
-Musescore plugin to retune and pitch up notes in [31 edo](https://en.wikipedia.org/wiki/31_equal_temperament)
-and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
+Musescore plugin to retune and pitch up/down notes in any EDO ranked from flat-2 to sharp-8.
+(Supports all EDOs from 5-72 except 59, 66, and 71. Also supports larger edos up to 117 that
+are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up to sharp-8)
 
+[Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
 
+## Features
+- Retuning note cent offsets based on edo of choice
+  - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for
+    evaluating cent offsets for any EDO.
+- Support for key signatures via [Key signature annotations](#key-signatures-support)
+- Transposing individual notes / selections by 1 EDO step, managing accidental neutralization and corrections
+- Tuning system, key signatures, and A4 tuning frequency can be changed mid score, and different staves
+  may be in different tunings, key signatures, and A4 reference pitches at the same time.
 
-## Usage
+## Instructions
 
-- Download the QML files for the tuning/notation system of choice and put them in the plugins folder.
+Download
+<a href="https://raw.githubusercontent.com/euwbah/musescore-n-tet-plugins/master/tune%20n-edo.qml" download>
+<code>tune n-edo.qml</code></a>,
+`pitch up.qml`,
+and `pitch down.qml`.
 
-- [Install & Activate the plugins](https://musescore.org/en/handbook/plugins#windows)
+[Install & Activate the plugins](https://musescore.org/en/handbook/plugins#windows)
 
-- This plugin current supports the following notation/tuning systems:
-  - [31 EDO (ups & downs)](#31-edo-ups-and-downs)
-  - [31 EDO (quarter-tone accidentals)](#31-edo-quarter-tone-accidentals-for-14-comma-meantone-approximation)
-  - [22 EDO (ups & downs, superpyth best fifth)](#31-edo-quarter-tone-accidentals-for-14-comma-meantone-approximation)
+- `tune n-edo.qml`: Tunes selected phrase (selection made with shift-click) / whole score (if nothing selected)
+- `pitch up.qml`: Transposes up selected phrase (shift-click) / individually selected notes (alt-click noteheads).
+- `pitch down.qml`: Transposes down selected phrase / individually selected notes.
 
-- The microtonal accidentals this plugin uses are Gould Arrow Quartertone accidentals for ups and downs arrow notation
-  and Stein-Zimmermann quartertone accidentals for 31 EDO 1/4-comma meantone quartertone accidental notation.
-  - The Gould Arrow accidentals are not to be confused with the similar looking Helmholtz-Ellis Just Intonation accidentals
-    that have thinner and smaller arrows (![Helmholtz syntonic up](images/helmholtz.png)) than the
-    Gould accidentals (![Up](images/u.png)). If you hover over the accidental in the palatte and it says 'syntonic comma' in the name,
-    **that is the wrong accidental**.
-  - Each up/down arrow represents an offset of 1 edostep (the smallest interval in the tuning system) from the
-    default nominals (natural notes) and sharps/flats.
-  - A sharp is tuned as stacking 7 best fifths up. (**C** G D A E B F# **C#**)
-    - E.g.: a best fifth in 31 edo is 18 steps of 31 edo. 7 best fifths = 7 * 18 = 126 steps mod 31 = 2 steps disregarding octaves.\
-      Hence in 31 edo, C# is 2 steps above C. C double-sharp is 4 steps above C.
-    - A best fifth in 22 edo is 13 steps. (7 * 13) mod 22 = 3 steps.\
-      In 22 edo, C# is 3 steps above C.
-  - A flat displaces the note as many steps as a sharp in the opposite direction.
-  - For more information on this notation system, you may read this handbook:\
-    [NOTATION GUIDE FOR EDOS 5-72](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf)
-
-- For each tuning/notation system, there will be 3 different plugins that each performs:
-  - Tuning selected phrase (shift-click) / whole score (if nothing selected)
-  - Transposing up by 1 EDO step & tuning selected phrase (shift-click) / individually selected notes (alt-click noteheads).
-  - Transposing down by 1 EDO step & tuning selected phrase / individually selected notes.
-
-- **[Key signatures annotations](#key-signatures-support) must be denoted for ALL key signatures for the plugin to work properly**
-
-- Plugins for different tuning systems can be installed and activated at the same time.
-  - **The plugins only take effect when they are explicitly run via the menu bar
-      or an assigned keyboard shortcut.**
-
-- To make plugin usage more ergonomic, it is recommended to assign the following keyboard shortcuts to the plugins:
+To make plugin usage more ergonomic, it is recommended to assign the following keyboard shortcuts to the plugins:
   - Tuning: alt + R
-  - Transpose pitch up/down: up/down arrow keys
+  - Pitch up/down: up/down arrow keys
     - The plugin is intended to replace the function of up/down arrow key shortcuts in MuseScore (including
       repositioning other elements)
     - Before assigning the transposing plugins the up/down arrow keys shortcut, you will have to clear the following
@@ -56,111 +41,142 @@ and [22 edo](https://en.wikipedia.org/wiki/22_equal_temperament)
       - _Select string above (TAB only)_
       - _Select string below (TAB only)_
 
+### Selecting the tuning system
+
+The plugin makes use of staff text (Ctrl-T) and system text (Ctrl-Shift-T) to configure which tuning system is used.
+
+Using staff text will apply the tuning system to only the staff that it is on, and using system text will
+apply the tuning system to the all the staves. Staff/system text will only affect the current and subsequent bars
+of music, but not the bars before, thus, it is possible to change the tuning system mid-piece, and have different
+instruments in different tuning systems concurrently.
+
+It is possible, but not recommended, to change the tuning system halfway through a bar,
+as accidentals may carry over and be applied in unexpected ways.
+
+There are a 3 different types of tuning system information text, each one has to be in its own separate staff/system text:
+- **EDO selector** format: `x edo`
+  - Where `x` is the number of equally-spaced notes in the octave.
+  - Spaces and capitalization are optional. Non-integer edos are not currently supported.
+  - When the EDO is changed, any prior key signature must be redeclared as the step offsets of the key signatures would differ
+    and has to be updated.
+- **A4 frequency selector** format: `a4: x hz`
+  - Where `x` is the frequency of the natural nominal tuning note A4. Other notes will be tuned to that as reference.
+  - Spaces and capitalization are optional. Decimals in frequency supported.
+- **Key signature** format: `.c.d.e.f.g.a.b`
+  - Where `c` thru `b` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C to B respectively.
+  - All 7 dots must be present, if there are no accidentals on a particular note, leave the space after the dot empty or use any placeholder like '0' or 'n'.
+  - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.
+
+### Notation system
+
+The plugin follows notation standards as per [NOTATION GUIDE FOR EDOS 5-72](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf),
+which is a generalized system for notating any EDO.
+
+Here is a brief summary of the contents of the document:
+
+#### Tuning of nominals C D E F G A B
+
+In this system, the nominals F C G D A E B are tuned according to a chain of **best fifths**,
+which is the best representation of the perfect 3:2 just fifth that the EDO has to offer.
+The exact pitches of the notes are calculated based on the frequency of the note A4, which is defined by the
+A4 frequency selector, or 440Hz by default.
+
+<details>
+  <summary><em> How to calculate an EDO's best fifth? </em></summary>
+
+  The number of steps a fifth is in x-edo = `round(x * log2(3/2))`
+
+  `3/2` represents the frequency ratio of a fifth in just intonation.
+  `log(3/2)` represents how many octaves are there in a fifth (approx 0.584962)
+  `x * log(3/2)` represents how many steps of x-edo are there in a fifth
+  `round()` rounds it up/down to the nearest whole edostep.
+
+</details>
+
+The best fifth in 12 edo is 7 steps. Thus, the distance between F and C, C and G, G and D, etc.. is 7 steps of 12 edo.
+
+The best fifth in 22 edo is 13 steps. Thus, the distance between C and G, etc.. is 13 steps of 22 edo.
+
+#### Tuning of regular pythagorean accidentals
+
+![bb](images/bb.png) ![b](images/b.png) ![s](images/s.png) ![x](images/x.png)
+
+The standard accidentals Double Flat (`bb`), Flat (`b`), Sharp (`#`), Double Sharp (`x`) are based on
+the circle of fifths.
+
+To give an example in 12-edo, going 7 fifths up from C4 yields C4-G4-D5-A5-E6-B6-F#7-C#8.
+A best fifth in 12-edo is 7 steps of 12 edo.
+Going up 7 fifths in 12-edo yields a total of 7*7 = 49 steps (which brings C4 to C#8)
+Going down 4 octaves to bring C#8 down to C#4 reduces the steps by 4 * 12 = 48 steps.
+Thus, a sharp symbol in 12-edo is defined as going up 49 steps, then down 48 steps, yielding a +1 step difference.
+
+The number of edosteps a sharp symbol raises the pitch by is known as an EDO's **sharpness** value.\
+Thus, the sharpness of 12-edo is 1, which classifies it as a **sharp-1** EDO.
+Consequently, a double sharp raises the pitch by 2 times of the sharpness value, thus 2 steps.
+A flat lowers the pitch by the sharpness value, thus lowering it by 1 step.
+A double flat lowers the pitch by 2 times of the sharpness value, thus lowering it by 2 steps.
+
+To give another example in 23-edo:
+A best fifth in 23-edo is 13 edosteps.
+Going up 7 fifths (From C4 to C#8) = going up 7 * 13 = 91 steps.
+Going down 4 octaves (From C#8 to C#4) = going down 4 * 23 = 92 steps.
+Thus, a sharp symbol in 23-edo is defined as going up 91 steps and down 92 steps, yielding a -1 step difference.
+A sharp symbol in 23-edo, surprisingly, __lowers__ the pitch by 1 step, instead of raising it.
+Consequently, the flat symbol raises the pitch by 1 step.
+The sharpness value of 23-edo is -1, which classifies it as a **flat-1** EDO.
+
+Note: in EDOs such as 7, 14 and 21, the sharp and flats do not raise nor lower the pitch, and thus
+they are known as **perfect** EDOs, i.e. **Sharp-0**.
+
+[Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
+
+The plugin only supports up to 2 flats and sharps. Triple flats and sharps and not supported as
+MuseScore does not provide these accidentals.
+
+#### Tuning of up/down arrows
+
+![sv3](images/sv3.png) ![u2](images/u2.png) ![bu1](images/bu1.png)
+
+Arrows on the natural, sharp/flat, double sharp/flat accidentals offsets the pitch of the note by
+the same number of steps of the EDO as there are arrows on the accidental.
+
+An upwards arrow always raises the pitch by 1 step, regardless of whether the sharp symbol raises or lowers the pitch of the
+note. Vice versa, a downwards arrow always lowers the pitch by 1 step.
+
+Thus the interval between C and C^ is +1 step. And so is the interval between C# and C#^, Cbv and Cb, etc..
+
+A maximum of 3 arrows are allowed on each accidental, as MuseScore currently does not provide accidentals
+with more than 3 arrows. Due to these limitations, and with the help of quartertone accidentals, the plugin
+can only handle EDOs with a sharpness rating of up to 8.
+
+[Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
+
+The up/down arrow accidentals this plugin uses are Helmholtz-Ellis Just Intonation accidentals.
+Gould arrow quartertone symbols look very similar to the single up/down arrow Helmholtz-Ellis accidentals,
+and may be used interchangeably, although the plugin defaults to Helmholtz-Ellis when transposing.
+To differentiate the two, Gould arrow symbols appear slightly larger than the Helmholtz-Ellis ones.
+
+#### Tuning of quartertone (semisharp/semiflat) accidentals
+
+![db](images/db.png) ![d](images/d.png) ![+](images/+.png) ![s+](images/s+.png)
+
+Stein-Zimmermann quartertone accidentals represent an offset of half or one-and-a-half times of the standard sharpness
+of the accidental. They only work when the EDO has an even-number sharpness rating which can be divided
+by 2 evenly.
+
+For example, in 31-edo, where the sharpness rating is sharp-2:
+- ![db](images/db.png) lowers the pitch by 1.5 x 2 = -3 steps
+- ![d](images/d.png) lowers the pitch by 0.5 x 2 = -1 step
+- ![+](images/+.png) raises the pitch by 0.5 x 2 = +1 step
+- ![s+](images/s+.png) raises the pitch by 1.5 x 2 = +3 steps
+
+
 --------
 
-## Supported Tuning Systems
 
-### 31 EDO (Ups and Downs)
+## Key signatures
 
-> Plugin files:\
-> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET.qml \
-> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET.qml \
-> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET.qml \
->
-> A4 = 440hz\
-> Nominals: C D E F G A B (C)\
-> Scale steps: LLsLLLs\
-> L: 5 steps\
-> s: 3 steps\
-> sharp-2
-
-| Diesis steps | Accidental |
-| ---: | :----- |
-| -5  | ![Double flat down](images/bbd.png) |
-| -4  | ![Double flat](images/bb.png)  |
-| -3  | ![Flat down](images/bd.png) or ![Double flat up](images/bbu.png) |
-| -2  | ![Flat](images/b.png)  |
-| -1  | ![Down](images/d.png) or ![Flat up](images/bu.png) |
-| 0   | ![Natural](images/n.png) |
-| +1  | ![Up](images/u.png) or ![Sharp down](images/sd.png) |
-| +2  | ![Sharp](images/s.png)  |
-| +3  | ![Sharp up](images/su.png) or ![Double sharp down](images/xv.png) |
-| +4  | ![Double sharp](images/x.png)  |
-| +5  | ![Double sharp up](images/xu.png)  |
-
-### 31 EDO (quarter-tone accidentals for 1/4-comma meantone approximation)
-
-> Plugin files:
-> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/31-TET-Meantone.qml \
-> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-31-TET-Meantone.qml \
-> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-31-TET-Meantone.qml \
->
-> A4 = 440hz\
-> Nominals: C D E F G A B (C)\
-> Scale steps: LLsLLLs\
-> L: 5 steps\
-> s: 3 steps\
-> sharp-2
-
-| Diesis steps | Accidental |
-| ---: | :----- |
-| -4  | ![Double flat](images/bb.png) |
-| -3  | ![Sesqui flat](images/db.png)  |
-| -2  | ![Flat](images/b.png)  |
-| -1  | ![Down](images/d-quarter.png) |
-| 0   | ![Natural](images/n.png) |
-| +1  | ![Up](images/+.png) |
-| +2  | ![Sharp](images/s.png)  |
-| +3  | ![Sesqui sharp](images/ss.png)  |
-| +4  | ![Double sharp](images/x.png)  |
-
-### 22 EDO (Superpythagorean notation)
-
-> Plugin files:
-> tuning: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/22-TET.qml \
-> transpose up: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Up-22-TET.qml \
-> transpose down: https://github.com/euwbah/musescore-n-tet-plugins/blob/master/Transpose-Down-22-TET.qml \
->
-> A4 = 440hz\
-> Nominals: C D E F G A B (C)\
-> Scale steps: LLsLLLs\
-> L: 4 steps\
-> s: 1 steps\
-> sharp-3
-
-**WARNING**: As MuseScore limits the maximum pitch shift on a note to 200 cents, most 4 step
-accidentals, and all 5-6 step accidentals will not fit within a 200 cent offset
-and therefore will sound several semitones out of pitch when the note is selected
-and sounded in editing mode.\
-However, when playing back a score (via the play button / spacebar), the note will sound in the correct pitch.
-
-| Diesis steps | Accidental |
-| ---: | :----- |
-| -6  | ![Double flat](images/bb.png) |
-| -5  | ![Double flat up](images/bbu.png) |
-| -4  | ![Flat down](images/bd.png) |
-| -3  | ![Flat](images/b.png)  |
-| -2  | ![Flat up](images/bu.png)  |
-| -1  | ![Down](images/d.png) |
-| 0   | ![Natural](images/n.png) |
-| +1  | ![Up](images/u.png) |
-| +2  | ![Sharp down](images/sd.png)  |
-| +3  | ![Sharp](images/s.png) |
-| +4  | ![Sharp up](images/su.png) |
-| +5  | ![Double sharp down](images/xd.png) |
-| +6  | ![Double sharp](images/x.png) |
-
-### Key signatures support
-
-MuseScore doesn't recognize accidentals in
-[custom key signatures](https://musescore.org/en/handbook/key-signatures#custom-key-signatures),
-and MuseScore plugins are not yet able to detect the contents of a key signature element.
-
-As such, if you want to create a microtonal key signature and have it affect the
-playback, you have to explicitly declare the key signature using
-system/staff text annotations containing accidental code.
-
-Also, in order for the up/down step transposition feature to work properly,
+In order for the up/down step transposition feature to work properly,
 **all** key signatures, even standard ones, must be accompanied with system/staff
 text key signature annotations.
 
@@ -193,31 +209,52 @@ you can also choose to put nothing between the dots)
 > declared custom key signature, behaving exactly the same way a key signature
 > would.
 
+![Staff text custom key sig](images/key-sig-example.png)
+
 #### Accidental Code
 
 | Accidental | Textual representation |
 | ----: | :---- |
-| ![Double flat down](images/bbd.png) | `bbv` |
-| ![Double flat](images/bb.png) | `bb` |
-| ![Double flat up](images/bbu.png) | `bb^` |
-| ![Sesqui flat](images/db.png) | `db`  |
-| ![Flat down](images/bd.png) | `bv`  |
-| ![Flat](images/b.png)   | `b`  |
-| ![Flat up](images/bu.png)   | `b^` |
-| ![Down](images/d.png)   | `v` |
-| ![Down](images/d-quarter.png) | `d` |
-| ![Natural](images/n.png) | Leave blank / any other character  |
-| ![Up](images/+.png) | `+` |
-| ![Up](images/u.png) | `^` |
-| ![Sharp down](images/sd.png) | `#v` |
-| ![Sharp](images/s.png) | `#`  |
-| ![Sharp up](images/su.png) | `#^`  |
-| ![Sesqui sharp](images/ss.png) | `#+` |
-| ![Double sharp down](images/xd.png) | `xv` |
-| ![Double sharp](images/x.png) | `x` |
-| ![Double sharp up](images/xu.png) | `x^` |
+| ![Double flat down 3](images/bbv3.png)  | `bbv3` |
+| ![Double flat down 2](images/bbv2.png)  | `bbv2` |
+| ![Double flat down](images/bbv1.png)    | `bbv` or `bbv1` |
+| ![Double flat](images/bb.png)           | `bb`   |
+| ![Double flat up](images/bbu1.png)      | `bb^` |
+| ![Double flat up 2](images/bbu2.png)    | `bb^2` |
+| ![Double flat up 3](images/bbu3.png)    | `bb^3` |
+| ![Sesqui flat](images/db.png)           | `db` or `bd` |
+| ![Flat down 3](images/bv3.png)          | `bv3`  |
+| ![Flat down 2](images/bv2.png)          | `bv2`  |
+| ![Flat down](images/bv1.png)            | `bv` or `bv1`  |
+| ![Flat](images/b.png)                   | `b`  |
+| ![Flat up](images/bu1.png)              | `b^3` |
+| ![Flat up 2](images/bu2.png)            | `b^2` |
+| ![Flat up 3](images/bu3.png)            | `b^` or `b^1` |
+| ![Down 3](images/v3.png)                | `v3` |
+| ![Down 2](images/v2.png)                | `v2` |
+| ![Down](images/v.png)                   | `v` or `v1` |
+| ![Quarter flat](images/d.png)           | `d` |
+| ![Natural](images/n.png)                | Leave blank / any other character  |
+| ![Quarter sharp](images/+.png)          | `+` |
+| ![Up](images/u1.png)                    | `^` or `^1` |
+| ![Up2](images/u2.png)                   | `^2` |
+| ![Up3](images/u3.png)                   | `^3` |
+| ![Sharp down3](images/sv3.png)          | `#v3` |
+| ![Sharp down2](images/sv2.png)          | `#v2` |
+| ![Sharp down](images/sv1.png)           | `#v` or `#v1` |
+| ![Sharp](images/s.png)                  | `#`  |
+| ![Sharp up](images/su1.png)             | `#^` or `#^1`  |
+| ![Sharp up 2](images/su2.png)           | `#^2`  |
+| ![Sharp up 3](images/su3.png)           | `#^3`  |
+| ![Sesqui sharp](images/s+.png)          | `#+` or `+#` |
+| ![Double sharp down](images/xv3.png)    | `xv3` |
+| ![Double sharp down2](images/xv2.png)   | `xv2` |
+| ![Double sharp down3](images/xv1.png)   | `xv` or `xv1` |
+| ![Double sharp](images/x.png)           | `x` |
+| ![Double sharp up](images/xu1.png)      | `x^` or `x^1` |
+| ![Double sharp up 2](images/xu2.png)    | `x^2` |
+| ![Double sharp up 3](images/xu3.png)    | `x^3` |
 
-![Staff text custom key sig](images/key-sig-example.png)
 
 ## Known issues:
 
@@ -241,6 +278,24 @@ you can also choose to put nothing between the dots)
     2. For notes in the same chord, left to right, then bottom to top, as they appear in the score.
 
 -------------
+
+## Appendix A: List of supported EDOs according to sharpness classification.
+
+| Sharpness | EDOs |
+| -------:  | :------- |
+| flat-2 | 4, 11 |
+| flat-1 | 2, 9, 16, 23 |
+| perfect | 7, 14, 21, 28, 35 |
+| sharp-1 | 5, 12, 19, 26, 33, 40, 47 |
+| sharp-2 | 3, 10, 17, 24, 31, 38, 45, 52 |
+| sharp-3 | 1, 8, 15, 22, 29, 36, 43, 50, 57, 64 |
+| sharp-4 | 6, 13, 20, 27, 34, 41, 48, 55, 62, 69, 76 |
+| sharp-5 | 18, 25, 32, 39, 46, 53, 60, 67, 74, 81, 88 |
+| sharp-6 | 30, 37, 44, 51, 58, 65, 72, 79, 86, 93, 100 |
+| sharp-7 | 42, 49, 56, 63, 70, 77, 84, 91, 98, 105 |
+| sharp-8 | 54, 61, 68, 75, 82, 89, 96, 103, 110, 117 |
+
+---------------
 
 ## Note to self / developers:
 
@@ -341,26 +396,46 @@ determine if a prior note's accidental was implicit or explicit.\
 ##### Accidentals (used in project)
 
 ```
-Accidental.none                (no explicit accidental)
-Accidental.SHARP2_ARROW_UP     x^
-Accidental.SHARP2              x
-Accidental.SHARP2_ARROW_DOWN   xv
-Accidental.SHARP_SLASH4        #+
-Accidental.SHARP_ARROW_UP      #^
-Accidental.SHARP               #
-Accidental.SHARP_ARROW_DOWN    #v
-Accidental.SHARP_SLASH         +
-Accidental.NATURAL_ARROW_UP    ^
-Accidental.NATURAL             natural
-Accidental.NATURAL_ARROW_DOWN  v
-Accidental.MIRRORED_FLAT       d
-Accidental.FLAT_ARROW_UP       b^
-Accidental.FLAT                b
-Accidental.FLAT_ARROW_DOWN     bv
-Accidental.MIRRORED_FLAT2      db
-Accidental.FLAT2_ARROW_UP      bb^
-Accidental.FLAT2               bb
-Accidental.FLAT2_ARROW_DOWN    bbv
+Accidental.NONE                         (no explicit accidental)
+Accidental.DOUBLE_SHARP_ONE_ARROW_UP          x^
+Accidental.DOUBLE_SHARP_TWO_ARROWS_UP         x^2
+Accidental.DOUBLE_SHARP_THREE_ARROWS_UP       x^3
+Accidental.SHARP2                             x
+Accidental.DOUBLE_SHARP_ONE_ARROW_DOWN        xv
+Accidental.DOUBLE_SHARP_TWO_ARROWS_DOWN       xv2
+Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN     xv3
+Accidental.SHARP_SLASH4                       #+
+Accidental.SHARP_ONE_ARROW_UP                 #^
+Accidental.SHARP_TWO_ARROWS_UP                #^2
+Accidental.SHARP_THREE_ARROWS_UP              #^3
+Accidental.SHARP                              #
+Accidental.SHARP_ONE_ARROW_DOWN               #v
+Accidental.SHARP_TWO_ARROWS_DOWN              #v2
+Accidental.SHARP_THREE_ARROWS_DOWN            #v3
+Accidental.SHARP_SLASH                        +
+Accidental.NATURAL_ONE_ARROW_UP               ^
+Accidental.NATURAL_TWO_ARROWS_UP              ^2
+Accidental.NATURAL_THREE_ARROWS_UP            ^3
+Accidental.NATURAL                            natural
+Accidental.NATURAL_ONE_ARROW_DOWN             v
+Accidental.NATURAL_TWO_ARROWS_DOWN            v2
+Accidental.NATURAL_THREE_ARROWS_DOWN          v3
+Accidental.MIRRORED_FLAT                      d
+Accidental.FLAT_ONE_ARROW_UP                  b^
+Accidental.FLAT_TWO_ARROWS_UP                 b^2
+Accidental.FLAT_THREE_ARROWS_UP               b^3
+Accidental.FLAT                               b
+Accidental.FLAT_ONE_ARROW_DOWN                bv
+Accidental.FLAT_TWO_ARROWS_DOWN               bv2
+Accidental.FLAT_THREE_ARROWS_DOWN             bv3
+Accidental.MIRRORED_FLAT2                     db
+Accidental.DOUBLE_FLAT_ONE_ARROW_UP           bb^
+Accidental.DOUBLE_FLAT_TWO_ARROWS_UP          bb^2
+Accidental.DOUBLE_FLAT_THREE_ARROWS_UP        bb^3
+Accidental.FLAT2                              bb
+Accidental.DOUBLE_FLAT_ONE_ARROW_DOWN         bbv
+Accidental.DOUBLE_FLAT_TWO_ARROWS_DOWN        bbv2
+Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN      bbv3
 ```
 
 #### Custom object types in up/down step transposition plugins

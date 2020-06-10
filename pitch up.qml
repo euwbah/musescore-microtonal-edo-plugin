@@ -1,9 +1,21 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.3
 import QtQuick.Controls.Styles 1.3
+import QtQuick.Dialogs 1.1
 import MuseScore 3.0
 
+
 MuseScore {
+
+      MessageDialog {
+        id: invalidTuningSystemError
+        title: 'n-TET tuning plugin error:'
+        text: 'Tuning system not supported, it requires an accidental that cannot be represented.\nOnly EDOs ranked up to sharp-8 are supported. See the README for more info.'
+        onAccepted: {
+          Qt.quit();
+        }
+      }
+
       version:  "2.1.0"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
@@ -45,33 +57,37 @@ MuseScore {
         }
       }
 
-      function convertAccidentalToSteps(acc) {
-        return convertAccidentalTypeToSteps(convertAccidentalTextToAccidentalType(acc));
+      function convertAccidentalToSteps(acc, edo) {
+        return convertAccidentalTypeToSteps(convertAccidentalTextToAccidentalType(acc), edo);
       }
 
       function convertAccidentalTextToAccidentalType(accStr) {
         switch(accStr.trim()) {
         case 'bbv3':
-          return Accidental.FLAT2_THREE_ARROWS_DOWN;
+          return Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN;
         case 'bbv2':
-          return Accidental.FLAT2_TWO_ARROWS_DOWN;
+          return Accidental.DOUBLE_FLAT_TWO_ARROWS_DOWN;
         case 'bbv':
-          return Accidental.FLAT2_ONE_ARROW_DOWN;
+        case 'bbv1':
+          return Accidental.DOUBLE_FLAT_ONE_ARROW_DOWN;
         case 'bb':
           return Accidental.FLAT2;
         case 'bb^3':
-          return Accidental.FLAT2_THREE_ARROWS_UP;
+          return Accidental.DOUBLE_FLAT_THREE_ARROWS_UP;
         case 'bb^2':
-          return Accidental.FLAT2_TWO_ARROWS_UP;
+          return Accidental.DOUBLE_FLAT_TWO_ARROWS_UP;
         case 'bb^':
-          return Accidental.FLAT2_ONE_ARROW_UP;
+        case 'bb^1':
+          return Accidental.DOUBLE_FLAT_ONE_ARROW_UP;
         case 'db':
+        case 'bd':
           return Accidental.MIRRORED_FLAT2;
         case 'bv3':
           return Accidental.FLAT_THREE_ARROWS_DOWN;
         case 'bv2':
           return Accidental.FLAT_TWO_ARROWS_DOWN;
         case 'bv':
+        case 'bv1':
           return Accidental.FLAT_ONE_ARROW_DOWN;
         case 'b':
           return Accidental.FLAT;
@@ -80,12 +96,14 @@ MuseScore {
         case 'b^2':
           return Accidental.FLAT_TWO_ARROWS_UP;
         case 'b^':
+        case 'b^1':
           return Accidental.FLAT_ONE_ARROW_UP;
         case 'v3':
           return Accidental.NATURAL_THREE_ARROWS_DOWN;
         case 'v2':
           return Accidental.NATURAL_TWO_ARROWS_DOWN;
         case 'v':
+        case 'v1':
           return Accidental.NATURAL_ONE_ARROW_DOWN;
         case 'd':
           return Accidental.MIRRORED_FLAT;
@@ -96,12 +114,14 @@ MuseScore {
         case '^2':
           return Accidental.NATURAL_TWO_ARROWS_UP;
         case '^':
+        case '^1':
           return Accidental.NATURAL_ONE_ARROW_UP;
         case '#v3':
           return Accidental.SHARP_THREE_ARROWS_DOWN;
         case '#v2':
           return Accidental.SHARP_TWO_ARROWS_DOWN;
         case '#v':
+        case '#v1':
           return Accidental.SHARP_ONE_ARROW_DOWN;
         case '#':
           return Accidental.SHARP;
@@ -110,23 +130,27 @@ MuseScore {
         case '#^2':
           return Accidental.SHARP_TWO_ARROWS_UP;
         case '#^':
+        case '#^1':
           return Accidental.SHARP_ONE_ARROW_UP;
         case '#+':
+        case '+#':
           return Accidental.SHARP_SLASH4;
         case 'xv3':
-          return Accidental.SHARP2_THREE_ARROWS_DOWN;
+          return Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN;
         case 'xv2':
-          return Accidental.SHARP2_TWO_ARROWS_DOWN;
+          return Accidental.DOUBLE_SHARP_TWO_ARROWS_DOWN;
         case 'xv':
-          return Accidental.SHARP2_ONE_ARROW_DOWN;
+        case 'xv1':
+          return Accidental.DOUBLE_SHARP_ONE_ARROW_DOWN;
         case 'x':
           return Accidental.SHARP2;
         case 'x^3':
-          return Accidental.SHARP2_THREE_ARROWS_UP;
+          return Accidental.DOUBLE_SHARP_THREE_ARROWS_UP;
         case 'x^2':
-          return Accidental.SHARP2_TWO_ARROWS_UP;
+          return Accidental.DOUBLE_SHARP_TWO_ARROWS_UP;
         case 'x^':
-          return Accidental.SHARP2_ONE_ARROW_UP;
+        case 'x^1':
+          return Accidental.DOUBLE_SHARP_ONE_ARROW_UP;
         default:
           return Accidental.NATURAL;
         }
@@ -151,27 +175,27 @@ MuseScore {
         case Accidental.MIRRORED_FLAT2:
           accOffset = -3*sharpValue/2;
           break;
-        case Accidental.SHARP2_THREE_ARROWS_UP:
+        case Accidental.DOUBLE_SHARP_THREE_ARROWS_UP:
           accOffset = 2*sharpValue + 3;
           break;
-        case Accidental.SHARP2_TWO_ARROWS_UP:
+        case Accidental.DOUBLE_SHARP_TWO_ARROWS_UP:
           accOffset = 2*sharpValue + 2;
           break;
         case Accidental.SHARP2_ARROW_UP:
-        case Accidental.SHARP2_ONE_ARROW_UP:
+        case Accidental.DOUBLE_SHARP_ONE_ARROW_UP:
           accOffset = 2*sharpValue + 1;
           break;
         case Accidental.SHARP2:
           accOffset = 2 * sharpValue;
           break;
         case Accidental.SHARP2_ARROW_DOWN:
-        case Accidental.SHARP2_ONE_ARROW_DOWN:
+        case Accidental.DOUBLE_SHARP_ONE_ARROW_DOWN:
           accOffset = 2*sharpValue - 1;
           break;
-        case Accidental.SHARP2_TWO_ARROWS_DOWN:
+        case Accidental.DOUBLE_SHARP_TWO_ARROWS_DOWN:
           accOffset = 2*sharpValue - 2;
           break;
-        case Accidental.SHARP2_THREE_ARROWS_DOWN:
+        case Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN:
           accOffset = 2*sharpValue - 3;
           break;
         case Accidental.SHARP_THREE_ARROWS_UP:
@@ -243,27 +267,27 @@ MuseScore {
         case Accidental.FLAT_THREE_ARROWS_DOWN:
           accOffset = -sharpValue - 3;
           break;
-        case Accidental.FLAT2_THREE_ARROWS_UP:
+        case Accidental.DOUBLE_FLAT_THREE_ARROWS_UP:
           accOffset = -2*sharpValue + 3;
           break;
-        case Accidental.FLAT2_TWO_ARROWS_UP:
+        case Accidental.DOUBLE_FLAT_TWO_ARROWS_UP:
           accOffset = -2*sharpValue + 2;
           break;
         case Accidental.FLAT2_ARROW_UP:
-        case Accidental.FLAT2_ONE_ARROW_UP:
+        case Accidental.DOUBLE_FLAT_ONE_ARROW_UP:
           accOffset = -2*sharpValue + 1;
           break;
         case Accidental.FLAT2:
           accOffset = -2 * sharpValue;
           break;
         case Accidental.FLAT2_ARROW_DOWN:
-        case Accidental.FLAT2_ONE_ARROW_DOWN:
+        case Accidental.DOUBLE_FLAT_ONE_ARROW_DOWN:
           accOffset = -2*sharpValue - 1;
           break;
-        case Accidental.FLAT2_TWO_ARROWS_DOWN:
+        case Accidental.DOUBLE_FLAT_TWO_ARROWS_DOWN:
           accOffset = -2*sharpValue - 2;
           break;
-        case Accidental.FLAT2_THREE_ARROWS_DOWN:
+        case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           accOffset = -2*sharpValue - 3;
           break;
         }
@@ -276,8 +300,10 @@ MuseScore {
       //
       // If numSharps is 1.5, 0.5, -0.5, or -1.5, it represents a quarter tone accidental.
       //    the numArrows param will be ignored.
-      // Returns null if no such accidental exists.
+      //
+      // Returns null if no such accidental exists, and logs a warning in the console.
       function constructAccidental(numSharps, numArrows) {
+        console.log('called construct acc with sharps: ' + numSharps + ', arrows: ' + numArrows);
         if (numSharps == -1.5)
           return Accidental.MIRRORED_FLAT2;
         else if (numSharps == -0.5)
@@ -290,19 +316,19 @@ MuseScore {
         else if (numSharps == -2) {
           switch(numArrows) {
           case -3:
-            return Accidental.FLAT2_THREE_ARROWS_DOWN;
+            return Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN;
           case -2:
-            return Accidental.FLAT2_TWO_ARROWS_DOWN;
+            return Accidental.DOUBLE_FLAT_TWO_ARROWS_DOWN;
           case -1:
-            return Accidental.FLAT2_ONE_ARROW_DOWN;
+            return Accidental.DOUBLE_FLAT_ONE_ARROW_DOWN;
           case 0:
             return Accidental.FLAT2;
           case 1:
-            return Accidental.FLAT2_ONE_ARROW_UP;
+            return Accidental.DOUBLE_FLAT_ONE_ARROW_UP;
           case 2:
-            return Accidental.FLAT2_TWO_ARROWS_UP;
+            return Accidental.DOUBLE_FLAT_TWO_ARROWS_UP;
           case 3:
-            return Accidental.FLAT2_THREE_ARROWS_UP;
+            return Accidental.DOUBLE_FLAT_THREE_ARROWS_UP;
           }
         } else if (numSharps == -1) {
           switch(numArrows) {
@@ -358,22 +384,23 @@ MuseScore {
         } else if (numSharps == 2) {
           switch(numArrows) {
           case -3:
-            return Accidental.SHARP2_THREE_ARROWS_DOWN;
+            return Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN;
           case -2:
-            return Accidental.SHARP2_TWO_ARROWS_DOWN;
+            return Accidental.DOUBLE_SHARP_TWO_ARROWS_DOWN;
           case -1:
-            return Accidental.SHARP2_ONE_ARROW_DOWN;
+            return Accidental.DOUBLE_SHARP_ONE_ARROW_DOWN;
           case 0:
             return Accidental.SHARP2;
           case 1:
-            return Accidental.SHARP2_ONE_ARROW_UP;
+            return Accidental.DOUBLE_SHARP_ONE_ARROW_UP;
           case 2:
-            return Accidental.SHARP2_TWO_ARROWS_UP;
+            return Accidental.DOUBLE_SHARP_TWO_ARROWS_UP;
           case 3:
-            return Accidental.SHARP2_THREE_ARROWS_UP;
+            return Accidental.DOUBLE_SHARP_THREE_ARROWS_UP;
           }
         }
 
+        console.log('WARNING: unexpected to have no such accidental exist: sharps: ' + numSharps + ', arrows: ' + numArrows);
         return null; // if no such accidental exists.
       }
 
@@ -398,21 +425,21 @@ MuseScore {
         case Accidental.MIRRORED_FLAT2:
           return a(-1.5, 0);
 
-        case Accidental.SHARP2_THREE_ARROWS_UP:
+        case Accidental.DOUBLE_SHARP_THREE_ARROWS_UP:
           return a(2, 3);
-        case Accidental.SHARP2_TWO_ARROWS_UP:
+        case Accidental.DOUBLE_SHARP_TWO_ARROWS_UP:
           return a(2, 2);
         case Accidental.SHARP2_ARROW_UP:
-        case Accidental.SHARP2_ONE_ARROW_UP:
+        case Accidental.DOUBLE_SHARP_ONE_ARROW_UP:
           return a(2, 1);
         case Accidental.SHARP2:
           return a(2, 0);
         case Accidental.SHARP2_ARROW_DOWN:
-        case Accidental.SHARP2_ONE_ARROW_DOWN:
+        case Accidental.DOUBLE_SHARP_ONE_ARROW_DOWN:
           return a(2, -1);
-        case Accidental.SHARP2_TWO_ARROWS_DOWN:
+        case Accidental.DOUBLE_SHARP_TWO_ARROWS_DOWN:
           return a(2, -2);
-        case Accidental.SHARP2_THREE_ARROWS_DOWN:
+        case Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN:
           return a(2, -3);
 
         case Accidental.SHARP_THREE_ARROWS_UP:
@@ -466,21 +493,21 @@ MuseScore {
         case Accidental.FLAT_THREE_ARROWS_DOWN:
           return a(-1, -3);
 
-        case Accidental.FLAT2_THREE_ARROWS_UP:
+        case Accidental.DOUBLE_FLAT_THREE_ARROWS_UP:
           return a(-2, 3);
-        case Accidental.FLAT2_TWO_ARROWS_UP:
+        case Accidental.DOUBLE_FLAT_TWO_ARROWS_UP:
           return a(-2, 2);
         case Accidental.FLAT2_ARROW_UP:
-        case Accidental.FLAT2_ONE_ARROW_UP:
+        case Accidental.DOUBLE_FLAT_ONE_ARROW_UP:
           return a(-2, 1);
         case Accidental.FLAT2:
           return a(-2, 0);
         case Accidental.FLAT2_ARROW_DOWN:
-        case Accidental.FLAT2_ONE_ARROW_DOWN:
+        case Accidental.DOUBLE_FLAT_ONE_ARROW_DOWN:
           return a(-2, -1);
-        case Accidental.FLAT2_TWO_ARROWS_DOWN:
+        case Accidental.DOUBLE_FLAT_TWO_ARROWS_DOWN:
           return a(-2, -2);
-        case Accidental.FLAT2_THREE_ARROWS_DOWN:
+        case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           return a(-2, -3);
         }
       }
@@ -493,8 +520,8 @@ MuseScore {
       //
       // Whenever possible, use the LEAST number of arrows
       // If steps splits sharpValue exactly into half, use a quarter-tone accidental.
-      // If plugin moves upwards, prefer spelling using up arrows (default to the flatter enharmonic side)
-      // If plugin moves downwards, prefer spelling using down arrows (default to the sharper enharmonic side)
+      // If plugin moves upwards, prefer spelling using up arrows (default to the flatter enharmonic side, or sharper if super-flat)
+      // If plugin moves downwards, prefer spelling using down arrows (default to the sharper enharmonic side, or flatter if super-flat)
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertStepsToAccidentalType(steps, edo) {
@@ -510,8 +537,15 @@ MuseScore {
 
         if (Math.abs(arrowsOnFlatSide) == Math.abs(arrowsOnSharpSide)) {
           // <UP DOWN VARIANT CHECKPOINT>
-          useFlatSide = true; // set to false if the plugin moves downwards
+          useFlatSide = sharpValue >= 0; // invert equality if the plugin moves downwards
         }
+
+        // check if the num of sharps the algorithm decides to use is illegal.
+        // maximum of 2 sharps/flats allowed.
+        if (numSharpsFlatter > 2 || numSharpsFlatter < -2)
+          useFlatSide = false;
+        if (numSharpsSharper > 2 || numSharpsSharper < -2)
+          useFlatSide = true;
 
         // check if quartertone accidentals may be used.
         if (steps == -sharpValue * 3/2)
@@ -526,26 +560,45 @@ MuseScore {
         var numSharps = useFlatSide ? numSharpsFlatter : numSharpsSharper;
         var numArrows = useFlatSide ? arrowsOnFlatSide : arrowsOnSharpSide;
 
+        while (numSharps > 2) {
+          if (numArrows + sharpValue > 3 || numArrows + sharpValue < -3) {
+            invalidTuningSystemError.open();
+            return null;
+          } else {
+            numSharps--;
+            numArrows += sharpValue;
+          }
+        }
+        while (numSharps < -2) {
+          if (numArrows - sharpValue > 3 || numArrows - sharpValue < -3) {
+            invalidTuningSystemError.open();
+            return null;
+          } else {
+            numSharps++;
+            numArrows -= sharpValue;
+          }
+        }
+
         return constructAccidental(numSharps, numArrows);
       }
 
       function convertAccidentalTypeToName(accType) {
         switch(accType) {
-        case Accidental.FLAT2_THREE_ARROWS_DOWN:
+        case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           return 'bbv3';
-        case Accidental.FLAT2_TWO_ARROWS_DOWN:
+        case Accidental.DOUBLE_FLAT_TWO_ARROWS_DOWN:
           return 'bbv2';
         case Accidental.FLAT2_ARROW_DOWN:
-        case Accidental.FLAT2_ONE_ARROW_DOWN:
+        case Accidental.DOUBLE_FLAT_ONE_ARROW_DOWN:
           return 'bbv';
         case Accidental.FLAT2:
           return 'bb';
         case Accidental.FLAT2_ARROW_UP:
-        case Accidental.FLAT2_ONE_ARROW_UP:
+        case Accidental.DOUBLE_FLAT_ONE_ARROW_UP:
           return 'bb^';
-        case Accidental.FLAT2_TWO_ARROWS_UP:
+        case Accidental.DOUBLE_FLAT_TWO_ARROWS_UP:
           return 'bb^2';
-        case Accidental.FLAT2_THREE_ARROWS_UP:
+        case Accidental.DOUBLE_FLAT_THREE_ARROWS_UP:
           return 'bb^3';
         case Accidental.MIRRORED_FLAT2:
           return 'db';
@@ -603,21 +656,21 @@ MuseScore {
           return '#^';
         case Accidental.SHARP_SLASH4:
           return '#+';
-        case Accidental.SHARP2_THREE_ARROWS_DOWN:
+        case Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN:
           return 'xv3';
-        case Accidental.SHARP2_TWO_ARROWS_DOWN:
+        case Accidental.DOUBLE_SHARP_TWO_ARROWS_DOWN:
           return 'xv2';
         case Accidental.SHARP2_ARROW_DOWN:
-        case Accidental.SHARP2_ONE_ARROW_DOWN:
+        case Accidental.DOUBLE_SHARP_ONE_ARROW_DOWN:
           return 'xv';
         case Accidental.SHARP2:
           return 'x';
-        case Accidental.SHARP2_THREE_ARROWS_UP:
+        case Accidental.DOUBLE_SHARP_THREE_ARROWS_UP:
           return 'x^3';
-        case Accidental.SHARP2_TWO_ARROWS_UP:
+        case Accidental.DOUBLE_SHARP_TWO_ARROWS_UP:
           return 'x^2';
         case Accidental.SHARP2_ARROW_UP:
-        case Accidental.SHARP2_ONE_ARROW_UP:
+        case Accidental.DOUBLE_SHARP_ONE_ARROW_UP:
           return 'x^';
         case Accidental.NONE:
           return 'none';
@@ -628,8 +681,10 @@ MuseScore {
 
       // Returns the accidental after it has been transposed up (or down if the plugin is for transposing down)
       // will return null if there are no more accidentals that are higher (or lower) than acc.
+      //
       // acc: a value from the Accidental enum
-      // <UP DOWN VARIANT CHECKPOINT>
+      // edo: the tuning system
+      //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function getNextAccidental(acc, edo) {
         /*
@@ -640,7 +695,7 @@ MuseScore {
         3. if the next accidental (determined by + sharp value) matches the transposed note
           perfectly without any arrows, use that instead
 
-        4. if the new  transposed note matches exactly half or one and a half steps that a sharp/flat
+        4. if the new transposed note matches exactly half or one and a half steps that a sharp/flat
            would transpose it by, use a quarter tone accidental.
 
         5. once 3 arrows are exceeded, a different accidental has to be used
@@ -653,46 +708,88 @@ MuseScore {
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         var acc = deconstructAccidental(acc);
+
+        console.log('get next called: sharps: ' + acc.numSharps + ', arrows: ' + acc.numArrows);
+
         // handle quarter tone accidentals
         if (acc.numSharps % 1 !== 0) {
           if (acc.numSharps > 0) {
-            acc.numSharps = Math.floor(Math.abs(numSharps));
+            acc.numSharps = Math.floor(Math.abs(acc.numSharps));
             acc.numArrows = Math.round(sharpValue / 2);
           } else {
-            
+            acc.numSharps = -Math.floor(Math.abs(acc.numSharps));
+            acc.numArrows = -Math.round(sharpValue / 2);
           }
         }
 
-        switch(acc) {
-        case Accidental.FLAT2_ARROW_DOWN:
-          return Accidental.FLAT2;
-        case Accidental.FLAT2:
-          return Accidental.FLAT2_ARROW_UP;
-        case Accidental.FLAT_ARROW_DOWN:
-        case Accidental.FLAT2_ARROW_UP:
-          return Accidental.FLAT;
-        case Accidental.FLAT:
-          return Accidental.FLAT_ARROW_UP;
-        case Accidental.FLAT_ARROW_UP:
-        case Accidental.NATURAL_ARROW_DOWN:
-          return Accidental.NATURAL;
-        case Accidental.NATURAL:
-          return Accidental.NATURAL_ARROW_UP;
-        case Accidental.NATURAL_ARROW_UP:
-        case Accidental.SHARP_ARROW_DOWN:
-          return Accidental.SHARP;
-        case Accidental.SHARP:
-          return Accidental.SHARP_ARROW_UP;
-        case Accidental.SHARP_ARROW_UP:
-        case Accidental.SHARP2_ARROW_DOWN:
-          return Accidental.SHARP2;
-        case Accidental.SHARP2:
-          return Accidental.SHARP2_ARROW_UP;
-        case Accidental.SHARP2_ARROW_UP:
-          return null;
-        default:
-          return null;
+        // <UP DOWN VARIANT CHECKPOINT>
+        acc.numArrows ++; // NOTE: set to -- for downwards plugin
+
+        // Sharp-flat manipulation section.
+        // disregard this section if perfect EDO (sharp-0), as sharps and flats do nothing to the scale.
+        if (sharpValue != 0) {
+          // check if the number of arrows coincide with a standard accidental
+          // <UP DOWN VARIANT CHECKPOINT>: negate sharp value for downwards plugins
+          if (sharpValue > 0 && acc.numArrows == sharpValue && acc.numSharps < 2)
+            return constructAccidental(acc.numSharps + 1, 0);
+          // in a flat-n edo, pythagorically flatenning the note raises the pitch.
+          else if (sharpValue < 0 && acc.numArrows == -sharpValue && acc.numSharps > -2)
+            return constructAccidental(acc.numSharps - 1, 0);
+
+          // check if the number of arrows coincide with quarter tone accidentals
+          else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2)
+            return constructAccidental(acc.numSharps + 0.5, 0);
+          else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2)
+            return constructAccidental(acc.numSharps - 0.5, 0);
+          else if (acc.numArrows == 3/2 * sharpValue && acc.numSharps < 1)
+            return constructAccidental(acc.numSharps + 1.5, 0);
+          else if (acc.numArrows == -3/2 * sharpValue && acc.numSharps > -1)
+            return constructAccidental(acc.numSharps - 1.5, 0);
+
+          // check if number of arrows exceeds sharpValue in the direction of transposition,
+          // and thus can be better represented with a different base accidental.
+          // <UP DOWN VARIANT CHECKPOINT>
+          else if (sharpValue > 0 && acc.numArrows > 3 * sharpValue && acc.numSharps < 0)
+            return constructAccidental(acc.numSharps + 3, acc.numArrows - sharpValue * 3);
+          else if (sharpValue > 0 && acc.numArrows > 2 * sharpValue && acc.numSharps < 1)
+            return constructAccidental(acc.numSharps + 2, acc.numArrows - sharpValue * 2);
+          else if (sharpValue > 0 && acc.numArrows > sharpValue && acc.numSharps < 2)
+            return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
+          // for flat-n edos, flats raise the pitch instead.
+          else if (sharpValue < 0 && acc.numArrows > -3 * sharpValue && acc.numSharps > 0)
+            return constructAccidental(acc.numSharps - 3, acc.numArrows + sharpValue * 3);
+          else if (sharpValue < 0 && acc.numArrows > -2 * sharpValue && acc.numSharps > -1)
+            return constructAccidental(acc.numSharps - 2, acc.numArrows + sharpValue * 2);
+          else if (sharpValue < 0 && acc.numArrows > -sharpValue && acc.numSharps > -2)
+            return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
         }
+
+        // otherwise, make sure its a valid accidental
+        if ((sharpValue > 0 && acc.numSharps == 2 && acc.numArrows > 3) ||
+            (sharpValue < 0 && acc.numSharps == -2 && acc.numArrows > 3))
+          return null;
+
+        // make sure the number of arrows are valid. (from -3 to +3)
+        // NOTE: will possibly return null from here if edo is perfect (sharp-0)
+        if (sharpValue > 0) {
+          if (acc.numArrows > 3 && acc.numArrows - sharpValue >= -3 && acc.numArrows - sharpValue <= 3 && acc.numSharps < 2)
+            return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
+          else if (acc.numArrows < -3 && acc.numArrows + sharpValue >= -3 && acc.numArrows + sharpValue <= 3 && acc.numSharps > -2)
+            return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
+        } else if (sharpValue < 0) {
+          if (acc.numArrows > 3 && acc.numArrows + sharpValue >= -3 && acc.numArrows + sharpValue <= 3 && acc.numSharps > -2)
+            return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
+          else if (acc.numArrows < -3 && acc.numArrows - sharpValue >= -3 && acc.numArrows - sharpValue <= 3 && acc.numSharps < 2)
+            return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
+        }
+
+
+        // console.log('constructing default: ' + acc.numSharps + ', ' + acc.numArrows);
+
+        // if no such accidental exists, it will return null.
+        var a = constructAccidental(acc.numSharps, acc.numArrows);
+        // console.log('constructed: ' + convertAccidentalTypeToName(0 + a));
+        return a;
       }
 
       // returns the note.line property after it has been enharmonically transposed
@@ -706,22 +803,44 @@ MuseScore {
       // returns the accidental equivalent of the next baseNote after the current baseNote
       // at maximum accidental offset is exceeded.
       //
-      // example: if the note is Bx, and there is no more accidental sharper than x,
-      //          call this function with the argument 'b', and it will return Accidental.SHARP_ARROW_UP
-      //          representing the note that is higher than Bx is C#^.
+      // The maximum accidental offset is x^3 (bb^3 for super-flat edos) for the upwards plugin
+      // and bv3 (xv3 for super-flat) for the downwards plugin
       //
-      // <UP DOWN VARIANT CHECKPOINT>
+      // example: if the note is Bx^3, and there is no more accidental sharper than x^3,
+      //          call this function with the arguments 'b' and 31 edo, and it will
+      //          return Accidental.DOUBLE_SHARP_ONE_ARROW_UP representing the note
+      //          that is one step higher than Bx^3 in 31 edo is Cx^.
+      //          (distance between nominals B and C in 31 edo is 3 steps)
+      //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
-      function getOverLimitEnharmonicEquivalent(baseNote) {
+      function getOverLimitEnharmonicEquivalent(baseNote, edo) {
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var sharpValue = 7 * fifthStep - 4 * edo;
         switch(baseNote) {
+        // <UP DOWN VARIANT CHECKPOINT> change to D E G A B for downwards variant
         case 'c':
         case 'd':
         case 'f':
         case 'g':
         case 'a':
-          return Accidental.NATURAL_ARROW_UP;
+          // a whole tone up enharmonic nominal. Steps = 2 fifthStep - octave.
+          var wholeToneSteps = 2 * fifthStep - edo;
+
+          // <UP DOWN VARIANT CHECKPOINT> flip steps direction
+          // limits are: x^3 or bb^3 (super-flat) if upwards, bbv3 or xv3 (super-flat) if downwards
+          var overLimitSteps = (sharpValue >= 0) ? (2 * sharpValue + 3 + 1) : (-2 * sharpValue + 3 + 1);
+
+          // <UP DOWN VARIANT CHECKPOINT> flip sign
+          // Simulate going up an enharmonic whole tone, reducing the offset.
+          var newSteps = overLimitSteps - wholeToneSteps;
+
+          return convertStepsToAccidentalType(newSteps, edo);
         default:
-          return Accidental.SHARP_ARROW_UP;
+          // a diatonic semitone up enharmonic nominal. Steps = -5 fifthStep + 3 octaves
+          var semitoneSteps = -5 * fifthStep + 3 * edo;
+          var overLimitSteps = (sharpValue >= 0) ? (2 * sharpValue + 3 + 1) : (-2 * sharpValue + 3 + 1);
+          var newSteps = overLimitSteps - wholeToneSteps;
+          return convertStepsToAccidentalType(newSteps, edo);
         }
       }
 
@@ -731,28 +850,36 @@ MuseScore {
       //   below: {baseNote: 'a' through 'g', offset: diesis offset}
       // }
       // <TUNING SYSTEM VARIANT CHECKPOINT>
-      function getEnharmonics(baseNote, offset) {
+      function getEnharmonics(baseNote, offset, edo) {
         var above, below;
+
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var sharpValue = 7 * fifthStep - 4 * edo;
+        var wholeToneSteps = 2 * fifthStep - edo;
+        var semitoneSteps = -5 * fifthStep + 3 * edo;
 
         switch (baseNote) {
         case 'a': case 'd': case 'g':
-          above = offset - 5;
-          below = offset + 5;
+          above = offset - wholeToneSteps;
+          below = offset + wholeToneSteps;
           break;
         case 'b': case 'e':
-          above = offset - 3;
-          below = offset + 5;
+          above = offset - semitoneSteps;
+          below = offset + wholeToneSteps;
           break;
         case 'c': case 'f':
-          above = offset - 5;
-          below = offset + 3;
+          above = offset - wholeToneSteps;
+          below = offset + semitoneSteps;
         }
 
-        above = above < -5 ? null : {
+        var lowerOffsetBound = -2 * Math.abs(sharpValue) - 3;
+        var upperOffsetBound = 2 * Math.abs(sharpValue) + 3;
+
+        above = above < lowerOffsetBound ? null : {
           baseNote: getNextNote(baseNote),
           offset: above
         };
-        below = below > 5 ? null : {
+        below = below > upperOffsetBound ? null : {
           baseNote: getPrevNote(baseNote),
           offset: below
         };
@@ -825,7 +952,7 @@ MuseScore {
       // For the natural accidental, blank or whitespace will both work.
       //
       // Assign the key signature object to the parms.currKeySig field!
-      function scanCustomKeySig(str) {
+      function scanCustomKeySig(str, edo) {
         if (typeof(str) !== 'string')
           return null;
         str = str.trim();
@@ -838,7 +965,7 @@ MuseScore {
           return null;
 
         for (var i = 1; i <= 7; i++) {
-          var accSteps = convertAccidentalToSteps(res[i].trim());
+          var accSteps = convertAccidentalToSteps(res[i].trim(), edo);
           var accType = convertAccidentalTextToAccidentalType(res[i].trim());
           keySig[notes[i]] = {offset: accSteps, type: accType};
         }
@@ -927,7 +1054,11 @@ MuseScore {
             // them according to which staff the current note element is in.
 
             // contains an array of staffKeySigHistory objects. Index in array corresponds to staffIdx number.
+            // allEDOs and allA4Freqs have similar uses containing staffEDOHistory and staffA4FreqHistory objects
+            // respectively.
             var allKeySigs = [];
+            var allEDOs = [];
+            var allA4Freqs = [];
 
             parms.bars = [];
             parms.currKeySig = parms.naturalKeySig;
@@ -935,6 +1066,8 @@ MuseScore {
             // populate all key signatures and bars
             for (var staff = 0; staff < curScore.nstaves; staff++) {
               var staffKeySigHistory = [];
+              var staffEDOHistory = [];
+              var staffA4FreqHistory = [];
 
               for (var voice = 0; voice < 4; voice++) {
                 cursor.rewind(1);
@@ -946,12 +1079,47 @@ MuseScore {
 
                 while (true) {
                   if (cursor.segment) {
+                    // scan edo & A4 tuning frequency first. key signature parsing is dependant on edo used.
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
                       var annotation = cursor.segment.annotations[i];
                       console.log("found annotation type: " + annotation.subtypeName());
                       if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
                           (annotation.subtypeName() == 'System')) {
-                        var maybeKeySig = scanCustomKeySig(annotation.text);
+                        if (annotation.text.toLowerCase().trim().endsWith('edo')) {
+                          var edo = parseInt(annotation.text.substring(0, annotation.text.length - 3));
+                          if (edo !== NaN || edo !== undefined || edo !== null) {
+                            console.log('found EDO annotation: ' + annotation.text)
+                            staffEDOHistory.push({
+                              tick: cursor.tick,
+                              edo: edo
+                            });
+                          }
+                        } else if (annotation.text.toLowerCase().trim().startsWith('a4:')) {
+                          var txt = annotation.text.toLowerCase().trim();
+                          if (txt.endsWith('hz'))
+                            txt = txt.substring(0, txt.length - 2);
+                          var a4Freq = parseFloat(txt.substring(3));
+                          if (a4Freq !== NaN || a4Freq !== undefined || a4Freq !== null) {
+                            console.log('found A4 frequency annotation: ' + annotation.text)
+                            staffA4FreqHistory.push({
+                              tick: cursor.tick,
+                              a4Freq: a4Freq
+                            });
+                          }
+                        }
+                      }
+                    }
+
+                    // Check for StaffText key signature changes, then update staffKeySigHistory
+                    for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                      var annotation = cursor.segment.annotations[i];
+                      console.log("found annotation type: " + annotation.subtypeName());
+                      if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
+                          (annotation.subtypeName() == 'System')) {
+                        var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
+                        if (!mostRecentEDO)
+                          mostRecentEDO = 12;
+                        var maybeKeySig = scanCustomKeySig(annotation.text, mostRecentEDO);
                         if (maybeKeySig !== null) {
                           console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
                           staffKeySigHistory.push({
@@ -980,6 +1148,8 @@ MuseScore {
               }
 
               allKeySigs.push(staffKeySigHistory);
+              allEDOs.push(staffEDOHistory);
+              allA4Freqs.push(staffA4FreqHistory);
             } // end of key sig and bars population for all staves
 
             // Run transpose operation on all note elements.
@@ -991,6 +1161,10 @@ MuseScore {
 
             for (var i = 0; i < selectedNotes.length; i++) {
               var note = selectedNotes[i];
+
+              parms.currKeySig = parms.naturalKeySig;
+              parms.currEdo = 12;
+              parms.currA4Freq = 440;
 
               // handle transposing the firstTiedNote in the event that a non-first tied note
               // is selected.
@@ -1033,11 +1207,29 @@ MuseScore {
 
               // set cur key sig
               var mostRecentKeySigTick = -1;
-              for (var j = 0; j < staffKeySigHistory.length; j++) {
+              for (var j = 0; j < allKeySigs[cursor.staffIdx].length; j++) {
                 var keySig = allKeySigs[cursor.staffIdx][j];
                 if (keySig.tick <= segment.tick && keySig.tick > mostRecentKeySigTick) {
                   parms.currKeySig = keySig.keySig;
                   mostRecentKeySigTick = keySig.tick;
+                }
+              }
+
+              var mostRecentEDOTick = -1;
+              for (var j = 0; j < allEDOs[cursor.staffIdx].length; j++) {
+                var edo = allEDOs[cursor.staffIdx][j];
+                if (edo.tick <= segment.tick && edo.tick > mostRecentEDOTick) {
+                  parms.currEdo = edo.edo;
+                  mostRecentEDOTick = edo.tick;
+                }
+              }
+
+              var mostRecentA4FreqTick = -1;
+              for (var j = 0; j < allA4Freqs[cursor.staffIdx].length; j++) {
+                var a4Freq = allA4Freqs[cursor.staffIdx][j];
+                if (a4Freq.tick <= segment.tick && a4Freq.tick > mostRecentA4FreqTick) {
+                  parms.currA4Freq = a4Freq.a4Freq;
+                  mostRecentA4FreqTick = a4Freq.tick;
                 }
               }
 
@@ -1080,6 +1272,7 @@ MuseScore {
 
           }
         } else {
+          // Standard implementation for phrase selection.
           for (var staff = startStaff; staff <= endStaff; staff++) {
 
             // reset barrings (actually, why tho?)
@@ -1088,6 +1281,8 @@ MuseScore {
             // After every staff, reset the currKeySig back to the original keySig
 
             parms.currKeySig = parms.naturalKeySig;
+            parms.currEdo = 12;
+            parms.currA4Freq = 440;
 
             // Even if system text is used for key sig, the text
             // won't carry over for all voices (if the text was placed on voice 1, only
@@ -1097,6 +1292,8 @@ MuseScore {
             // need to be aggregated into this array before the notes can be
             // tuned.
             var staffKeySigHistory = [];
+            var staffEDOHistory = [];
+            var staffA4FreqHistory = [];
 
             // initial run to populate custom key signatures
             for (var voice = 0; voice < 4; voice++) {
@@ -1120,13 +1317,47 @@ MuseScore {
               while (true) {
 
                 if (cursor.segment) {
+                  // scan edo & A4 tuning frequency first. key signature parsing is dependant on edo used.
+                  for (var i = 0; i < cursor.segment.annotations.length; i++) {
+                    var annotation = cursor.segment.annotations[i];
+                    console.log("found annotation type: " + annotation.subtypeName());
+                    if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
+                        (annotation.subtypeName() == 'System')) {
+                      if (annotation.text.toLowerCase().trim().endsWith('edo')) {
+                        var edo = parseInt(annotation.text.substring(0, annotation.text.length - 3));
+                        if (edo !== NaN || edo !== undefined || edo !== null) {
+                          console.log('found EDO annotation: ' + annotation.text)
+                          staffEDOHistory.push({
+                            tick: cursor.tick,
+                            edo: edo
+                          });
+                        }
+                      } else if (annotation.text.toLowerCase().trim().startsWith('a4:')) {
+                        var txt = annotation.text.toLowerCase().trim();
+                        if (txt.endsWith('hz'))
+                          txt = txt.substring(0, txt.length - 2);
+                        var a4Freq = parseFloat(txt.substring(3));
+                        if (a4Freq !== NaN || a4Freq !== undefined || a4Freq !== null) {
+                          console.log('found A4 frequency annotation: ' + annotation.text)
+                          staffA4FreqHistory.push({
+                            tick: cursor.tick,
+                            a4Freq: a4Freq
+                          });
+                        }
+                      }
+                    }
+                  }
+
                   // Check for StaffText key signature changes, then update staffKeySigHistory
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
                     var annotation = cursor.segment.annotations[i];
                     console.log("found annotation type: " + annotation.subtypeName());
                     if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
                         (annotation.subtypeName() == 'System')) {
-                      var maybeKeySig = scanCustomKeySig(annotation.text);
+                      var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
+                      if (!mostRecentEDO)
+                        mostRecentEDO = 12;
+                      var maybeKeySig = scanCustomKeySig(annotation.text, mostRecentEDO);
                       if (maybeKeySig !== null) {
                         console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
                         staffKeySigHistory.push({
@@ -1176,6 +1407,24 @@ MuseScore {
                   if (keySig.tick <= cursor.tick && keySig.tick > mostRecentKeySigTick) {
                     parms.currKeySig = keySig.keySig;
                     mostRecentKeySigTick = keySig.tick;
+                  }
+                }
+
+                var mostRecentEDOTick = -1;
+                for (var i = 0; i < staffEDOHistory.length; i++) {
+                  var edo = staffEDOHistory[i];
+                  if (edo.tick <= cursor.tick && edo.tick > mostRecentEDOTick) {
+                    parms.currEdo = edo.edo;
+                    mostRecentEDOTick = edo.tick;
+                  }
+                }
+
+                var mostRecentA4FreqTick = -1;
+                for (var i = 0; i < staffA4FreqHistory.length; i++) {
+                  var a4Freq = staffA4FreqHistory[i];
+                  if (a4Freq.tick <= cursor.tick && a4Freq.tick > mostRecentA4FreqTick) {
+                    parms.currA4Freq = a4Freq.a4Freq;
+                    mostRecentA4FreqTick = a4Freq.tick;
                   }
                 }
 
@@ -1634,7 +1883,7 @@ MuseScore {
           return result;
         else {
           return {
-            offset: convertAccidentalTypeToSteps(0 + result),
+            offset: convertAccidentalTypeToSteps(0 + result, parms.currEdo),
             type: result
           };
         }
@@ -1654,6 +1903,9 @@ MuseScore {
       //
       function getNotePitchData(cursor, note, parms) {
         var noteData = {};
+        var edo = parms.currEdo;
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var sharpValue = 7 * fifthStep - 4 * edo;
 
         noteData.line = note.line;
         noteData.tpc = note.tpc;
@@ -1663,145 +1915,145 @@ MuseScore {
         switch(note.tpc) {
         case -1: //Fbb
           noteData.baseNote = 'f';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 0: //Cbb
           noteData.baseNote = 'c';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 1: //Gbb
           noteData.baseNote = 'g';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 2: //Dbb
           noteData.baseNote = 'd';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 3: //Abb
           noteData.baseNote = 'a';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 4: //Ebb
           noteData.baseNote = 'e';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
         case 5: //Bbb
           noteData.baseNote = 'b';
-          noteData.diesisOffset = -4;
+          noteData.diesisOffset = -2 * sharpValue;
           noteData.implicitAccidental = Accidental.FLAT2;
           break;
 
         case 6: //Fb
           noteData.baseNote = 'f';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
         case 7: //Cb
           noteData.baseNote = 'c';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
         case 8: //Gb
           noteData.baseNote = 'g';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
         case 9: //Db
           noteData.baseNote = 'd';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
         case 10: //Ab
           noteData.baseNote = 'a';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
         case 11: //Eb
           noteData.baseNote = 'e';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
         case 12: //Bb
           noteData.baseNote = 'b';
-          noteData.diesisOffset = -2;
+          noteData.diesisOffset = -sharpValue;
           noteData.implicitAccidental = Accidental.FLAT;
           break;
 
         case 20: //F#
           noteData.baseNote = 'f';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
         case 21: //C#
           noteData.baseNote = 'c';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
         case 22: //G#
           noteData.baseNote = 'g';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
         case 23: //D#
           noteData.baseNote = 'd';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
         case 24: //A#
           noteData.baseNote = 'a';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
         case 25: //E#
           noteData.baseNote = 'e';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
         case 26: //B#
           noteData.baseNote = 'b';
-          noteData.diesisOffset = 2;
+          noteData.diesisOffset = sharpValue;
           noteData.implicitAccidental = Accidental.SHARP;
           break;
 
         case 27: //Fx
           noteData.baseNote = 'f';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 28: //Cx
           noteData.baseNote = 'c';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 29: //Gx
           noteData.baseNote = 'g';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 30: //Dx
           noteData.baseNote = 'd';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 31: //Ax
           noteData.baseNote = 'a';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 32: //Ex
           noteData.baseNote = 'e';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         case 33: //Bx
           noteData.baseNote = 'b';
-          noteData.diesisOffset = 4;
+          noteData.diesisOffset = 2 * sharpValue;
           noteData.implicitAccidental = Accidental.SHARP2;
           break;
         }
@@ -1847,7 +2099,7 @@ MuseScore {
           noteData.implicitAccidental = 0 + note.accidentalType;
 
           if (irregularAccidentalOrNatural) {
-            noteData.diesisOffset = convertAccidentalTypeToSteps(0 + note.accidentalType);
+            noteData.diesisOffset = convertAccidentalTypeToSteps(0 + note.accidentalType, edo);
           }
           // explicit acc exists, can return early.
           return noteData;
@@ -2253,17 +2505,19 @@ MuseScore {
         // variables represent the new note this current note would be tuned to.
 
         // this will be null if there are no more accidentals to use
-        var newAccidental = getNextAccidental(pitchData.implicitAccidental);
+        var newAccidental = getNextAccidental(pitchData.implicitAccidental, parms.currEdo);
+        console.log(newAccidental);
         // if true, denotes that the note should be spelt with a different baseNote.
         var usingEnharmonic = false;
         if (newAccidental === null) {
           // the current note is at its absolute max pitch
           usingEnharmonic = true;
-          newAccidental = getOverLimitEnharmonicEquivalent(pitchData.baseNote);
+          newAccidental = getOverLimitEnharmonicEquivalent(pitchData.baseNote, parms.currEdo);
         }
 
         // diesis offset of the accidental of the next base note at this point in time.
-        var newOffset = convertAccidentalTypeToSteps(newAccidental);
+        var newOffset = convertAccidentalTypeToSteps(newAccidental, parms.currEdo);
+        console.log('new offset: ' + newOffset);
 
         // If an enharmonic spelling is required while transposing upwards,
         // the new line is the note above it.
@@ -2272,7 +2526,7 @@ MuseScore {
         // <UP DOWN VARIANT CHECKPOINT> (use getPrevNote for downwards transposition)
         var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
-        var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset);
+        var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
 
         // Step 1b. if the new note fits perfectly into the key signature, use that key signature's accidental instead.
 
@@ -2296,6 +2550,7 @@ MuseScore {
           newLine -= 1;
           newAccidental = parms.currKeySig[nextNoteEnharmonics.above.baseNote].type;
           newOffset = parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset;
+          nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
         }
 
         // check if the enharmonic that's below newBaseNote (if any) has offset exactly that
@@ -2308,12 +2563,16 @@ MuseScore {
           newLine += 1;
           newAccidental = parms.currKeySig[nextNoteEnharmonics.below.baseNote].type;
           newOffset = parms.currKeySig[nextNoteEnharmonics.below.baseNote].offset;
+          nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
         }
 
-        // Step 1c. If accidental offset of new note exceeds offset on the key signature
+        // Step 1c. If accidental offset of new note exceeds or equals offset on the key signature
         //          of the enharmonic equivalent above/below (depending of the direction of the plugin)
         //          the new note, in the direction that the plugin is transposing,
         //          use the enharmonic equivalent spelling instead.
+        //          (Note that the equals in the inequality is only there because in very small edos like 5 EDO,
+        //          the above logical condition 1b does not hold true as an enharmonic non-accidental equivalent
+        //          exists, but only more than 1 diatonic step away. (B-C, E-F are equal in pitch))
         //
         // e.g. key signature has Db, new note (going upwards) is C#+. The enharmonic equiv of C#+
         //      spelt with D is Dv, and Dv has an offset that exceeds Db (in the upwards direction),
@@ -2323,13 +2582,16 @@ MuseScore {
         // NOTE: the enharmonic to use, and the inequality to check of the downwards
         //       variant of this plugin will have to be inverted.
         // <UP DOWN VARIANT CHECKPOINT>
-
-        if (nextNoteEnharmonics.above &&
-            nextNoteEnharmonics.above.offset > parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset) {
+        // This is now a while statement as in 5 edo and other super small edos,
+        // this thing can get REALLY screwed. (e.g. E and F are the same note in 5 edo,
+        // so going up by single enharmonic won't do anything for reducing the accidental steps)
+        while (nextNoteEnharmonics.above &&
+               nextNoteEnharmonics.above.offset >= parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset) {
           newBaseNote = nextNoteEnharmonics.above.baseNote;
           newLine = getNextLine(newLine);
-          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.offset);
+          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.offset, parms.currEdo);
           newOffset = nextNoteEnharmonics.above.offset;
+          nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
         }
 
         // Step 1d is a converse of clause 1c, it is implicitly implemented in the implementation
@@ -2866,7 +3128,7 @@ MuseScore {
                     ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
 
-        note.tuning = centOffsets[newBaseNote][newOffset];
+        note.tuning = getCentOffset(newBaseNote, newOffset, parms.currEdo, parms.currA4Freq);
 
 
         // Step 4. Remove accidentals on all marked notes.

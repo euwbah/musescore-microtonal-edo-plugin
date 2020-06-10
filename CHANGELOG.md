@@ -1,7 +1,7 @@
 ## Changelog
 
-### 2.1 (In testing)
-- Implement generic n-EDO plugin.
+### 2.1.0
+- Implement generic n-EDO plugin for flat-2 to sharp-8 EDOs. (Most EDOs from 5 to 72 are covered, except 59, 66, and 71)
 
 ### 2.0.3
 - Fixed local vs. global key signatures not working.
