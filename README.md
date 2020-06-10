@@ -73,7 +73,7 @@ Here is a brief summary of the contents of the document:
 ### Tuning of nominals C D E F G A B
 
 In this system, the nominals F C G D A E B are tuned according to a chain of **best fifths**,
-which is the best representation of the perfect 3:2 just fifth that the EDO has to offer.
+which is the best representation of the perfect 3:2 just fifth that the EDO has to offer.\
 The exact pitches of the notes are calculated based on the frequency of the note A4, which is defined by the
 A4 frequency selector, or 440Hz by default.
 
@@ -100,25 +100,25 @@ The best fifth in 22 edo is 13 steps. Thus, the distance between C and G, etc.. 
 The standard accidentals Double Flat (`bb`), Flat (`b`), Sharp (`#`), Double Sharp (`x`) are based on
 the circle of fifths.
 
-To give an example in 12-edo, going 7 fifths up from C4 yields C4-G4-D5-A5-E6-B6-F#7-C#8.
-A best fifth in 12-edo is 7 steps of 12 edo.
-Going up 7 fifths in 12-edo yields a total of 7*7 = 49 steps (which brings C4 to C#8)
-Going down 4 octaves to bring C#8 down to C#4 reduces the steps by 4 * 12 = 48 steps.
+To give an example in 12-edo, going 7 fifths up from C4 yields C4-G4-D5-A5-E6-B6-F#7-C#8.\
+A best fifth in 12-edo is 7 steps of 12 edo.\
+Going up 7 fifths in 12-edo yields a total of 7*7 = 49 steps (which brings C4 to C#8)\
+Going down 4 octaves to bring C#8 down to C#4 reduces the steps by 4 * 12 = 48 steps.\
 Thus, a sharp symbol in 12-edo is defined as going up 49 steps, then down 48 steps, yielding a +1 step difference.
 
 The number of edosteps a sharp symbol raises the pitch by is known as an EDO's **sharpness** value.\
-Thus, the sharpness of 12-edo is 1, which classifies it as a **sharp-1** EDO.
-Consequently, a double sharp raises the pitch by 2 times of the sharpness value, thus 2 steps.
-A flat lowers the pitch by the sharpness value, thus lowering it by 1 step.
+Thus, the sharpness of 12-edo is 1, which classifies it as a **sharp-1** EDO.\
+Consequently, a double sharp raises the pitch by 2 times of the sharpness value, thus 2 steps.\
+A flat lowers the pitch by the sharpness value, thus lowering it by 1 step.\
 A double flat lowers the pitch by 2 times of the sharpness value, thus lowering it by 2 steps.
 
 To give another example in 23-edo:
-A best fifth in 23-edo is 13 edosteps.
-Going up 7 fifths (From C4 to C#8) = going up 7 * 13 = 91 steps.
-Going down 4 octaves (From C#8 to C#4) = going down 4 * 23 = 92 steps.
-Thus, a sharp symbol in 23-edo is defined as going up 91 steps and down 92 steps, yielding a -1 step difference.
-A sharp symbol in 23-edo, surprisingly, __lowers__ the pitch by 1 step, instead of raising it.
-Consequently, the flat symbol raises the pitch by 1 step.
+A best fifth in 23-edo is 13 edosteps.\
+Going up 7 fifths (From C4 to C#8) = going up 7 * 13 = 91 steps.\
+Going down 4 octaves (From C#8 to C#4) = going down 4 * 23 = 92 steps.\
+Thus, a sharp symbol in 23-edo is defined as going up 91 steps and down 92 steps, yielding a -1 step difference.\
+A sharp symbol in 23-edo, surprisingly, __lowers__ the pitch by 1 step, instead of raising it.\
+Consequently, the flat symbol raises the pitch by 1 step.\
 The sharpness value of 23-edo is -1, which classifies it as a **flat-1** EDO.
 
 Note: in EDOs such as 7, 14 and 21, the sharp and flats do not raise nor lower the pitch, and thus
@@ -147,7 +147,7 @@ can only handle EDOs with a sharpness rating of up to 8.
 
 [Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
 
-The up/down arrow accidentals this plugin uses are Helmholtz-Ellis Just Intonation accidentals.
+The up/down arrow accidentals this plugin uses are Helmholtz-Ellis Just Intonation accidentals.\
 Gould arrow quartertone symbols look very similar to the single up/down arrow Helmholtz-Ellis accidentals,
 and may be used interchangeably, although the plugin defaults to Helmholtz-Ellis when transposing.
 To differentiate the two, Gould arrow symbols appear slightly larger than the Helmholtz-Ellis ones.
@@ -194,10 +194,10 @@ Natural accidentals are denoted by leaving the space blank, or using any other c
 that does not represent an accidental.
 
 **Examples:**
-Ab-down major in 31 edo's ups-and-downs is written like this: `.v.bv.bv.v.v.bv.bv`
+Ab-down major in 31 edo's ups-and-downs is written like this: `.v.bv.bv.v.v.bv.bv`\
 representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
 
-C major in 22 edo's ups-and-downs is written like this: `.0.0.v.0.0.v.v`
+C major in 22 edo's ups-and-downs is written like this: `.0.0.v.0.0.v.v`\
 representing the key signature of C, D, Ev, F, G, Av, Bv. (The `0`s represent placeholders,
 you can also choose to put nothing between the dots)
 
