@@ -10,7 +10,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 - Retuning note cent offsets based on edo of choice
   - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for
     evaluating cent offsets for any EDO.
-- Support for key signatures via [Key signature annotations](#key-signatures-support)
+- Support for key signatures via [Key signature annotations](#key-signatures)
 - Transposing individual notes / selections by 1 EDO step, managing accidental neutralization and corrections
 - Tuning system, key signatures, and A4 tuning frequency can be changed mid score, and different staves
   may be in different tunings, key signatures, and A4 reference pitches at the same time.
