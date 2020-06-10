@@ -11,6 +11,16 @@ MuseScore {
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
 
+      // MuseScore's annotations contain formatting code in angle brackets if the
+      // annotation text formatting is not default. This function removes
+      // all text within angle brackets including the brackets themselves
+      function removeFormattingCode(str) {
+        if (typeof(str) == 'string')
+          return str.replace(/<[^>]*>/g, '');
+        else
+          return null;
+      }
+
       // Calculates the number of cents to detune the default musescore note by.
       // noteName: the note nominal alphabet from 'a' thru 'g'
       // stepOffset: offset the nominal by this many steps of the EDO
@@ -265,22 +275,23 @@ MuseScore {
                   console.log("found annotation type: " + annotation.subtypeName());
                   if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
                       (annotation.subtypeName() == 'System')) {
-                    if (annotation.text.toLowerCase().trim().endsWith('edo')) {
-                      var edo = parseInt(annotation.text.substring(0, annotation.text.length - 3));
+                    var text = removeFormattingCode(annotation.text);
+                    if (text.toLowerCase().trim().endsWith('edo')) {
+                      var edo = parseInt(text.substring(0, text.length - 3));
                       if (edo !== NaN || edo !== undefined || edo !== null) {
-                        console.log('found EDO annotation: ' + annotation.text)
+                        console.log('found EDO annotation: ' + text)
                         staffEDOHistory.push({
                           tick: cursor.tick,
                           edo: edo
                         });
                       }
-                    } else if (annotation.text.toLowerCase().trim().startsWith('a4:')) {
-                      var txt = annotation.text.toLowerCase().trim();
+                    } else if (text.toLowerCase().trim().startsWith('a4:')) {
+                      var txt = text.toLowerCase().trim();
                       if (txt.endsWith('hz'))
                         txt = txt.substring(0, txt.length - 2);
                       var a4Freq = parseFloat(txt.substring(3));
                       if (a4Freq !== NaN || a4Freq !== undefined || a4Freq !== null) {
-                        console.log('found A4 frequency annotation: ' + annotation.text)
+                        console.log('found A4 frequency annotation: ' + text)
                         staffA4FreqHistory.push({
                           tick: cursor.tick,
                           a4Freq: a4Freq
@@ -296,12 +307,13 @@ MuseScore {
                   console.log("found annotation type: " + annotation.subtypeName());
                   if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
                       (annotation.subtypeName() == 'System')) {
+                    var text = removeFormattingCode(annotation.text);
                     var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
                     if (!mostRecentEDO)
                       mostRecentEDO = 12;
-                    var maybeKeySig = scanCustomKeySig(annotation.text, mostRecentEDO);
+                    var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
                     if (maybeKeySig !== null) {
-                      console.log("detected new custom keySig: " + annotation.text + ", staff: " + staff + ", voice: " + voice);
+                      console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
                       staffKeySigHistory.push({
                         tick: cursor.tick,
                         keySig: maybeKeySig
