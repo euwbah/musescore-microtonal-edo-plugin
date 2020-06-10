@@ -21,9 +21,9 @@ Download
 <a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/euwbah/musescore-n-tet-plugins/blob/master/tune%20n-edo.qml">
 <code>tune n-edo.qml</code></a>,
 <a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/euwbah/musescore-n-tet-plugins/blob/master/pitch%20up.qml">
-<code>`pitch up.qml`</code></a>,
+<code>`pitch up.qml`</code></a>, and
 <a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/euwbah/musescore-n-tet-plugins/blob/master/pitch%20down.qml">
-<code>and `pitch down.qml`</code></a>.
+<code>`pitch down.qml`</code></a>.
 
 [Install & Activate the plugins](https://musescore.org/en/handbook/plugins#windows)
 
