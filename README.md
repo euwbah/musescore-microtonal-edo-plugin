@@ -82,9 +82,9 @@ A4 frequency selector, or 440Hz by default.
 
   The number of steps a fifth is in x-edo = `round(x * log2(3/2))`
 
-  `3/2` represents the frequency ratio of a fifth in just intonation.
-  `log(3/2)` represents how many octaves are there in a fifth (approx 0.584962)
-  `x * log(3/2)` represents how many steps of x-edo are there in a fifth
+  `3/2` represents the frequency ratio of a fifth in just intonation.\
+  `log(3/2)` represents how many octaves are there in a fifth (approx 0.584962)\
+  `x * log(3/2)` represents how many steps of x-edo are there in a fifth\
   `round()` rounds it up/down to the nearest whole edostep.
 
 </details>
