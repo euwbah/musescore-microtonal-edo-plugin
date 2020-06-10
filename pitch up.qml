@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version:  "2.1.0"
+      version:  "2.1.1"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
