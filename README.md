@@ -1,4 +1,4 @@
-# n-EDO Retuner plugin for Musescore 3
+# n-EDO Retuner plugin for Musescore 3.4+
 
 Musescore plugin to retune and pitch up/down notes in any EDO ranked from flat-2 to sharp-8.
 (Supports all EDOs from 5-72 except 59, 66, and 71. Also supports larger edos up to 117 that
@@ -18,6 +18,8 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
   may be in different tunings, key signatures, and A4 reference pitches at the same time.
 
 ## Instructions
+
+**Make sure you are using MuseScore 3.4 or newer. The plugin will not work in previous versions**
 
 [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into MuseScore's plugins directory.
 
