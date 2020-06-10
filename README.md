@@ -62,8 +62,11 @@ There are a 3 different types of tuning system information text, each one has to
   - Spaces and capitalization are optional. Decimals in frequency supported.
 - **Key signature** format: `.x.x.x.x.x.x.x`
   - Where each `x` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C, D, E, F, G, A, and B in that order.
-  - All 7 dots must be present, if there are no accidentals on a particular note, leave the space after the dot empty or use any placeholder like '0' or 'n'.
-  - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.
+  - If a particular note is natural, leave the space after the dot empty or use any placeholder like '0' or 'n', but keep the dot there.\
+    In total, there should be 7 dots.
+  - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.\
+    If there are no key signatures for the score, there is no need to enter key signature text, but you can still enter a blank
+    key signature text for future use (e.g.: `.......` is a blank key signature)
 
 ## Notation system
 
