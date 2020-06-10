@@ -18,7 +18,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 ## Instructions
 
 Download
-<a href="https://raw.githubusercontent.com/euwbah/musescore-n-tet-plugins/master/tune%20n-edo.qml" download>
+<a href="https://raw.githubusercontent.com/euwbah/musescore-n-tet-plugins/master/tune%20n-edo.qml" download="tune n-edo.qml">
 <code>tune n-edo.qml</code></a>,
 `pitch up.qml`,
 and `pitch down.qml`.
@@ -67,14 +67,14 @@ There are a 3 different types of tuning system information text, each one has to
   - All 7 dots must be present, if there are no accidentals on a particular note, leave the space after the dot empty or use any placeholder like '0' or 'n'.
   - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.
 
-### Notation system
+## Notation system
 
 The plugin follows notation standards as per [NOTATION GUIDE FOR EDOS 5-72](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf),
 which is a generalized system for notating any EDO.
 
 Here is a brief summary of the contents of the document:
 
-#### Tuning of nominals C D E F G A B
+### Tuning of nominals C D E F G A B
 
 In this system, the nominals F C G D A E B are tuned according to a chain of **best fifths**,
 which is the best representation of the perfect 3:2 just fifth that the EDO has to offer.
@@ -97,7 +97,7 @@ The best fifth in 12 edo is 7 steps. Thus, the distance between F and C, C and G
 
 The best fifth in 22 edo is 13 steps. Thus, the distance between C and G, etc.. is 13 steps of 22 edo.
 
-#### Tuning of regular pythagorean accidentals
+### Tuning of regular pythagorean accidentals
 
 ![bb](images/bb.png) ![b](images/b.png) ![s](images/s.png) ![x](images/x.png)
 
@@ -133,7 +133,7 @@ they are known as **perfect** EDOs, i.e. **Sharp-0**.
 The plugin only supports up to 2 flats and sharps. Triple flats and sharps and not supported as
 MuseScore does not provide these accidentals.
 
-#### Tuning of up/down arrows
+### Tuning of up/down arrows
 
 ![sv3](images/sv3.png) ![u2](images/u2.png) ![bu1](images/bu1.png)
 
@@ -156,7 +156,7 @@ Gould arrow quartertone symbols look very similar to the single up/down arrow He
 and may be used interchangeably, although the plugin defaults to Helmholtz-Ellis when transposing.
 To differentiate the two, Gould arrow symbols appear slightly larger than the Helmholtz-Ellis ones.
 
-#### Tuning of quartertone (semisharp/semiflat) accidentals
+### Tuning of quartertone (semisharp/semiflat) accidentals
 
 ![db](images/db.png) ![d](images/d.png) ![+](images/+.png) ![s+](images/s+.png)
 
@@ -211,7 +211,7 @@ you can also choose to put nothing between the dots)
 
 ![Staff text custom key sig](images/key-sig-example.png)
 
-#### Accidental Code
+### Accidental Code
 
 | Accidental | Textual representation |
 | ----: | :---- |
