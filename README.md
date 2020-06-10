@@ -60,8 +60,8 @@ There are a 3 different types of tuning system information text, each one has to
 - **A4 frequency selector** format: `a4: x hz`
   - Where `x` is the frequency of the natural nominal tuning note A4. Other notes will be tuned to that as reference.
   - Spaces and capitalization are optional. Decimals in frequency supported.
-- **Key signature** format: `.c.d.e.f.g.a.b`
-  - Where `c` thru `b` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C to B respectively.
+- **Key signature** format: `.x.x.x.x.x.x.x`
+  - Where each `x` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C, D, E, F, G, A, and B in that order.
   - All 7 dots must be present, if there are no accidentals on a particular note, leave the space after the dot empty or use any placeholder like '0' or 'n'.
   - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.
 
