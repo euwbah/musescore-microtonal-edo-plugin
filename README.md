@@ -113,7 +113,8 @@ Going up 7 fifths in 12-edo yields a total of 7*7 = 49 steps (which brings C4 to
 Going down 4 octaves to bring C#8 down to C#4 reduces the steps by 4 * 12 = 48 steps.\
 Thus, a sharp symbol in 12-edo is defined as going up 49 steps, then down 48 steps, yielding a +1 step difference.
 
-The number of edosteps a sharp symbol raises the pitch by is known as an EDO's **sharpness** value.\
+The number of edosteps a sharp symbol raises the pitch by is known as an EDO's **sharpness** value,
+also known as the size of the **apotome**.\
 Thus, the sharpness of 12-edo is 1, which classifies it as a **sharp-1** EDO.\
 Consequently, a double sharp raises the pitch by 2 times of the sharpness value, thus 2 steps.\
 A flat lowers the pitch by the sharpness value, thus lowering it by 1 step.\
@@ -126,7 +127,7 @@ Going down 4 octaves (From C#8 to C#4) = going down 4 * 23 = 92 steps.\
 Thus, a sharp symbol in 23-edo is defined as going up 91 steps and down 92 steps, yielding a -1 step difference.\
 A sharp symbol in 23-edo, surprisingly, __lowers__ the pitch by 1 step, instead of raising it.\
 Consequently, the flat symbol raises the pitch by 1 step.\
-The sharpness value of 23-edo is -1, which classifies it as a **flat-1** EDO.
+The apotome size of 23-edo is -1, which classifies it as a **flat-1** EDO.
 
 Note: in EDOs such as 7, 14 and 21, the sharp and flats do not raise nor lower the pitch, and thus
 they are known as **perfect** EDOs, i.e. **Sharp-0**.
@@ -230,9 +231,9 @@ you can also choose to put nothing between the dots)
 | ![Flat down 2](images/bv2.png)          | `bv2`  |
 | ![Flat down](images/bv1.png)            | `bv` or `bv1`  |
 | ![Flat](images/b.png)                   | `b`  |
-| ![Flat up](images/bu1.png)              | `b^3` |
+| ![Flat up](images/bu1.png)              | `b^` or `b^1` |
 | ![Flat up 2](images/bu2.png)            | `b^2` |
-| ![Flat up 3](images/bu3.png)            | `b^` or `b^1` |
+| ![Flat up 3](images/bu3.png)            | `b^3` |
 | ![Down 3](images/v3.png)                | `v3` |
 | ![Down 2](images/v2.png)                | `v2` |
 | ![Down](images/v.png)                   | `v` or `v1` |
@@ -284,7 +285,7 @@ you can also choose to put nothing between the dots)
 
 ## Appendix A: List of supported EDOs according to sharpness classification.
 
-| Sharpness | EDOs |
+| Sharpness (steps of an apotome) | EDOs |
 | -------:  | :------- |
 | flat-2 | 4, 11 |
 | flat-1 | 2, 9, 16, 23 |
