@@ -9,11 +9,11 @@ MuseScore {
       menuPath: "Plugins.n-EDO.Tune"
 
       // WARNING! This doesn't validate the accidental code!
-      property var customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+      property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
 
       // Enumeration of custom names to map MuseScore symbols, text, and accidentals
       // to a consistent accidental enumeration called AccType instead of Accidental.
-      property variant AccType: (function() {
+      property variant accType: (function() {
         var symbols =
           [
           'NONE',
@@ -77,7 +77,7 @@ MuseScore {
 
       // An object class for defining all possible accidentals, including
       // multi-accidentals, etc...
-      property var Acc: (function() {
+      property var acc: (function() {
         var clazz = function() {
           this.type = AccType.NONE;
         };
