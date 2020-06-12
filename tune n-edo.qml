@@ -82,9 +82,9 @@ MuseScore {
           this.type = AccType.NONE;
         };
 
-        clazz.prototype.calculatePitchOffset(tuningSystem) {
+        clazz.prototype.calculatePitchOffset = function(tuningSystem) {
 
-        }
+        };
 
         clazz.readFromNote = function(note) {
 
