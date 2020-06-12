@@ -21,7 +21,7 @@ MuseScore {
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
       // WARNING! This doesn't validate the accidental code!
-      property var customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+      property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
 
       // MuseScore's annotations contain formatting code in angle brackets if the
       // annotation text formatting is not default. This function removes
@@ -974,7 +974,9 @@ MuseScore {
         if (res === null)
           return null;
 
+        console.log('scanCust', str, 'res:', res[0]);
         for (var i = 1; i <= 7; i++) {
+          console.log(res[i]);
           var accSteps = convertAccidentalToSteps(res[i].trim(), edo);
           var accType = convertAccidentalTextToAccidentalType(res[i].trim());
           keySig[notes[i]] = {offset: accSteps, type: accType};

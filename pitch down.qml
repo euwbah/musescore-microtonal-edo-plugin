@@ -21,7 +21,7 @@ MuseScore {
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
       // WARNING! This doesn't validate the accidental code!
-      property var customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+      property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
 
       // MuseScore's annotations contain formatting code in angle brackets if the
       // annotation text formatting is not default. This function removes

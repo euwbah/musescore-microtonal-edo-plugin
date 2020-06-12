@@ -13,7 +13,7 @@ MuseScore {
 
       // Enumeration of custom names to map MuseScore symbols, text, and accidentals
       // to a consistent accidental enumeration called AccType instead of Accidental.
-      property var AccType: (function() {
+      property variant AccType: (function() {
         var symbols =
           [
           'NONE',
