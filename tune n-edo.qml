@@ -9,7 +9,87 @@ MuseScore {
       menuPath: "Plugins.n-EDO.Tune"
 
       // WARNING! This doesn't validate the accidental code!
-      property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+      property var customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+
+      // Enumeration of custom names to map MuseScore symbols, text, and accidentals
+      // to a consistent accidental enumeration called AccType instead of Accidental.
+      property var AccType: (function() {
+        var symbols =
+          [
+          'NONE',
+          'NATURAL',
+          'SHARP_SLASH4',
+          'SHARP_SLASH',
+          'MIRRORED_FLAT',
+          'MIRRORED_FLAT2',
+          'DOUBLE_SHARP_THREE_ARROWS_UP',
+          'DOUBLE_SHARP_TWO_ARROWS_UP',
+          'SHARP2_ARROW_UP',
+          'DOUBLE_SHARP_ONE_ARROW_UP',
+          'SHARP2',
+          'SHARP2_ARROW_DOWN',
+          'DOUBLE_SHARP_ONE_ARROW_DOWN',
+          'DOUBLE_SHARP_TWO_ARROWS_DOWN',
+          'DOUBLE_SHARP_THREE_ARROWS_DOWN',
+          'SHARP_THREE_ARROWS_UP',
+          'SHARP_TWO_ARROWS_UP',
+          'SHARP_ARROW_UP',
+          'SHARP_ONE_ARROW_UP',
+          'SHARP',
+          'SHARP_ARROW_DOWN',
+          'SHARP_ONE_ARROW_DOWN',
+          'SHARP_TWO_ARROWS_DOWN',
+          'SHARP_THREE_ARROWS_DOWN',
+          'NATURAL_THREE_ARROWS_UP',
+          'NATURAL_TWO_ARROWS_UP',
+          'NATURAL_ARROW_UP',
+          'NATURAL_ONE_ARROW_UP',
+          'NATURAL_ARROW_DOWN',
+          'NATURAL_ONE_ARROW_DOWN',
+          'NATURAL_TWO_ARROWS_DOWN',
+          'NATURAL_THREE_ARROWS_DOWN',
+          'FLAT_THREE_ARROWS_UP',
+          'FLAT_TWO_ARROWS_UP',
+          'FLAT_ARROW_UP',
+          'FLAT_ONE_ARROW_UP',
+          'FLAT',
+          'FLAT_ARROW_DOWN',
+          'FLAT_ONE_ARROW_DOWN',
+          'FLAT_TWO_ARROWS_DOWN',
+          'FLAT_THREE_ARROWS_DOWN',
+          'DOUBLE_FLAT_THREE_ARROWS_UP',
+          'DOUBLE_FLAT_TWO_ARROWS_UP',
+          'FLAT2_ARROW_UP',
+          'DOUBLE_FLAT_ONE_ARROW_UP',
+          'FLAT2',
+          'FLAT2_ARROW_DOWN',
+          'DOUBLE_FLAT_ONE_ARROW_DOWN',
+          'DOUBLE_FLAT_TWO_ARROWS_DOWN',
+          'DOUBLE_FLAT_THREE_ARROWS_DOWN'
+          ];
+        var enumeration = {};
+        for (var i = 0; i < symbols.length; i++) {
+          enumeration[symbols[i]] = i;
+        }
+        Object.freeze(enumeration);
+        return enumeration;
+      })()
+
+      // An object class for defining all possible accidentals, including
+      // multi-accidentals, etc...
+      property var Acc: (function() {
+        var clazz = function() {
+          this.type = AccType.NONE;
+        };
+
+        clazz.prototype.calculatePitchOffset(tuningSystem) {
+
+        }
+
+        clazz.readFromNote = function(note) {
+
+        };
+      })()
 
       // MuseScore's annotations contain formatting code in angle brackets if the
       // annotation text formatting is not default. This function removes
