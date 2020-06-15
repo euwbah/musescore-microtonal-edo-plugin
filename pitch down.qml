@@ -17,8 +17,8 @@ MuseScore {
       }
 
       version:  "2.1.1"
-      description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
-      menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
+      description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
+      menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
