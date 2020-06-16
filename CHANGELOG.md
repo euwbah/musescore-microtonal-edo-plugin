@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.1.2
+- Added 'no dt' version, which prioritizes up/down arrows over semi/sesqui sharps and flats wherever possible.
+
 ### 2.1.1
 - Fixed formatted StaffText/SystemText causing tuning system parsing to fail
 - Fixed certain accidentals fail to reflect in tuning plugin

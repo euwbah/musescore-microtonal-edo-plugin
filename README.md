@@ -25,9 +25,12 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 [Install & Activate the plugins](https://musescore.org/en/handbook/plugins#windows)
 
-- `tune n-edo.qml`: Tunes selected phrase (selection made with shift-click) / whole score (if nothing selected)
-- `pitch up.qml`: Transposes up selected phrase (shift-click) / individually selected notes (alt-click noteheads).
-- `pitch down.qml`: Transposes down selected phrase / individually selected notes.
+- `tune n-edo.qml`:
+  - Tunes selected phrase (selection made with shift-click) / whole score (if nothing selected)
+- `pitch up.qml`/`pitch down.qml`:
+  - Transposes up/down selected phrase (shift-click) / individually selected notes (alt-click noteheads).
+- `pitch up no dt.qml`/`pitch down no dt.qml`:
+  - Same as above, but prioritizes up/down arrows over semi/sesqui sharp/flat symbols wherever possible.
 
 To make plugin usage more ergonomic, it is recommended to assign the following keyboard shortcuts to the plugins:
   - Tuning: alt + R
@@ -40,6 +43,9 @@ To make plugin usage more ergonomic, it is recommended to assign the following k
       - _Pitch down or move text or articulation down_
       - _Select string above (TAB only)_
       - _Select string below (TAB only)_
+    - Ensure only one variant of each plugin has the keyboard shortcut assigned at a time.\
+      If 'pitch up.qml' is assigned to the up arrow, then 'pitch up no dt.qml' cannot be assigned to the up arrow.\
+      Although, both plugins may be enabled simultaneously and have different keyboard shortcuts assigned to each variant.
 
 ### Selecting the tuning system
 
@@ -68,7 +74,7 @@ There are a 3 different types of tuning system information text, each one has to
     In total, there should be 7 dots.
   - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.\
     If there are no key signatures for the score, there is no need to enter key signature text, but you can still enter a blank
-    key signature text for future use (e.g.: `.......` is a blank key signature)
+    key signature text for future reference (e.g.: `.......` is a blank key signature)
 
 ## Notation system
 

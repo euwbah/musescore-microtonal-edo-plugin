@@ -17,8 +17,9 @@ MuseScore {
       }
 
       version:  "2.1.2"
-      description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
-      menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step"
+      description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO." +
+                   "This version prioritises up/down arrows over semisharp/flat accidentals whereever possible."
+      menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step (Arrows)"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -547,7 +548,7 @@ MuseScore {
 
         if (Math.abs(arrowsOnFlatSide) == Math.abs(arrowsOnSharpSide)) {
           // <UP DOWN VARIANT CHECKPOINT>
-          useFlatSide = sharpValue <= 0; // invert equality if the plugin moves downwards
+          useFlatSide = sharpValue >= 0; // invert equality if the plugin moves downwards
         }
 
         // check if the num of sharps the algorithm decides to use is illegal.
@@ -733,45 +734,47 @@ MuseScore {
         }
 
         // <UP DOWN VARIANT CHECKPOINT>
-        acc.numArrows --; // NOTE: set to -- for downwards plugin
+        acc.numArrows ++; // NOTE: set to -- for downwards plugin
 
         // Sharp-flat manipulation section.
         // disregard this section if perfect EDO (sharp-0), as sharps and flats do nothing to the scale.
         if (sharpValue != 0) {
           // check if the number of arrows coincide with a standard accidental
           // <UP DOWN VARIANT CHECKPOINT>: negate sharp value for downwards plugins
-          if (sharpValue < 0 && acc.numArrows == sharpValue && acc.numSharps < 2)
+          if (sharpValue > 0 && acc.numArrows == sharpValue && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 1, 0);
           // in a flat-n edo, pythagorically flatenning the note raises the pitch.
-          else if (sharpValue > 0 && acc.numArrows == -sharpValue && acc.numSharps > -2)
+          else if (sharpValue < 0 && acc.numArrows == -sharpValue && acc.numSharps > -2)
             return constructAccidental(acc.numSharps - 1, 0);
 
           // check if the number of arrows coincide with quarter tone accidentals
-          else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2)
+          // in the 'arrow priority' version, this is only enabled if absolutely necessary
+          // (when apotome size is 8 steps and above)
+          else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 0.5, 0);
-          else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2)
+          else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps - 0.5, 0);
-          else if (acc.numArrows == 3/2 * sharpValue && acc.numSharps < 1)
+          else if (acc.numArrows == 3/2 * sharpValue && acc.numSharps < 1 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 1.5, 0);
-          else if (acc.numArrows == -3/2 * sharpValue && acc.numSharps > -1)
+          else if (acc.numArrows == -3/2 * sharpValue && acc.numSharps > -1 && sharpValue >= 8)
             return constructAccidental(acc.numSharps - 1.5, 0);
 
           // check if number of arrows exceeds sharpValue in the direction of transposition,
           // and thus can be better represented with a different base accidental.
-          // <UP DOWN VARIANT CHECKPOINT>: negate sharpValue for downwards plugin
-          else if (sharpValue > 0 && acc.numArrows < -3 * sharpValue && acc.numSharps > 0)
-            return constructAccidental(acc.numSharps - 3, acc.numArrows + sharpValue * 3);
-          else if (sharpValue > 0 && acc.numArrows < -2 * sharpValue && acc.numSharps > -1)
-            return constructAccidental(acc.numSharps - 2, acc.numArrows + sharpValue * 2);
-          else if (sharpValue > 0 && acc.numArrows < -sharpValue && acc.numSharps > -2)
-            return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
-          // for flat-n edos, flats raise the pitch instead.
-          else if (sharpValue < 0 && acc.numArrows < 3 * sharpValue && acc.numSharps < 0)
+          // <UP DOWN VARIANT CHECKPOINT>
+          else if (sharpValue > 0 && acc.numArrows > 3 * sharpValue && acc.numSharps < 0)
             return constructAccidental(acc.numSharps + 3, acc.numArrows - sharpValue * 3);
-          else if (sharpValue < 0 && acc.numArrows < 2 * sharpValue && acc.numSharps < 1)
+          else if (sharpValue > 0 && acc.numArrows > 2 * sharpValue && acc.numSharps < 1)
             return constructAccidental(acc.numSharps + 2, acc.numArrows - sharpValue * 2);
-          else if (sharpValue < 0 && acc.numArrows < sharpValue && acc.numSharps < 2)
+          else if (sharpValue > 0 && acc.numArrows > sharpValue && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
+          // for flat-n edos, flats raise the pitch instead.
+          else if (sharpValue < 0 && acc.numArrows > -3 * sharpValue && acc.numSharps > 0)
+            return constructAccidental(acc.numSharps - 3, acc.numArrows + sharpValue * 3);
+          else if (sharpValue < 0 && acc.numArrows > -2 * sharpValue && acc.numSharps > -1)
+            return constructAccidental(acc.numSharps - 2, acc.numArrows + sharpValue * 2);
+          else if (sharpValue < 0 && acc.numArrows > -sharpValue && acc.numSharps > -2)
+            return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
         }
 
         // otherwise, make sure its a valid accidental
@@ -807,7 +810,7 @@ MuseScore {
       // NOTE: Set the coefficient to -1 for upwards plugins, and +1 for downwards plugins.
       // <UP DOWN VARIANT CHECKPOINT>
       function getNextLine(line) {
-        return line + 1;
+        return line - 1;
       }
 
       // returns the accidental equivalent of the next baseNote after the current baseNote
@@ -828,21 +831,21 @@ MuseScore {
         var sharpValue = 7 * fifthStep - 4 * edo;
         switch(baseNote) {
         // <UP DOWN VARIANT CHECKPOINT> change to D E G A B for downwards variant
+        case 'c':
         case 'd':
-        case 'e':
+        case 'f':
         case 'g':
         case 'a':
-        case 'b':
           // a whole tone up enharmonic nominal. Steps = 2 fifthStep - octave.
           var wholeToneSteps = 2 * fifthStep - edo;
 
           // <UP DOWN VARIANT CHECKPOINT> flip steps direction
           // limits are: x^3 or bb^3 (super-flat) if upwards, bbv3 or xv3 (super-flat) if downwards
-          var overLimitSteps = (sharpValue >= 0) ? (-2 * sharpValue - 3 - 1) : (2 * sharpValue - 3 - 1);
+          var overLimitSteps = (sharpValue >= 0) ? (2 * sharpValue + 3 + 1) : (-2 * sharpValue + 3 + 1);
 
           // <UP DOWN VARIANT CHECKPOINT> flip sign
-          // Simulate going down an enharmonic diatonic whole tone, reducing the offset.
-          var newSteps = overLimitSteps + wholeToneSteps;
+          // Simulate going up an enharmonic whole tone, reducing the offset.
+          var newSteps = overLimitSteps - wholeToneSteps;
 
           return convertStepsToAccidentalType(newSteps, edo);
         default:
@@ -974,7 +977,9 @@ MuseScore {
         if (res === null)
           return null;
 
+        console.log('scanCust', str, 'res:', res[0]);
         for (var i = 1; i <= 7; i++) {
+          console.log(res[i]);
           var accSteps = convertAccidentalToSteps(res[i].trim(), edo);
           var accType = convertAccidentalTextToAccidentalType(res[i].trim());
           keySig[notes[i]] = {offset: accSteps, type: accType};
@@ -1055,7 +1060,7 @@ MuseScore {
             if (selectedNotes.length == 0) {
               console.log('no selected note elements, defaulting to pitch-up/pitch-down shortcuts');
               // <UP DOWN VARIANT CHECKPOINT>
-              cmd('pitch-down');
+              cmd('pitch-up');
               Qt.quit();
             }
 
@@ -2538,7 +2543,7 @@ MuseScore {
         var newLine = usingEnharmonic ? getNextLine(pitchData.line) : pitchData.line;
 
         // <UP DOWN VARIANT CHECKPOINT> (use getPrevNote for downwards transposition)
-        var newBaseNote = usingEnharmonic ? getPrevNote(pitchData.baseNote) : pitchData.baseNote;
+        var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
 
@@ -2599,12 +2604,12 @@ MuseScore {
         // This is now a while statement as in 5 edo and other super small edos,
         // this thing can get REALLY screwed. (e.g. E and F are the same note in 5 edo,
         // so going up by single enharmonic won't do anything for reducing the accidental steps)
-        while (nextNoteEnharmonics.below &&
-               nextNoteEnharmonics.below.offset <= parms.currKeySig[nextNoteEnharmonics.below.baseNote].offset) {
-          newBaseNote = nextNoteEnharmonics.below.baseNote;
+        while (nextNoteEnharmonics.above &&
+               nextNoteEnharmonics.above.offset >= parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset) {
+          newBaseNote = nextNoteEnharmonics.above.baseNote;
           newLine = getNextLine(newLine);
-          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.below.offset, parms.currEdo);
-          newOffset = nextNoteEnharmonics.below.offset;
+          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.offset, parms.currEdo);
+          newOffset = nextNoteEnharmonics.above.offset;
           nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
         }
 

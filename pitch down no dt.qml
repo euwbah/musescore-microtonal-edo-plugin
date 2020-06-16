@@ -17,8 +17,9 @@ MuseScore {
       }
 
       version:  "2.1.2"
-      description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
-      menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step"
+      description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO." +
+                   "This version prioritises up/down arrows over semisharp/flat accidentals whereever possible."
+      menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step (Arrows)"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -747,13 +748,13 @@ MuseScore {
             return constructAccidental(acc.numSharps - 1, 0);
 
           // check if the number of arrows coincide with quarter tone accidentals
-          else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2)
+          else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 0.5, 0);
-          else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2)
+          else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps - 0.5, 0);
-          else if (acc.numArrows == 3/2 * sharpValue && acc.numSharps < 1)
+          else if (acc.numArrows == 3/2 * sharpValue && acc.numSharps < 1 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 1.5, 0);
-          else if (acc.numArrows == -3/2 * sharpValue && acc.numSharps > -1)
+          else if (acc.numArrows == -3/2 * sharpValue && acc.numSharps > -1 && sharpValue >= 8)
             return constructAccidental(acc.numSharps - 1.5, 0);
 
           // check if number of arrows exceeds sharpValue in the direction of transposition,
