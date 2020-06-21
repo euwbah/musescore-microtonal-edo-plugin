@@ -45,7 +45,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
       - _Select string below (TAB only)_
   - To keep the normal up/down arrow key functions, you could assign something else to the plugins, such as Alt+PgUp and Alt+PgDown
   - You can search the shortcut preferences to explore what shortcuts are available without conflict\
-    or which need to be changed if you want to switch them to these plugins.\
+    or which need to be changed if you want to switch them to these plugins.
   - Ensure only one variant of each plugin has the keyboard shortcut assigned at a time.\
     If 'pitch up.qml' is assigned to the up arrow, then 'pitch up no dt.qml' cannot be assigned to the up arrow.\
     Both plugins may be enabled simultaneously, but they must have different keyboard shortcuts.
