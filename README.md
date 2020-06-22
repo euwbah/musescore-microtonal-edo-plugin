@@ -34,18 +34,13 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 - Set up keyboard shortcuts for the plugins:
   - For Tuning, we recommend using Alt+R (for "Retune")
-  - For Pitch up/down, consider using up/down arrow keys
-    - That will replace the function of up/down arrow key shortcuts in MuseScore (including
-      repositioning other elements)
-    - Before assigning the transposing plugins the up/down arrow keys shortcut, you will have to clear the following
-      shortcuts in the Shortcuts preferences menu with the 'Clear' button. (Edit -> Preferences -> Shortcuts)
-      - _Pitch up or move text or articulation up_
-      - _Pitch down or move text or articulation down_
-      - _Select string above (TAB only)_
-      - _Select string below (TAB only)_
-  - To keep the normal up/down arrow key functions, you could assign something else to the plugins, such as Alt+PgUp and Alt+PgDown
-  - You can search the shortcut preferences to explore what shortcuts are available without conflict\
-    or which need to be changed if you want to switch them to these plugins.
+  - For Pitch up/down, we recommend up/down arrow keys
+    - This will replace the function of up/down arrow key shortcuts in MuseScore (including repositioning other elements)
+    - So, before assigning the transposing plugins the up/down arrow keys shortcut, you will have to clear or change the following shortcuts in the Shortcuts preferences menu (Edit -> Preferences -> Shortcuts)
+      - _Pitch up or move text or articulation up_ (consider replacing with Alt+PgUp)
+      - _Pitch down or move text or articulation down_ (consider replacing with Alt+PgDn)
+      - _Select string above (TAB only)_ (suggest replacing with Alt+Up, which matches moving to next note above in staff)
+      - _Select string below (TAB only)_ (suggest replacing with Alt+Down, which matches moving to next note below in staff)
   - Ensure only one variant of each plugin has the keyboard shortcut assigned at a time.\
     If 'pitch up.qml' is assigned to the up arrow, then 'pitch up no dt.qml' cannot be assigned to the up arrow.\
     Both plugins may be enabled simultaneously, but they must have different keyboard shortcuts.
