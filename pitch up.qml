@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version:  "2.1.2"
+      version: "2.2.0"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -34,7 +34,7 @@ MuseScore {
       }
 
       // <TUNING SYSTEM VARIANT CHECKPOINT>
-      function getCentOffset(noteName, stepOffset, edo, a4Freq) {
+      function getCentOffset(noteName, stepOffset, edo, center) {
         var stepSize = 1200.0 / edo;
         var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
         var sharpValue = 7 * fifthStep - 4 * edo;
@@ -44,26 +44,59 @@ MuseScore {
           if (stepOffset == x*sharpValue)
             regularAccCentOffset += 100*x;
         }
-
         var centOffset = -regularAccCentOffset;
 
-        centOffset += 1200.0 * Math.log(a4Freq / 440.0) / Math.log(2);
+        // Offset caused by custom central frequency
+        centOffset += 1200*Math.log (center.freq / 440) / Math.log(2);
+        // Offset caused by custom central note
+        var centerValue;
+        switch (center.note.substring(0, 1)) {
+        case 'f':
+          centOffset += 400;
+          centerValue = 3;
+          break;
+        case 'c':
+          centOffset += 900;
+          centerValue = 2;
+          break;
+        case 'g':
+          centOffset += 200;
+          centerValue = 1;
+          break;
+        case 'd':
+          centOffset += 700;
+          centerValue = 0;
+          break;
+        case 'a':
+          centOffset += 0;
+          centerValue = -1;
+          break;
+        case 'e':
+          centOffset += 500;
+          centerValue = -2;
+          break;
+        case 'b':
+          centOffset += -200;
+          centerValue = -3;
+          break;
+        }
+        centOffset += -1200*(parseInt(center.note.substring(1, 2)) - 4);
 
         switch (noteName) {
           case 'f':
-            return stepSize*(-4*fifthStep + stepOffset) + 2800 + centOffset;
+            return stepSize*stepOffset + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
           case 'c':
-            return stepSize*(-3*fifthStep + stepOffset) + 2100 + centOffset;
+            return stepSize*stepOffset + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
           case 'g':
-            return stepSize*(-2*fifthStep + stepOffset) + 1400 + centOffset;
+            return stepSize*stepOffset + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
           case 'd':
-            return stepSize*(-fifthStep + stepOffset) + 700 + centOffset;
+            return stepSize*stepOffset + centerValue*(stepSize*fifthStep - 700) + centOffset;
           case 'a':
-            return stepSize*stepOffset + centOffset;
+            return stepSize*stepOffset + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
           case 'e':
-            return stepSize*(fifthStep + stepOffset) - 700 + centOffset;
+            return stepSize*stepOffset + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
           case 'b':
-            return stepSize*(2*fifthStep + stepOffset) - 1400 + centOffset;
+            return stepSize*stepOffset + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
         }
       }
 
@@ -1066,11 +1099,11 @@ MuseScore {
             // them according to which staff the current note element is in.
 
             // contains an array of staffKeySigHistory objects. Index in array corresponds to staffIdx number.
-            // allEDOs and allA4Freqs have similar uses containing staffEDOHistory and staffA4FreqHistory objects
+            // allEDOs and allCenters have similar uses containing staffEDOHistory and staffCenterHistory objects
             // respectively.
             var allKeySigs = [];
             var allEDOs = [];
-            var allA4Freqs = [];
+            var allCenters = [];
 
             parms.bars = [];
             parms.currKeySig = parms.naturalKeySig;
@@ -1079,7 +1112,7 @@ MuseScore {
             for (var staff = 0; staff < curScore.nstaves; staff++) {
               var staffKeySigHistory = [];
               var staffEDOHistory = [];
-              var staffA4FreqHistory = [];
+              var staffCenterHistory = [];
 
               for (var voice = 0; voice < 4; voice++) {
                 cursor.rewind(1);
@@ -1091,7 +1124,7 @@ MuseScore {
 
                 while (true) {
                   if (cursor.segment) {
-                    // scan edo & A4 tuning frequency first. key signature parsing is dependant on edo used.
+                    // scan edo & tuning center first. key signature parsing is dependant on edo used.
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
                       var annotation = cursor.segment.annotations[i];
                       console.log("found annotation type: " + annotation.subtypeName());
@@ -1107,16 +1140,16 @@ MuseScore {
                               edo: edo
                             });
                           }
-                        } else if (text.toLowerCase().trim().startsWith('a4:')) {
+                        } else if (text.trim().search(/[a-g][0-9]:/i == 0)) {
                           var txt = text.toLowerCase().trim();
                           if (txt.endsWith('hz'))
                             txt = txt.substring(0, txt.length - 2);
-                          var a4Freq = parseFloat(txt.substring(3));
-                          if (a4Freq !== NaN || a4Freq !== undefined || a4Freq !== null) {
-                            console.log('found A4 frequency annotation: ' + text)
-                            staffA4FreqHistory.push({
+                          var center = {note: txt.substring(0, 2), freq: parseFloat(txt.substring(3))};
+                          if (center.freq !== NaN || center.freq !== undefined || center.freq !== null) {
+                            console.log('found tuning center annotation: ' + text)
+                            staffCenterHistory.push({
                               tick: cursor.tick,
-                              a4Freq: a4Freq
+                              center: center
                             });
                           }
                         }
@@ -1163,7 +1196,7 @@ MuseScore {
 
               allKeySigs.push(staffKeySigHistory);
               allEDOs.push(staffEDOHistory);
-              allA4Freqs.push(staffA4FreqHistory);
+              allCenters.push(staffCenterHistory);
             } // end of key sig and bars population for all staves
 
             // Run transpose operation on all note elements.
@@ -1178,7 +1211,7 @@ MuseScore {
 
               parms.currKeySig = parms.naturalKeySig;
               parms.currEdo = 12;
-              parms.currA4Freq = 440;
+              parms.currCenter = {note: 'a4', freq: 440};
 
               // handle transposing the firstTiedNote in the event that a non-first tied note
               // is selected.
@@ -1238,12 +1271,12 @@ MuseScore {
                 }
               }
 
-              var mostRecentA4FreqTick = -1;
-              for (var j = 0; j < allA4Freqs[cursor.staffIdx].length; j++) {
-                var a4Freq = allA4Freqs[cursor.staffIdx][j];
-                if (a4Freq.tick <= segment.tick && a4Freq.tick > mostRecentA4FreqTick) {
-                  parms.currA4Freq = a4Freq.a4Freq;
-                  mostRecentA4FreqTick = a4Freq.tick;
+              var mostRecentCenterTick = -1;
+              for (var j = 0; j < allCenters[cursor.staffIdx].length; j++) {
+                var center = allCenters[cursor.staffIdx][j];
+                if (center.tick <= segment.tick && center.tick > mostRecentCenterTick) {
+                  parms.currCenter = center.center;
+                  mostRecentCenterTick = center.tick;
                 }
               }
 
@@ -1296,7 +1329,7 @@ MuseScore {
 
             parms.currKeySig = parms.naturalKeySig;
             parms.currEdo = 12;
-            parms.currA4Freq = 440;
+            parms.currCenter = {note: 'a4', freq: 440};
 
             // Even if system text is used for key sig, the text
             // won't carry over for all voices (if the text was placed on voice 1, only
@@ -1307,7 +1340,7 @@ MuseScore {
             // tuned.
             var staffKeySigHistory = [];
             var staffEDOHistory = [];
-            var staffA4FreqHistory = [];
+            var staffCenterHistory = [];
 
             // initial run to populate custom key signatures
             for (var voice = 0; voice < 4; voice++) {
@@ -1331,7 +1364,7 @@ MuseScore {
               while (true) {
 
                 if (cursor.segment) {
-                  // scan edo & A4 tuning frequency first. key signature parsing is dependant on edo used.
+                  // scan edo & tuning center first. key signature parsing is dependant on edo used.
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
                     var annotation = cursor.segment.annotations[i];
                     console.log("found annotation type: " + annotation.subtypeName());
@@ -1347,16 +1380,16 @@ MuseScore {
                             edo: edo
                           });
                         }
-                      } else if (text.toLowerCase().trim().startsWith('a4:')) {
+                      } else if (text.trim().search(/[a-g][0-9]:/i) == 0) {
                         var txt = text.toLowerCase().trim();
                         if (txt.endsWith('hz'))
                           txt = txt.substring(0, txt.length - 2);
-                        var a4Freq = parseFloat(txt.substring(3));
-                        if (a4Freq !== NaN || a4Freq !== undefined || a4Freq !== null) {
-                          console.log('found A4 frequency annotation: ' + text)
-                          staffA4FreqHistory.push({
+                        var center = {note: txt.substring(0, 2), freq: parseFloat(txt.substring(3))};
+                        if (center.freq !== NaN || center.freq !== undefined || center.freq !== null) {
+                          console.log('found tuning center annotation: ' + text)
+                          staffCenterHistory.push({
                             tick: cursor.tick,
-                            a4Freq: a4Freq
+                            center: center
                           });
                         }
                       }
@@ -1435,12 +1468,12 @@ MuseScore {
                   }
                 }
 
-                var mostRecentA4FreqTick = -1;
-                for (var i = 0; i < staffA4FreqHistory.length; i++) {
-                  var a4Freq = staffA4FreqHistory[i];
-                  if (a4Freq.tick <= cursor.tick && a4Freq.tick > mostRecentA4FreqTick) {
-                    parms.currA4Freq = a4Freq.a4Freq;
-                    mostRecentA4FreqTick = a4Freq.tick;
+                var mostRecentCenterTick = -1;
+                for (var i = 0; i < staffCenterHistory.length; i++) {
+                  var center = staffCenterHistory[i];
+                  if (center.tick <= cursor.tick && center.tick > mostRecentCenterTick) {
+                    parms.currCenter = center.center;
+                    mostRecentCenterTick = center.tick;
                   }
                 }
 
@@ -3144,7 +3177,7 @@ MuseScore {
                     ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
 
-        note.tuning = getCentOffset(newBaseNote, newOffset, parms.currEdo, parms.currA4Freq);
+        note.tuning = getCentOffset(newBaseNote, newOffset, parms.currEdo, parms.currCenter);
 
 
         // Step 4. Remove accidentals on all marked notes.
@@ -3157,7 +3190,7 @@ MuseScore {
       }
 
       onRun: {
-        console.log("hello 31tet");
+        console.log("hello n-edo");
 
         if (typeof curScore === 'undefined')
               Qt.quit();
