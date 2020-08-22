@@ -113,7 +113,7 @@ MuseScore {
 
       function getCentOffset(noteName, stepOffset, edo, center) {
         var stepSize = 1200.0 / edo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         var regularAccCentOffset = 0;
@@ -124,7 +124,7 @@ MuseScore {
         var centOffset = -regularAccCentOffset;
 
         // Offset caused by custom central frequency
-        centOffset += 1200*Math.log (center.freq / 440) / Math.log(2);
+        centOffset += 1200*Math.log (center.freq / 440) / Math.LN2;
         // Offset caused by custom central note
         var centerValue;
         switch (center.note.substring(0, 1)) {
@@ -178,7 +178,7 @@ MuseScore {
       }
 
       function convertAccidentalToStepsOrNull(acc, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
         switch(acc.trim()) {
         case 'db':
@@ -587,7 +587,7 @@ MuseScore {
       // will not be tuned.
       function tuneNote(note, segment, parms, scanOnly) {
         var tpc = note.tpc;
-        var fifthStep = Math.round(parms.currEdo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(parms.currEdo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7*fifthStep - 4*parms.currEdo;
 
         // If tpc is non-natural, there's no need to go through additional steps,

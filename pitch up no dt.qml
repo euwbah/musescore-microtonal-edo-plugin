@@ -37,7 +37,7 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function getCentOffset(noteName, stepOffset, edo, center) {
         var stepSize = 1200.0 / edo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         var regularAccCentOffset = 0;
@@ -48,7 +48,7 @@ MuseScore {
         var centOffset = -regularAccCentOffset;
 
         // Offset caused by custom central frequency
-        centOffset += 1200*Math.log (center.freq / 440) / Math.log(2);
+        centOffset += 1200*Math.log (center.freq / 440) / Math.LN2;
         // Offset caused by custom central note
         var centerValue;
         switch (center.note.substring(0, 1)) {
@@ -203,7 +203,7 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertAccidentalTypeToSteps(accType, edo) {
         var accOffset = null;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         switch(accType) {
@@ -569,7 +569,7 @@ MuseScore {
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertStepsToAccidentalType(steps, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         var numSharpsFlatter = Math.floor(steps / sharpValue);
@@ -748,7 +748,7 @@ MuseScore {
            less than or eq. to 3 arrows, there is no such note and the tuning system cannot be supported
            as there are more notes than the number of accidentals available in musescore
         */
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         var acc = deconstructAccidental(acc);
@@ -860,7 +860,7 @@ MuseScore {
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function getOverLimitEnharmonicEquivalent(baseNote, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
         switch(baseNote) {
         // <UP DOWN VARIANT CHECKPOINT> change to D E G A B for downwards variant
@@ -899,7 +899,7 @@ MuseScore {
       function getEnharmonics(baseNote, offset, edo) {
         var above, below;
 
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
         var wholeToneSteps = 2 * fifthStep - edo;
         var semitoneSteps = -5 * fifthStep + 3 * edo;
@@ -1956,7 +1956,7 @@ MuseScore {
       function getNotePitchData(cursor, note, parms) {
         var noteData = {};
         var edo = parms.currEdo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.log(2));
+        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
         noteData.line = note.line;

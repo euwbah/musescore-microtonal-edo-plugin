@@ -14,8 +14,8 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
     evaluating cent offsets for any EDO.
 - Support for key signatures via [Key signature annotations](#key-signatures)
 - Transposing individual notes / selections by 1 EDO step, managing accidental neutralization and corrections
-- Tuning system, key signatures, and A4 tuning frequency can be changed mid score, and different staves
-  may be in different tunings, key signatures, and A4 reference pitches at the same time.
+- Tuning system, key signatures, and reference pitches can be changed mid score, and different staves
+  may be in different tunings, key signatures, and reference pitches at the same time.
 
 ## Instructions
 
@@ -63,8 +63,8 @@ There are a 3 different types of tuning system information text, each one has to
   - Spaces and capitalization are optional. Non-integer edos are not currently supported.
   - When the EDO is changed, any prior key signature must be redeclared as the step offsets of the key signatures would differ
     and has to be updated.
-- **A4 frequency selector** format: `a4: x hz`
-  - Where `x` is the frequency of the natural nominal tuning note A4. Other notes will be tuned to that as reference.
+- **Reference frequency selector** format: `x: y hz`
+  - Where `x` is the pitch nominal such as `a4`, `y` is its frequency. Other notes will be tuned to that as reference.
   - Spaces and capitalization are optional. Decimals in frequency supported.
 - **Key signature** format: `.x.x.x.x.x.x.x`
   - Where each `x` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C, D, E, F, G, A, and B in that order.
@@ -85,8 +85,8 @@ Here is a brief summary of the contents of the document:
 
 In this system, the nominals F C G D A E B are tuned according to a chain of **best fifths**,
 which is the best representation of the perfect 3:2 just fifth that the EDO has to offer.\
-The exact pitches of the notes are calculated based on the frequency of the note A4, which is defined by the
-A4 frequency selector, or 440Hz by default.
+The exact pitches of the notes are calculated based on the frequency of the reference note, which is defined by the
+reference frequency selector, or A4: 440 Hz by default.
 
 <details>
   <summary><em> How to calculate an EDO's best fifth? </em></summary>
@@ -94,8 +94,8 @@ A4 frequency selector, or 440Hz by default.
   The number of steps a fifth is in x-edo = `round(x * log2(3/2))`
 
   `3/2` represents the frequency ratio of a fifth in just intonation.\
-  `log(3/2)` represents how many octaves are there in a fifth (approx 0.584962)\
-  `x * log(3/2)` represents how many steps of x-edo are there in a fifth\
+  `log2(3/2)` represents how many octaves are there in a fifth (approx 0.584962)\
+  `x * log2(3/2)` represents how many steps of x-edo are there in a fifth\
   `round()` rounds it up/down to the nearest whole edostep.
 
 </details>
@@ -227,13 +227,13 @@ you can also choose to put nothing between the dots)
 | ![Double flat down 2](images/bbv2.png)  | `bbv2` |
 | ![Double flat down](images/bbv1.png)    | `bbv` or `bbv1` |
 | ![Double flat](images/bb.png)           | `bb`   |
-| ![Double flat up](images/bbu1.png)      | `bb^` |
+| ![Double flat up](images/bbu1.png)      | `bb^` or `bb^1` |
 | ![Double flat up 2](images/bbu2.png)    | `bb^2` |
 | ![Double flat up 3](images/bbu3.png)    | `bb^3` |
 | ![Sesqui flat](images/db.png)           | `db` or `bd` |
 | ![Flat down 3](images/bv3.png)          | `bv3`  |
 | ![Flat down 2](images/bv2.png)          | `bv2`  |
-| ![Flat down](images/bv1.png)            | `bv` or `bv1`  |
+| ![Flat down](images/bv1.png)            | `bv` or `bv1` |
 | ![Flat](images/b.png)                   | `b`  |
 | ![Flat up](images/bu1.png)              | `b^` or `b^1` |
 | ![Flat up 2](images/bu2.png)            | `b^2` |
@@ -251,7 +251,7 @@ you can also choose to put nothing between the dots)
 | ![Sharp down2](images/sv2.png)          | `#v2` |
 | ![Sharp down](images/sv1.png)           | `#v` or `#v1` |
 | ![Sharp](images/s.png)                  | `#`  |
-| ![Sharp up](images/su1.png)             | `#^` or `#^1`  |
+| ![Sharp up](images/su1.png)             | `#^` or `#^1` |
 | ![Sharp up 2](images/su2.png)           | `#^2`  |
 | ![Sharp up 3](images/su3.png)           | `#^3`  |
 | ![Sesqui sharp](images/s+.png)          | `#+` or `+#` |
