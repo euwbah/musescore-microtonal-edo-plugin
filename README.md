@@ -9,13 +9,13 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 ![screenshot](images/microtonal-plugin-screenshot.png)
 
 ## Features
-- Retuning note cent offsets based on edo of choice
+- Retuning note cent offsets to match any supported edo of choice
   - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for
     evaluating cent offsets for any EDO.
 - Support for key signatures via [Key signature annotations](#key-signatures)
-- Transposing individual notes / selections by 1 EDO step, managing accidental neutralization and corrections
-- Tuning system, key signatures, and reference pitches can be changed mid score, and different staves
-  may be in different tunings, key signatures, and reference pitches at the same time.
+- Transposing individual notes / selections by 1 EDO step, managing neutralization and correction of accidentals on following notes.
+- Tuning system, key signatures, and reference pitches can be changed mid score, and staves
+  may be set to different tunings, key signatures, and reference pitches at the same time.
 
 ## Instructions
 
@@ -23,7 +23,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into MuseScore's plugins directory.
 
-[Install & Activate the plugins](https://musescore.org/en/handbook/plugins#windows)
+[Install & Activate](https://musescore.org/en/handbook/plugins#windows) the following plugins:
 
 - `tune n-edo.qml`:
   - Tunes selected phrase (selection made with shift-click) / whole score (if nothing selected)
@@ -32,11 +32,11 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 - `pitch up no dt.qml`/`pitch down no dt.qml`:
   - Same as above, but prioritizes up/down arrows over semi/sesqui sharp/flat symbols wherever possible.
 
-- Set up keyboard shortcuts for the plugins:
+- Set up keyboard shortcuts for the plugins (or access them in the plugin drop-down menu):
   - For Tuning, we recommend using Alt+R (for "Retune")
   - For Pitch up/down, we recommend up/down arrow keys
-    - This will replace the function of up/down arrow key shortcuts in MuseScore (including repositioning other elements)
-    - So, before assigning the transposing plugins the up/down arrow keys shortcut, you will have to clear or change the following shortcuts in the Shortcuts preferences menu (Edit -> Preferences -> Shortcuts)
+    - This replaces the original function of up/down arrow key shortcuts in MuseScore (including repositioning other elements)
+    - Before assigning the transposing plugins the up/down arrow keys shortcut, you will have to clear or change the following shortcuts in the Shortcuts preferences menu (Edit -> Preferences -> Shortcuts)
       - _Pitch up or move text or articulation up_ (consider replacing with Alt+PgUp)
       - _Pitch down or move text or articulation down_ (consider replacing with Alt+PgDn)
       - _Select string above (TAB only)_ (suggest replacing with Alt+Up, which matches moving to next note above in staff)
@@ -47,7 +47,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 ### Selecting the tuning system
 
-The plugin makes use of staff text (Ctrl-T) and system text (Ctrl-Shift-T) to configure which tuning system is used.
+The plugin makes use of staff text annotations (Ctrl-T) and system text annotations (Ctrl-Shift-T) to configure which tuning system is used.
 
 Using staff text will apply the tuning system to only the staff that it is on, and using system text will
 apply the tuning system to the all the staves. Staff/system text will only affect the current and subsequent bars
@@ -57,7 +57,7 @@ instruments in different tuning systems concurrently.
 It is possible, but not recommended, to change the tuning system halfway through a bar,
 as accidentals may carry over and be applied in unexpected ways.
 
-There are a 3 different types of tuning system information text, each one has to be in its own separate staff/system text:
+There are 3 types of tuning system annotations that the plugin accepts, and each one has to be in its own separate staff/system text:
 - **EDO selector** format: `x edo` (e.g. `31 edo`)
   - Where `x` is the number of equally-spaced notes in the octave.
   - Spaces and capitalization are optional. Non-integer edos are not currently supported.
@@ -66,13 +66,15 @@ There are a 3 different types of tuning system information text, each one has to
 - **Reference frequency selector** format: `x: y hz` (e.g. `a4: 440 hz`)
   - Where `x` is the pitch nominal such as `a4`, `y` is its frequency. Other notes will be tuned to that as reference.
   - Spaces and capitalization are optional. Decimals in frequency are supported.
-- **Key signature** format: `.x.x.x.x.x.x.x`
+- **Key signature** format: `.x.x.x.x.x.x.x` (e.g. `.b.b.b.b.b.b.bb` is F-flat major in 12/19/31/50 edo)
   - Where each `x` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C, D, E, F, G, A, and B in that order.
   - If a particular note is natural, leave the space after the dot empty or use any placeholder like '0' or 'n', but keep the dot there.\
     In total, there should be 7 dots.
   - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.\
     If there are no key signatures for the score, there is no need to enter key signature text, but you can still enter a blank
     key signature text for future reference (e.g.: `.......` is a blank key signature)
+  - Likewise, all key signature annotation texts **must** have a corresponding key signature element placed in that measure, especially if
+    there are standard accidentals (bb/b/#/x) in the key signature.
 
 ## Notation system
 
@@ -100,9 +102,9 @@ reference frequency selector, or A4: 440 Hz by default.
 
 </details>
 
-The best fifth in 12 edo is 7 steps. Thus, the distance between F and C, C and G, G and D, etc.. is 7 steps of 12 edo.
+The best fifth in 12 edo is 7 steps. Thus, the distance between F-C, C-G, G-D, etc.. is 7 steps of 12 edo.
 
-The best fifth in 22 edo is 13 steps. Thus, the distance between C and G, etc.. is 13 steps of 22 edo.
+The best fifth in 22 edo is 13 steps. Thus, the distance between C-G, etc.. is 13 steps of 22 edo.
 
 ### Tuning of regular pythagorean accidentals
 
@@ -200,7 +202,7 @@ Key signature code syntax:
 2. Put the textual representation of the accidental for the note **C** using the [accidental code](#accidental-code)
 3. Put another dot `.`
 4. Put the required accidental for **D**
-5. Repeat from notes **C** thru **B**
+5. Repeat from notes **C** thru **B**, in that order.
 
 Natural accidentals are denoted by leaving the space blank, or using any other character
 that does not represent an accidental.
