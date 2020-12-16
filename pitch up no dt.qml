@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.0"
+      version: "2.2.1"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO." +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whereever possible."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step (Arrows)"

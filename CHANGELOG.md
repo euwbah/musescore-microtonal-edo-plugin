@@ -1,7 +1,10 @@
 ## Changelog
 
+### 2.2.1
+- Bug fix (#17)
+
 ### 2.2.0
-- Added support for custom tuning centers. 
+- Added support for custom tuning centers.
 
 ### 2.1.2
 - Added 'no dt' version, which prioritizes up/down arrows over semi/sesqui sharps and flats wherever possible.
