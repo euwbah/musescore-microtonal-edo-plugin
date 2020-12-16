@@ -1143,7 +1143,7 @@ MuseScore {
                               edo: edo
                             });
                           }
-                        } else if (text.trim().search(/[a-g][0-9]:/i == 0)) {
+                        } else if (text.trim().search(/[a-g][0-9]:/i) !== -1) {
                           var txt = text.toLowerCase().trim();
                           if (txt.endsWith('hz'))
                             txt = txt.substring(0, txt.length - 2);
@@ -1383,7 +1383,7 @@ MuseScore {
                             edo: edo
                           });
                         }
-                      } else if (text.trim().search(/[a-g][0-9]:/i) == 0) {
+                      } else if (text.trim().search(/[a-g][0-9]:/i) !== -1) {
                         var txt = text.toLowerCase().trim();
                         if (txt.endsWith('hz'))
                           txt = txt.substring(0, txt.length - 2);

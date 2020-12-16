@@ -1140,13 +1140,13 @@ MuseScore {
                               edo: edo
                             });
                           }
-                        } else if (text.trim().search(/[a-g][0-9]:/i == 0)) {
+                        } else if (text.trim().search(/[a-g][0-9]:/i) !== -1) {
                           var txt = text.toLowerCase().trim();
                           if (txt.endsWith('hz'))
                             txt = txt.substring(0, txt.length - 2);
                           var center = {note: txt.substring(0, 2), freq: parseFloat(txt.substring(3))};
                           if (center.freq !== NaN || center.freq !== undefined || center.freq !== null) {
-                            console.log('found tuning center annotation: ' + text)
+                            console.log('found tuning center annotation: ' + text + ', freq: ' + center.freq);
                             staffCenterHistory.push({
                               tick: cursor.tick,
                               center: center
@@ -1275,6 +1275,7 @@ MuseScore {
               for (var j = 0; j < allCenters[cursor.staffIdx].length; j++) {
                 var center = allCenters[cursor.staffIdx][j];
                 if (center.tick <= segment.tick && center.tick > mostRecentCenterTick) {
+                  console.log('center.center: ' + center.center.note + ': ' + center.center.freq);
                   parms.currCenter = center.center;
                   mostRecentCenterTick = center.tick;
                 }
@@ -1380,13 +1381,13 @@ MuseScore {
                             edo: edo
                           });
                         }
-                      } else if (text.trim().search(/[a-g][0-9]:/i) == 0) {
+                      } else if (text.trim().search(/[a-g][0-9]:/i) !== -1) {
                         var txt = text.toLowerCase().trim();
                         if (txt.endsWith('hz'))
                           txt = txt.substring(0, txt.length - 2);
                         var center = {note: txt.substring(0, 2), freq: parseFloat(txt.substring(3))};
                         if (center.freq !== NaN || center.freq !== undefined || center.freq !== null) {
-                          console.log('found tuning center annotation: ' + text)
+                          console.log('found tuning center annotation: ' + text + ', freq: ' + center.freq);
                           staffCenterHistory.push({
                             tick: cursor.tick,
                             center: center
@@ -3176,6 +3177,8 @@ MuseScore {
         console.log('new baseNote: ' + newBaseNote + ', line: ' + newLine +
                     ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
+
+        console.log('parms currEdo: ' + parms.currEdo + ', currCenter: ' + parms.currCenter.note + ' = ' + parms.currCenter.freq);
 
         note.tuning = getCentOffset(newBaseNote, newOffset, parms.currEdo, parms.currCenter);
 

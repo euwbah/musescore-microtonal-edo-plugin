@@ -58,14 +58,14 @@ It is possible, but not recommended, to change the tuning system halfway through
 as accidentals may carry over and be applied in unexpected ways.
 
 There are a 3 different types of tuning system information text, each one has to be in its own separate staff/system text:
-- **EDO selector** format: `x edo`
+- **EDO selector** format: `x edo` (e.g. `31 edo`)
   - Where `x` is the number of equally-spaced notes in the octave.
   - Spaces and capitalization are optional. Non-integer edos are not currently supported.
   - When the EDO is changed, any prior key signature must be redeclared as the step offsets of the key signatures would differ
     and has to be updated.
-- **Reference frequency selector** format: `x: y hz`
+- **Reference frequency selector** format: `x: y hz` (e.g. `a4: 440 hz`)
   - Where `x` is the pitch nominal such as `a4`, `y` is its frequency. Other notes will be tuned to that as reference.
-  - Spaces and capitalization are optional. Decimals in frequency supported.
+  - Spaces and capitalization are optional. Decimals in frequency are supported.
 - **Key signature** format: `.x.x.x.x.x.x.x`
   - Where each `x` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C, D, E, F, G, A, and B in that order.
   - If a particular note is natural, leave the space after the dot empty or use any placeholder like '0' or 'n', but keep the dot there.\
