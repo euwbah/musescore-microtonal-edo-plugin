@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.0"
+      version: "2.2.1"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -1140,7 +1140,7 @@ MuseScore {
                               edo: edo
                             });
                           }
-                        } else if (text.trim().search(/[a-g][0-9]:/i == 0)) {
+                        } else if (text.trim().search(/[a-g][0-9]:/i) !== -1) {
                           var txt = text.toLowerCase().trim();
                           if (txt.endsWith('hz'))
                             txt = txt.substring(0, txt.length - 2);
@@ -1380,7 +1380,7 @@ MuseScore {
                             edo: edo
                           });
                         }
-                      } else if (text.trim().search(/[a-g][0-9]:/i) == 0) {
+                      } else if (text.trim().search(/[a-g][0-9]:/i) !== -1) {
                         var txt = text.toLowerCase().trim();
                         if (txt.endsWith('hz'))
                           txt = txt.substring(0, txt.length - 2);
