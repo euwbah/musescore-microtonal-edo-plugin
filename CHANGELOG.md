@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.2.2
+- Fixed incorrect tuning of up/down arrows where regular sharps/flats are applicable. 
+
 ### 2.2.1
 - Bug fix (#17)
 
