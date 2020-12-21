@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.1"
+      version: "2.2.2"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -34,20 +34,13 @@ MuseScore {
       }
 
       // <TUNING SYSTEM VARIANT CHECKPOINT>
-      function getCentOffset(noteName, stepOffset, edo, center) {
+      function getCentOffset(noteName, stepOffset, regAcc, edo, center) {
         var stepSize = 1200.0 / edo;
         var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
-        var regularAccCentOffset = 0;
-        for (var x = -2; x <= 2; x++) {
-          if (stepOffset == x*sharpValue)
-            regularAccCentOffset += 100*x;
-        }
-        var centOffset = -regularAccCentOffset;
-
         // Offset caused by custom central frequency
-        centOffset += 1200*Math.log (center.freq / 440) / Math.LN2;
+        var centOffset = 1200*Math.log (center.freq / 440) / Math.LN2;
         // Offset caused by custom central note
         var centerValue;
         switch (center.note.substring(0, 1)) {
@@ -84,19 +77,19 @@ MuseScore {
 
         switch (noteName) {
           case 'f':
-            return stepSize*stepOffset + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
           case 'c':
-            return stepSize*stepOffset + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
           case 'g':
-            return stepSize*stepOffset + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
           case 'd':
-            return stepSize*stepOffset + centerValue*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + centerValue*(stepSize*fifthStep - 700) + centOffset;
           case 'a':
-            return stepSize*stepOffset + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
           case 'e':
-            return stepSize*stepOffset + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
           case 'b':
-            return stepSize*stepOffset + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
         }
       }
 
@@ -3177,7 +3170,15 @@ MuseScore {
                     ', explicit accidental: ' + convertAccidentalTypeToName(newAccidental) +
                     ', offset: ' + newOffset + ', enharmonic: ' + usingEnharmonic)
 
-        note.tuning = getCentOffset(newBaseNote, newOffset, parms.currEdo, parms.currCenter);
+        function countRegularAccidental (acc) {
+          acc = deconstructAccidental (acc);
+          if (acc.numArrows != 0 || acc.numSharps % 1 != 0)
+            return 0;
+          else
+            return acc.numSharps;
+        }
+        var newRegAcc = countRegularAccidental (newImplicitAccidental);
+        note.tuning = getCentOffset(newBaseNote, newOffset, newRegAcc, parms.currEdo, parms.currCenter);
 
 
         // Step 4. Remove accidentals on all marked notes.

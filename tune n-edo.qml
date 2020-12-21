@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version: "2.2.0"
+      version: "2.2.2"
       description: "Retune selection to any EDO temperament, or whole score if nothing selected."
       menuPath: "Plugins.n-EDO.Tune"
 
@@ -104,6 +104,7 @@ MuseScore {
       // Calculates the number of cents to detune the default musescore note by.
       // noteName: the note nominal alphabet from 'f' thru 'b'
       // stepOffset: offset the nominal by this many steps of the EDO
+      // regAcc: number of regular accidentals
       // edo: how many notes per octave in the tuning system.
       // center: the central note and its frequency in Hz (by default A4, 440)
       //
@@ -111,20 +112,13 @@ MuseScore {
       // method edited by @euwbah to set A as the normalised frequency instead of D
       // FloraCanou: let's support custom tuning center
 
-      function getCentOffset(noteName, stepOffset, edo, center) {
+      function getCentOffset(noteName, stepOffset, regAcc, edo, center) {
         var stepSize = 1200.0 / edo;
         var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
 
-        var regularAccCentOffset = 0;
-        for (var x = -2; x <= 2; x++) {
-          if (stepOffset == x*sharpValue)
-            regularAccCentOffset += 100*x;
-        }
-        var centOffset = -regularAccCentOffset;
-
         // Offset caused by custom central frequency
-        centOffset += 1200*Math.log (center.freq / 440) / Math.LN2;
+        var centOffset = 1200*Math.log (center.freq / 440) / Math.LN2;
         // Offset caused by custom central note
         var centerValue;
         switch (center.note.substring(0, 1)) {
@@ -161,19 +155,19 @@ MuseScore {
 
         switch (noteName) {
           case 'f':
-            return stepSize*stepOffset + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
           case 'c':
-            return stepSize*stepOffset + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
           case 'g':
-            return stepSize*stepOffset + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
           case 'd':
-            return stepSize*stepOffset + centerValue*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + centerValue*(stepSize*fifthStep - 700) + centOffset;
           case 'a':
-            return stepSize*stepOffset + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
           case 'e':
-            return stepSize*stepOffset + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
           case 'b':
-            return stepSize*stepOffset + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
+            return stepSize*stepOffset - 100*regAcc + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
         }
       }
 
@@ -599,91 +593,91 @@ MuseScore {
 
         switch(tpc) {
         case -1: //Fbb
-          note.tuning = getCentOffset ('f', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
         case 0: //Cbb
-          note.tuning = getCentOffset ('c', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
         case 1: //Gbb
-          note.tuning = getCentOffset ('g', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
         case 2: //Dbb
-          note.tuning = getCentOffset ('d', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
         case 3: //Abb
-          note.tuning = getCentOffset ('a', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
         case 4: //Ebb
-          note.tuning = getCentOffset ('e', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
         case 5: //Bbb
-          note.tuning = getCentOffset ('b', -2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
           return;
 
         case 6: //Fb
-          note.tuning = getCentOffset ('f', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
         case 7: //Cb
-          note.tuning = getCentOffset ('c', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
         case 8: //Gb
-          note.tuning = getCentOffset ('g', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
         case 9: //Db
-          note.tuning = getCentOffset ('d', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
         case 10: //Ab
-          note.tuning = getCentOffset ('a', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
         case 11: //Eb
-          note.tuning = getCentOffset ('e', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
         case 12: //Bb
-          note.tuning = getCentOffset ('b', -sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', -sharpValue, -1, parms.currEdo, parms.currCenter);
           return;
 
         case 20: //F#
-          note.tuning = getCentOffset ('f', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
         case 21: //C#
-          note.tuning = getCentOffset ('c', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
         case 22: //G#
-          note.tuning = getCentOffset ('g', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
         case 23: //D#
-          note.tuning = getCentOffset ('d', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
         case 24: //A#
-          note.tuning = getCentOffset ('a', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
         case 25: //E#
-          note.tuning = getCentOffset ('e', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
         case 26: //B#
-          note.tuning = getCentOffset ('b', sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', sharpValue, 1, parms.currEdo, parms.currCenter);
           return;
 
         case 27: //Fx
-          note.tuning = getCentOffset ('f', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         case 28: //Cx
-          note.tuning = getCentOffset ('c', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         case 29: //Gx
-          note.tuning = getCentOffset ('g', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         case 30: //Dx
-          note.tuning = getCentOffset ('d', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         case 31: //Ax
-          note.tuning = getCentOffset ('a', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         case 32: //Ex
-          note.tuning = getCentOffset ('e', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         case 33: //Bx
-          note.tuning = getCentOffset ('b', 2*sharpValue, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
           return;
         }
 
@@ -854,7 +848,7 @@ MuseScore {
         }
 
         console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
-        note.tuning = getCentOffset(baseNote, stepsFromBaseNote, parms.currEdo, parms.currCenter);
+        note.tuning = getCentOffset(baseNote, stepsFromBaseNote, 0, parms.currEdo, parms.currCenter);
         return;
       }
 
