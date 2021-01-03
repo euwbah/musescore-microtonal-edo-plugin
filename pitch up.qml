@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.2"
+      version: "2.2.3"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -1669,7 +1669,7 @@ MuseScore {
                                       note.noteType == NoteType.GRACE32;
 
                   if (isGraceBefore) {
-                    if (note.line === line) {
+                    if (note.line === line && getTick(note) <= noteTick) {
                       nNotesInSameLine ++;
                       if(note.accidental) {
                         explicitAccidental = note.accidentalType;
@@ -1730,7 +1730,7 @@ MuseScore {
 
               if (!searchGraces) {
                 for (var i = 0; i < notes.length; i++) {
-                  if (notes[i].line === line) {
+                  if (notes[i].line === line && getTick(notes[i]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
@@ -1746,7 +1746,7 @@ MuseScore {
                     // but for solely the purposes of retrieving accidental state, this is a perfectly fine solution.
                     if(notes[i].accidental) {
                       explicitAccidental = notes[i].accidentalType;
-                      console.log('found explicitAccidental: ' + explicitAccidental);
+                      console.log('found explicitAccidental: ' + explicitAccidental + ' at: ' + getTick(notes[i]));
                     }
                     else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
                       explicitPossiblyBotchedAccidental = Accidental.FLAT2;
@@ -1797,7 +1797,7 @@ MuseScore {
                 var explicitPossiblyBotchedAccidental = undefined;
                 var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[j].line === line) {
+                  if (notes[j].line === line && getTick(notes[i]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     if(notes[j].accidental)
@@ -2101,7 +2101,7 @@ MuseScore {
         }
 
         var irregularAccidentalOrNatural = noteData.baseNote === undefined;
-        console.log('irr: ' + irregularAccidentalOrNatural);
+        // console.log('irr: ' + irregularAccidentalOrNatural);
 
         // in the event that tpc is considered natural by
         // MuseScore's playback, it would mean that it is

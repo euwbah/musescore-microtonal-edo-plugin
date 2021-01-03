@@ -1,7 +1,13 @@
 ## Changelog
 
+### 2.2.3
+- Fixed issue where an accidental in the next bar affects an accidental before when the accidental in the
+  next bar is of a lower voice index than the current selected individual note(s).
+  This issue only happens when noteheads are selected rather than entire group selections,
+  and the noteheads are of voice 2, 3 or 4.
+
 ### 2.2.2
-- Fixed incorrect tuning of up/down arrows where regular sharps/flats are applicable. 
+- Fixed incorrect tuning of up/down arrows where regular sharps/flats are applicable.
 
 ### 2.2.1
 - Bug fix (#17)

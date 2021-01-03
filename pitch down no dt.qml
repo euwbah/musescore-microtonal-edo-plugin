@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.2"
+      version: "2.2.3"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO." +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whereever possible."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step (Arrows)"
@@ -1668,7 +1668,7 @@ MuseScore {
                                       note.noteType == NoteType.GRACE32;
 
                   if (isGraceBefore) {
-                    if (note.line === line) {
+                    if (note.line === line && getTick(notes[i]) <= noteTick) {
                       nNotesInSameLine ++;
                       if(note.accidental) {
                         explicitAccidental = note.accidentalType;
@@ -1729,7 +1729,7 @@ MuseScore {
 
               if (!searchGraces) {
                 for (var i = 0; i < notes.length; i++) {
-                  if (notes[i].line === line) {
+                  if (notes[i].line === line && getTick(notes[i]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
@@ -1796,7 +1796,7 @@ MuseScore {
                 var explicitPossiblyBotchedAccidental = undefined;
                 var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[j].line === line) {
+                  if (notes[j].line === line && getTick(notes[i]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     if(notes[j].accidental)
