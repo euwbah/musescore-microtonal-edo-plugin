@@ -1,5 +1,13 @@
 ## Changelog
 
+### 2.2.4
+- Fixed critical bug:
+  - if a note were to have an explicit natural accidental after pitching up/down,
+    and the inherited accidental prior to the current note was a regular accidental,
+    any following notes in the selection with the same pitch will be affected by the first regular accidental,
+    and not the second one.
+- Fixed typo in NoteType.APPOGIATURE => NoteType.APPOGGIATURA
+
 ### 2.2.3
 - Fixed issue where an accidental in the next bar affects an accidental before when the accidental in the
   next bar is of a lower voice index than the current selected individual note(s).
