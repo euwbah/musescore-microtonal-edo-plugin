@@ -501,6 +501,4 @@ Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN      bbv3
 - Handle cross-staff notation (ctrl + shift + up/down in connected staves, e.g. grand staff) where note appears to be in another staff
   other than the cursor's staffIdx. Currently, accidentals in the cross-staff do not work on the notes that came from another staff.
   See Add Courtesy Accidentals plugin for how to do this
-- Implement porcupine notation for 22-edo (D-E-F-G-A-B-C-D = sssLsss)
 - Implement toggling between enharmonic equivalences
-- Don't hard-code frequencies, just use a dictionary of exponential operations instead

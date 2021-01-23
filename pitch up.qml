@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.2"
+      version: "2.2.4"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -1645,8 +1645,15 @@ MuseScore {
           while (cursor.tick < tickOfThisBar && cursor.nextMeasure());
           while (cursor.tick < noteTick && cursor.next());
 
-          // if before is true, move cursor to the segment BEFORE noteTick.
+
+          // used to ensure that an updated note with an explicit naturla accidental
+          // (that doesn't show up as explicit) doesn't go unnoticed when
+          // another regular accidental comes before it.
+          // See long comment at 1752 for more info.
+          var firstAccidentalPropertyUndefinedNaturalTPC = undefined;
+
           if (before) {
+            // if before is true, move cursor to the segment BEFORE noteTick.
             // but before that, ensure accidentals of grace notes attached to the current chord are picked up
             // as they constitute as 'before' the current chord.
             if (cursor.element && cursor.element.type == Ms.CHORD) {
@@ -1664,12 +1671,12 @@ MuseScore {
                 var implicitExplicitNote = undefined; // the note that has `explicitPossiblyBotchedAccidental`
                 for (var j = 0; j < graces[i].notes.length; j++) {
                   var note = graces[i].notes[j];
-                  var isGraceBefore = note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
+                  var isGraceBefore = note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURA ||
                                       note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
                                       note.noteType == NoteType.GRACE32;
 
                   if (isGraceBefore) {
-                    if (note.line === line) {
+                    if (note.line === line && getTick(note) <= noteTick) {
                       nNotesInSameLine ++;
                       if(note.accidental) {
                         explicitAccidental = note.accidentalType;
@@ -1683,9 +1690,18 @@ MuseScore {
                         explicitPossiblyBotchedAccidental = Accidental.SHARP;
                       else if (note.tpc <= 33 && note.tpc >= 27)
                         explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+                      else if (note.tpc <= 19 && note.tpc >= 13)
+                        firstAccidentalPropertyUndefinedNaturalTPC = notes[i];
 
-                      if (note.tpc <= 12 || note.tpc >= 20)
+                      if (note.tpc <= 12 || note.tpc >= 20) {
                         implicitExplicitNote = note;
+
+                        if (firstAccidentalPropertyUndefinedNaturalTPC !== undefined) {
+                          implicitExplicitNote = firstAccidentalPropertyUndefinedNaturalTPC;
+                          explicitPossiblyBotchedAccidental = Accidental.NATURAL;
+                          firstAccidentalPropertyUndefinedNaturalTPC = undefined;
+                        }
+                      }
                     }
                   }
                 }
@@ -1707,7 +1723,7 @@ MuseScore {
               }
             }
 
-            // then move cursor to segment before noteTick
+            // finally, move cursor to segment before noteTick
             while (cursor.tick >= noteTick && cursor.prev());
 
           } // end of 'before' processing
@@ -1730,14 +1746,35 @@ MuseScore {
 
               if (!searchGraces) {
                 for (var i = 0; i < notes.length; i++) {
-                  if (notes[i].line === line) {
+                  if (notes[i].line === line && getTick(notes[i]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     // console.log('found same line: ' + notes[i].line + ', acc: ' + convertAccidentalTypeToName(0 + notes[i].accidentalType) +
                     //             ', tick: ' + getTick(notes[i]) + ', tpc: ' + notes[i].tpc);
 
                     // Note: this behemoth is necessary due to this issue: https://musescore.org/en/node/305977
-                    // "Note.accidental and Note.accidentalType not updated in new cursor instance after setting to regular accidental."
+                    //
+                    // If a note was updated to a regular accidental, it's note.accidental and note.accidentalType
+                    // values would be undefined, except if it is updated to a natural accidental which naturalises
+                    // a NON-regular accidental that came before.
+                    //
+                    // Additional steps have to be taken when it comes to an updated note with an explicit natural accidental.
+                    // The natural accidental doesn't get registered as an explicit accidental due to the bug as listed above,
+                    // and neither does it get recognized as an 'explicitPossiblyBotchedAccidental' as its TPC is natural.
+                    // One can not simply use TPC to check for regular explicit natural accidentals as
+                    // notes with/inheriting non-regular accidentals will also be assigned the 'natural' TPC.
+                    //
+                    // In order to check if an updated note has an explicit natural accidental that has
+                    // to be taken into consideration one shall need to evaluate at every regular
+                    // ('possibly botched') accidental if there exists a note of which tpc is natural,
+                    // of which .accidental property is undefined, that comes after the regular accidental,
+                    // that comes before the noteTick.
+                    // This note is represented in the code as firstAccidentalPropertyUndefinedNaturalTPC.
+                    //
+                    // If such a note exists, the current regular accidental is void, and in its place,
+                    // the first (leftmost/earliest) natural TPC with note.accidental undefined shall
+                    // be assigned to the implicitExplicitNote for consideration as a regular NATURAL accidental.
+
                     // Note that this is a hacky workaround, using the note's tpc to assume the presence of an explicit accidental
                     // when its accidental properties gets erased due to a pitch update.
                     // (If no pitch update was done performed on the note, any explicit accidental will still be registered as such)
@@ -1746,19 +1783,49 @@ MuseScore {
                     // but for solely the purposes of retrieving accidental state, this is a perfectly fine solution.
                     if(notes[i].accidental) {
                       explicitAccidental = notes[i].accidentalType;
-                      console.log('found explicitAccidental: ' + explicitAccidental);
+                      console.log('found explicitAccidental: ' + explicitAccidental + ' at: ' + getTick(notes[i]));
                     }
-                    else if (notes[i].tpc <= 5 && notes[i].tpc >= -1)
+                    else if (notes[i].tpc <= 5 && notes[i].tpc >= -1) {
                       explicitPossiblyBotchedAccidental = Accidental.FLAT2;
-                    else if (notes[i].tpc <= 12 && notes[i].tpc >= 6)
+                      console.log('found possibly botched double flat' + ' at: ' + getTick(notes[i]));
+                    }
+                    else if (notes[i].tpc <= 12 && notes[i].tpc >= 6) {
                       explicitPossiblyBotchedAccidental = Accidental.FLAT;
-                    else if (notes[i].tpc <= 26 && notes[i].tpc >= 20)
+                      console.log('found possibly botched flat' + ' at: ' + getTick(notes[i]));
+                    }
+                    else if (notes[i].tpc <= 26 && notes[i].tpc >= 20) {
                       explicitPossiblyBotchedAccidental = Accidental.SHARP;
-                    else if (notes[i].tpc <= 33 && notes[i].tpc >= 27)
+                      console.log('found possibly botched sharp' + ' at: ' + getTick(notes[i]));
+                    }
+                    else if (notes[i].tpc <= 33 && notes[i].tpc >= 27) {
                       explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+                      console.log('found possibly botched double sharp' + ' at: ' + getTick(notes[i]));
+                    }
+                    else if (notes[i].tpc <= 19 && notes[i].tpc >= 13) {
+                      // These ones could either have an explicit natural accidental which is erroneously
+                      // not stated by the .accidental property,
+                      // or they could be notes with non-regular accidentals
+                      // or they could be notes that inherit accidentals from non-regular accidentals.
 
-                    if (notes[i].tpc <= 12 || notes[i].tpc >= 20)
+                      firstAccidentalPropertyUndefinedNaturalTPC = notes[i];
+                      console.log('found first natural tpc with undefined accidental property at: ' + getTick(notes[i]));
+                    }
+
+                    if (notes[i].tpc <= 12 || notes[i].tpc >= 20) {
                       implicitExplicitNote = notes[i];
+
+                      if (firstAccidentalPropertyUndefinedNaturalTPC) {
+                        console.log('overriding regular possibly botched accidental with explicit natural accidental');
+                        // If this note has a regular accidental, but there is a note with
+                        // a natural TPC that follows it that has an undefined note.accidental value,
+                        // that note should take precedence over this one as it came first and it can
+                        // be proven that the natural accidental is explicit even though it is not reflected
+                        // by the note.accidentalType!
+                        implicitExplicitNote = firstAccidentalPropertyUndefinedNaturalTPC;
+                        explicitPossiblyBotchedAccidental = Accidental.NATURAL;
+                        firstAccidentalPropertyUndefinedNaturalTPC = undefined;
+                      }
+                    }
                   }
                 }
 
@@ -1797,22 +1864,31 @@ MuseScore {
                 var explicitPossiblyBotchedAccidental = undefined;
                 var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[j].line === line) {
+                  if (notes[j].line === line && getTick(notes[i]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     if(notes[j].accidental)
                       explicitAccidental = notes[j].accidentalType;
                     else if (notes[j].tpc <= 5 && notes[j].tpc >= -1)
-                     explicitPossiblyBotchedAccidental = Accidental.FLAT2;
+                      explicitPossiblyBotchedAccidental = Accidental.FLAT2;
                     else if (notes[j].tpc <= 12 && notes[j].tpc >= 6)
-                     explicitPossiblyBotchedAccidental = Accidental.FLAT;
+                      explicitPossiblyBotchedAccidental = Accidental.FLAT;
                     else if (notes[j].tpc <= 26 && notes[j].tpc >= 20)
-                     explicitPossiblyBotchedAccidental = Accidental.SHARP;
+                      explicitPossiblyBotchedAccidental = Accidental.SHARP;
                     else if (notes[j].tpc <= 33 && notes[j].tpc >= 27)
-                     explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+                      explicitPossiblyBotchedAccidental = Accidental.SHARP2;
+                    else if (notes[i].tpc <= 19 && notes[i].tpc >= 13)
+                      firstAccidentalPropertyUndefinedNaturalTPC = notes[i];
 
-                    if (notes[j].tpc <= 12 || notes[j].tpc >= 20)
+                    if (notes[j].tpc <= 12 || notes[j].tpc >= 20) {
                       implicitExplicitNote = notes[j];
+
+                      if (firstAccidentalPropertyUndefinedNaturalTPC !== undefined) {
+                        implicitExplicitNote = firstAccidentalPropertyUndefinedNaturalTPC;
+                        explicitPossiblyBotchedAccidental = Accidental.NATURAL;
+                        firstAccidentalPropertyUndefinedNaturalTPC = undefined;
+                      }
+                    }
                   }
                 }
 
@@ -2101,7 +2177,7 @@ MuseScore {
         }
 
         var irregularAccidentalOrNatural = noteData.baseNote === undefined;
-        console.log('irr: ' + irregularAccidentalOrNatural);
+        // console.log('irr: ' + irregularAccidentalOrNatural);
 
         // in the event that tpc is considered natural by
         // MuseScore's playback, it would mean that it is
@@ -2155,7 +2231,7 @@ MuseScore {
         //       returned in the above clause.
 
         var graceChord = undefined;
-        if (note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
+        if (note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURA ||
             note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
             note.noteType == NoteType.GRACE32) {
           graceChord = note.parent;
@@ -2528,7 +2604,7 @@ MuseScore {
         // Step 0
 
         var graceChord = undefined;
-        if (note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURE ||
+        if (note.noteType == NoteType.ACCIACCATURA || note.noteType == NoteType.APPOGGIATURA ||
             note.noteType == NoteType.GRACE4 || note.noteType == NoteType.GRACE16 ||
             note.noteType == NoteType.GRACE32) {
           graceChord = note.parent;
@@ -2651,6 +2727,7 @@ MuseScore {
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
             if (parms.currKeySig[newBaseNote].type == newAccidental) {
+                console.log('making accidental implicit: priorAccOnNewLine is null and note is in key signature');
               newAccidental = Accidental.NONE;
             }
           }
@@ -2661,6 +2738,8 @@ MuseScore {
           else if (newAccidental == priorAccOnNewLine.type) {
             // TODO: Is it really ok to do this even if the note now shares its line with other notes
             //       in the same chord?
+            console.log('priorAcc offset: ' + priorAccOnNewLine.offset);
+            console.log('making accidental implicit: priorAccOnNewLine is same as the new accidental');
             newAccidental = Accidental.NONE;
           }
         }
@@ -3111,7 +3190,7 @@ MuseScore {
 
               var fnlType = followingNewLine.noteType;
               var fnlGC = undefined;
-              if (fnlType == NoteType.ACCIACCATURA || fnlType == NoteType.APPOGGIATURE ||
+              if (fnlType == NoteType.ACCIACCATURA || fnlType == NoteType.APPOGGIATURA ||
                   fnlType == NoteType.GRACE4 || fnlType == NoteType.GRACE16 ||
                   fnlType == NoteType.GRACE32) {
                 fnlGC = note.parent;

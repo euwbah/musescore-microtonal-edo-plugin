@@ -1,7 +1,21 @@
 ## Changelog
 
+### 2.2.4
+- Fixed critical bug:
+  - if a note were to have an explicit natural accidental after pitching up/down,
+    and the inherited accidental prior to the current note was a regular accidental,
+    any following notes in the selection with the same pitch will be affected by the first regular accidental,
+    and not the second one.
+- Fixed typo in NoteType.APPOGIATURE => NoteType.APPOGGIATURA
+
+### 2.2.3
+- Fixed issue where an accidental in the next bar affects an accidental before when the accidental in the
+  next bar is of a lower voice index than the current selected individual note(s).
+  This issue only happens when noteheads are selected rather than entire group selections,
+  and the noteheads are of voice 2, 3 or 4.
+
 ### 2.2.2
-- Fixed incorrect tuning of up/down arrows where regular sharps/flats are applicable. 
+- Fixed incorrect tuning of up/down arrows where regular sharps/flats are applicable.
 
 ### 2.2.1
 - Bug fix (#17)
