@@ -27,23 +27,24 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 - `tune n-edo.qml`:
   - Tunes selected phrase (selection made with shift-click) / whole score (if nothing selected)
-- `pitch up.qml`/`pitch down.qml`:
+- `pitch up.qml` & `pitch down.qml`:
   - Transposes up/down selected phrase (shift-click) / individually selected notes (alt-click noteheads).
-- `pitch up no dt.qml`/`pitch down no dt.qml`:
+- `pitch up no dt.qml` & `pitch down no dt.qml`:
   - Same as above, but prioritizes up/down arrows over semi/sesqui sharp/flat symbols wherever possible.
 
-- Set up keyboard shortcuts for the plugins (or access them in the plugin drop-down menu):
-  - For Tuning, we recommend using Alt+R (for "Retune")
+- Set up keyboard shortcuts for the plugins (optional, you can still access them in the plugin drop-down menu):
+  - Go to Plugins -> Plugin Manager -> select plugin -> Define Shortcut
+  - For Tuning, it is recommended to use Alt+R (for "Retune")
   - For Pitch up/down, we recommend up/down arrow keys
-    - This replaces the original function of up/down arrow key shortcuts in MuseScore (including repositioning other elements)
-    - Before assigning the transposing plugins the up/down arrow keys shortcut, you will have to clear or change the following shortcuts in the Shortcuts preferences menu (Edit -> Preferences -> Shortcuts)
+    - This plugin is built to work in place of the default up/down arrow key shortcuts in MuseScore (including repositioning other elements)
+    - Before assigning the up/down arrow keys shortcut, you will have to clear or change the following shortcuts in the Shortcuts preferences menu (Edit -> Preferences -> Shortcuts)
       - _Pitch up or move text or articulation up_ (consider replacing with Alt+PgUp)
       - _Pitch down or move text or articulation down_ (consider replacing with Alt+PgDn)
       - _Select string above (TAB only)_ (suggest replacing with Alt+Up, which matches moving to next note above in staff)
       - _Select string below (TAB only)_ (suggest replacing with Alt+Down, which matches moving to next note below in staff)
   - Ensure only one variant of each plugin has the keyboard shortcut assigned at a time.\
     If 'pitch up.qml' is assigned to the up arrow, then 'pitch up no dt.qml' cannot be assigned to the up arrow.\
-    Both plugins may be enabled simultaneously, but they must have different keyboard shortcuts.
+    Both plugins may be enabled simultaneously, but they must be assigned different keyboard shortcuts.
 
 ### Selecting the tuning system
 
