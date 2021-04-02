@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.2.5
+- Fixed critical bugs:
+  - Some grace notes break the plugin due to a typo in getMostRecentAccidentalInBar.
+    Some grace notes were indexed as notes[i] instead of notes[j] due to careless copy-pasting typo.
+  - Pitch up with arrows not working
+
 ### 2.2.4
 - Fixed critical bug:
   - if a note were to have an explicit natural accidental after pitching up/down,

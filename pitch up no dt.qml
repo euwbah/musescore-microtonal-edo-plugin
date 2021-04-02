@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.4"
+      version: "2.2.5"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO." +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whereever possible."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step (Arrows)"
@@ -776,6 +776,7 @@ MuseScore {
           // check if the number of arrows coincide with quarter tone accidentals
           // in the 'arrow priority' version, this is only enabled if absolutely necessary
           // (when apotome size is 8 steps and above)
+          // <NO DT VARIANT CHECKPOINT>
           else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 0.5, 0);
           else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2 && sharpValue >= 8)
@@ -1016,6 +1017,7 @@ MuseScore {
 
       // get the tick of a note object, whether it is a grace note or normal note.
       function getTick(note) {
+        console.assert(note !== undefined && note !== null, "getTick called on non existent note")
         if (note.parent.parent.tick !== undefined)
           return note.parent.parent.tick;
         else
@@ -1099,7 +1101,7 @@ MuseScore {
             // respectively.
             var allKeySigs = [];
             var allEDOs = [];
-            var allCenterss = [];
+            var allCenters = [];
 
             parms.bars = [];
             parms.currKeySig = parms.naturalKeySig;
@@ -1867,7 +1869,7 @@ MuseScore {
                 var explicitPossiblyBotchedAccidental = undefined;
                 var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[j].line === line && getTick(notes[i]) <= noteTick) {
+                  if (notes[j].line === line && getTick(notes[j]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     if(notes[j].accidental)
@@ -1880,8 +1882,8 @@ MuseScore {
                       explicitPossiblyBotchedAccidental = Accidental.SHARP;
                     else if (notes[j].tpc <= 33 && notes[j].tpc >= 27)
                       explicitPossiblyBotchedAccidental = Accidental.SHARP2;
-                    else if (notes[i].tpc <= 19 && notes[i].tpc >= 13)
-                      firstAccidentalPropertyUndefinedNaturalTPC = notes[i];
+                    else if (notes[j].tpc <= 19 && notes[j].tpc >= 13)
+                      firstAccidentalPropertyUndefinedNaturalTPC = notes[j];
 
                     if (notes[j].tpc <= 12 || notes[j].tpc >= 20) {
                       implicitExplicitNote = notes[j];
@@ -2180,7 +2182,7 @@ MuseScore {
         }
 
         var irregularAccidentalOrNatural = noteData.baseNote === undefined;
-        console.log('irr: ' + irregularAccidentalOrNatural);
+        // console.log('irr: ' + irregularAccidentalOrNatural);
 
         // in the event that tpc is considered natural by
         // MuseScore's playback, it would mean that it is
@@ -2730,6 +2732,7 @@ MuseScore {
         if (priorAccOnNewLine !== 'botched') {
           if (priorAccOnNewLine === null) {
             if (parms.currKeySig[newBaseNote].type == newAccidental) {
+                console.log('making accidental implicit: priorAccOnNewLine is null and note is in key signature');
               newAccidental = Accidental.NONE;
             }
           }
@@ -2740,6 +2743,8 @@ MuseScore {
           else if (newAccidental == priorAccOnNewLine.type) {
             // TODO: Is it really ok to do this even if the note now shares its line with other notes
             //       in the same chord?
+            console.log('priorAcc offset: ' + priorAccOnNewLine.offset);
+            console.log('making accidental implicit: priorAccOnNewLine is same as the new accidental');
             newAccidental = Accidental.NONE;
           }
         }

@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.4"
+      version: "2.2.5"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step"
 
@@ -773,6 +773,7 @@ MuseScore {
             return constructAccidental(acc.numSharps - 1, 0);
 
           // check if the number of arrows coincide with quarter tone accidentals
+          // <NO DT VARIANT CHECKPOINT>
           else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 0.5, 0);
           else if (acc.numArrows == -1/2 * sharpValue && acc.numSharps > -2)
@@ -1013,6 +1014,7 @@ MuseScore {
 
       // get the tick of a note object, whether it is a grace note or normal note.
       function getTick(note) {
+        console.assert(note !== undefined && note !== null, "getTick called on non existent note");
         if (note.parent.parent.tick !== undefined)
           return note.parent.parent.tick;
         else
@@ -1865,7 +1867,7 @@ MuseScore {
                 var explicitPossiblyBotchedAccidental = undefined;
                 var implicitExplicitNote = undefined;
                 for (var j = 0; j < notes.length; j++) {
-                  if (notes[j].line === line && getTick(notes[i]) <= noteTick) {
+                  if (notes[j].line === line && getTick(notes[j]) <= noteTick) {
                     nNotesInSameLine ++;
 
                     if(notes[j].accidental)
@@ -1878,8 +1880,8 @@ MuseScore {
                       explicitPossiblyBotchedAccidental = Accidental.SHARP;
                     else if (notes[j].tpc <= 33 && notes[j].tpc >= 27)
                       explicitPossiblyBotchedAccidental = Accidental.SHARP2;
-                    else if (notes[i].tpc <= 19 && notes[i].tpc >= 13)
-                      firstAccidentalPropertyUndefinedNaturalTPC = notes[i];
+                    else if (notes[j].tpc <= 19 && notes[j].tpc >= 13)
+                      firstAccidentalPropertyUndefinedNaturalTPC = notes[j];
 
                     if (notes[j].tpc <= 12 || notes[j].tpc >= 20) {
                       implicitExplicitNote = notes[j];
