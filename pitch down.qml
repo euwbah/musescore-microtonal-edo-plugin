@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.5"
+      version: "2.2.6"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step"
 

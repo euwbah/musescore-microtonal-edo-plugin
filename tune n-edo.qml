@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version: "2.2.2"
+      version: "2.2.6"
       description: "Retune selection to any EDO temperament, or whole score if nothing selected."
       menuPath: "Plugins.n-EDO.Tune"
 
@@ -477,22 +477,31 @@ MuseScore {
                 // from all 4 voices in a staff since microtonal accidentals from one voice
                 // should affect subsequent notes on the same line in other voices as well.
 
+                var mostRecentKeySigTick = -1;
                 for (var i = 0; i < staffKeySigHistory.length; i++) {
                   var keySig = staffKeySigHistory[i];
-                  if (keySig.tick <= cursor.tick)
+                  if (keySig.tick <= cursor.tick && keySig.tick >= mostRecentKeySigTick) {
                     parms.currKeySig = keySig.keySig;
+                    mostRecentKeySigTick = keySig.tick;
+                  }
                 }
 
+                var mostRecentEDOTick = -1;
                 for (var i = 0; i < staffEDOHistory.length; i++) {
                   var edo = staffEDOHistory[i];
-                  if (edo.tick <= cursor.tick)
+                  if (edo.tick <= cursor.tick && edo.tick >= mostRecentEDOTick) {
                     parms.currEdo = edo.edo;
+                    mostRecentEDOTick = edo.tick;
+                  }
                 }
 
+                var mostRecentCenterTick = -1;
                 for (var i = 0; i < staffCenterHistory.length; i++) {
                   var center = staffCenterHistory[i];
-                  if (center.tick <= cursor.tick)
+                  if (center.tick <= cursor.tick && center.tick >= mostRecentCenterTick) {
                     parms.currCenter = center.center;
+                    mostRecentCenterTick = center.tick;
+                  }
                 }
 
 
@@ -847,7 +856,7 @@ MuseScore {
           console.log('steps on KeySig: ' + stepsFromBaseNote);
         }
 
-        console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
+        console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote + ", tick: " + note.parent.parent.tick);
         note.tuning = getCentOffset(baseNote, stepsFromBaseNote, 0, parms.currEdo, parms.currCenter);
         return;
       }

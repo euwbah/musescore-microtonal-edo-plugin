@@ -1,5 +1,12 @@
 ## Changelog
 
+### 2.2.6
+- Fixed critical bugs:
+  - getMostRecentAcc gave the wrong accidental when there are notes on the same staff line
+    in different voices, causes pitch up/down to get stuck on one note.
+  - Tune N-EDO plugin: key signature/edo/frequency center annotation texts broken when multiple voices are present
+    in the bar where the annotation texts are declared (Bug fix #25)
+
 ### 2.2.5
 - Fixed critical bugs:
   - Some grace notes break the plugin due to a typo in getMostRecentAccidentalInBar.
