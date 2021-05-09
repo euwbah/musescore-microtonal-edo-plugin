@@ -1,11 +1,20 @@
 ## Changelog
 
+### 2.2.7
+- Fixed critical bugs:
+  - two notes in same segment, voice, tick, and line, yields wrong accidentals when transposed.
+    (getMostRecentAccidentalInBar did not handle 'before' processing correctly. 'before' was tick based
+    but should've been based on voice and visual positioning).
+- Wayyyy more robust setAccidental function which ensures set accidentals persist in
+  code even after the note is edited and traversed.
+  This actually allows for a lot of the parms state nonsense to be removed with some refactoring.
+  Perhaps in a future version the code base can be a lot cleaner.
+
 ### 2.2.6
 - Fixed critical bugs:
   - getMostRecentAcc gave the wrong accidental when there are notes on the same staff line
     in different voices, causes pitch up/down to get stuck on one note.
-  - Tune N-EDO plugin: key signature/edo/frequency center annotation texts broken when multiple voices are present
-    in the bar where the annotation texts are declared (Bug fix #25)
+  - Tune N-EDO plugin: key signature/edo/frequency center annotation texts broken when multiple voices are present in the bar where the annotation texts are declared (Bug fix #25)
 
 ### 2.2.5
 - Fixed critical bugs:
