@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.2.8
+- Fixed critical bug:
+  - localized name used for staff/system text causing the plugin to not work
+    when MuseScore is not set to use English.
+
 ### 2.2.7
 - Fixed critical bugs:
   - two notes in same segment, voice, tick, and line, yields wrong accidentals when transposed.

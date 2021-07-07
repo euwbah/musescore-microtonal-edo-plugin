@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.7"
+      version: "2.2.8"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -1116,9 +1116,9 @@ MuseScore {
                     // scan edo & tuning center first. key signature parsing is dependant on edo used.
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
                       var annotation = cursor.segment.annotations[i];
-                      console.log("found annotation type: " + annotation.subtypeName());
-                      if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
-                          (annotation.subtypeName() == 'System')) {
+                      console.log("found annotation type: " + annotation.name);
+                      if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
+                          (annotation.name == 'SystemText')) {
                         var text = removeFormattingCode(annotation.text);
                         if (text.toLowerCase().trim().endsWith('edo')) {
                           var edo = parseInt(text.substring(0, text.length - 3));
@@ -1148,9 +1148,9 @@ MuseScore {
                     // Check for StaffText key signature changes, then update staffKeySigHistory
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
                       var annotation = cursor.segment.annotations[i];
-                      console.log("found annotation type: " + annotation.subtypeName());
-                      if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
-                          (annotation.subtypeName() == 'System')) {
+                      console.log("found annotation type: " + annotation.name);
+                      if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
+                          (annotation.name == 'SystemText')) {
                         var text = removeFormattingCode(annotation.text);
                         var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
                         if (!mostRecentEDO)
@@ -1356,9 +1356,9 @@ MuseScore {
                   // scan edo & tuning center first. key signature parsing is dependant on edo used.
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
                     var annotation = cursor.segment.annotations[i];
-                    console.log("found annotation type: " + annotation.subtypeName());
-                    if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
-                        (annotation.subtypeName() == 'System')) {
+                    console.log("found annotation type: " + annotation.name);
+                    if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
+                        (annotation.name == 'SystemText')) {
                       var text = removeFormattingCode(annotation.text);
                       if (text.toLowerCase().trim().endsWith('edo')) {
                         var edo = parseInt(text.substring(0, text.length - 3));
@@ -1388,9 +1388,9 @@ MuseScore {
                   // Check for StaffText key signature changes, then update staffKeySigHistory
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
                     var annotation = cursor.segment.annotations[i];
-                    console.log("found annotation type: " + annotation.subtypeName());
-                    if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
-                        (annotation.subtypeName() == 'System')) {
+                    console.log("found annotation type: " + annotation.name);
+                    if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
+                        (annotation.name == 'SystemText')) {
                       var text = removeFormattingCode(annotation.text);
                       var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
                       if (!mostRecentEDO)
