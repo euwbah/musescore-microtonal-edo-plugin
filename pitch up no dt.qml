@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.8"
+      version: "2.2.9"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO." +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whereever possible."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step (Arrows)"
@@ -861,7 +861,7 @@ MuseScore {
 
           // <UP DOWN VARIANT CHECKPOINT> flip steps direction
           // limits are: x^3 or bb^3 (super-flat) if upwards, bbv3 or xv3 (super-flat) if downwards
-          var overLimitSteps = (sharpValue >= 0) ? (2 * sharpValue + 3 + 1) : (-2 * sharpValue + 3 + 1);
+          var overLimitSteps = 2 * Math.abs(sharpValue) + 3 + 1;
 
           // <UP DOWN VARIANT CHECKPOINT> flip sign
           // Simulate going up an enharmonic whole tone, reducing the offset.
@@ -2596,7 +2596,7 @@ MuseScore {
         var newLine = usingEnharmonic ? getNextLine(pitchData.line) : pitchData.line;
 
         // <UP DOWN VARIANT CHECKPOINT> (use getPrevNote for downwards transposition)
-        var newBaseNote = usingEnharmonic ? getPrevNote(pitchData.baseNote) : pitchData.baseNote;
+        var newBaseNote = usingEnharmonic ? getNextNote(pitchData.baseNote) : pitchData.baseNote;
 
         var nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
 
@@ -2657,12 +2657,12 @@ MuseScore {
         // This is now a while statement as in 5 edo and other super small edos,
         // this thing can get REALLY screwed. (e.g. E and F are the same note in 5 edo,
         // so going up by single enharmonic won't do anything for reducing the accidental steps)
-        while (nextNoteEnharmonics.below &&
-               nextNoteEnharmonics.below.offset <= parms.currKeySig[nextNoteEnharmonics.below.baseNote].offset) {
-          newBaseNote = nextNoteEnharmonics.below.baseNote;
+        while (nextNoteEnharmonics.above &&
+               nextNoteEnharmonics.above.offset >= parms.currKeySig[nextNoteEnharmonics.above.baseNote].offset) {
+          newBaseNote = nextNoteEnharmonics.above.baseNote;
           newLine = getNextLine(newLine);
-          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.below.offset, parms.currEdo);
-          newOffset = nextNoteEnharmonics.below.offset;
+          newAccidental = convertStepsToAccidentalType(nextNoteEnharmonics.above.offset, parms.currEdo);
+          newOffset = nextNoteEnharmonics.above.offset;
           nextNoteEnharmonics = getEnharmonics(newBaseNote, newOffset, parms.currEdo);
         }
 

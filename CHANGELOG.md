@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.2.9
+- Fixed pitch down invoking pitch-up command when rests/text/non-note elements are selected
+- Fixed pitch up not correcting an exceeded enharmonic (bug fix #31)
+
 ### 2.2.8
 - Fixed critical bug:
   - localized name used for staff/system text causing the plugin to not work

@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.2.8"
+      version: "2.2.9"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step"
 
@@ -858,7 +858,7 @@ MuseScore {
 
           // <UP DOWN VARIANT CHECKPOINT> flip steps direction
           // limits are: x^3 or bb^3 (super-flat) if upwards, bbv3 or xv3 (super-flat) if downwards
-          var overLimitSteps = (sharpValue >= 0) ? (-2 * sharpValue - 3 - 1) : (2 * sharpValue - 3 - 1);
+          var overLimitSteps = - (2 * Math.abs(sharpValue) + 3 + 1);
 
           // <UP DOWN VARIANT CHECKPOINT> flip sign
           // Simulate going down an enharmonic diatonic whole tone, reducing the offset.
@@ -1077,7 +1077,7 @@ MuseScore {
             if (selectedNotes.length == 0) {
               console.log('no selected note elements, defaulting to pitch-up/pitch-down shortcuts');
               // <UP DOWN VARIANT CHECKPOINT>
-              cmd('pitch-up');
+              cmd('pitch-down');
               Qt.quit();
             }
 
