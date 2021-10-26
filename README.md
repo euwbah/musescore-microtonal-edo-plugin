@@ -9,42 +9,48 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 ![screenshot](images/microtonal-plugin-screenshot.png)
 
 ## Features
-- Retuning note cent offsets to match any supported edo of choice
+
+- Retuning notes to match any supported edo of choice
   - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for
     evaluating cent offsets for any EDO.
 - Support for key signatures via [Key signature annotations](#key-signatures)
-- Transposing individual notes / selections by 1 EDO step, managing neutralization and correction of accidentals on following notes.
-- Tuning system, key signatures, and reference pitches can be changed mid score, and staves
-  may be set to different tunings, key signatures, and reference pitches at the same time.
+- Transposing individual notes/selections by 1 EDO step while automatically assigning accidentals
+- Tuning, key signatures, and reference pitches can be changed mid score;
+- Each staff can be assigned its own tunings, key signatures, and reference pitches simultaneously.
+- Based on [Kite Giedraitis' ups and downs notation](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf)
 
-## Instructions
+## Quick start
 
 **Make sure you are using MuseScore 3.4 or newer. The plugin will not work in previous versions**
 
-[Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into MuseScore's plugins directory.
+1. [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into MuseScore's plugins directory.
 
-[Install & Activate](https://musescore.org/en/handbook/plugins#windows) the following plugins:
+2. [Install & Activate](https://musescore.org/en/handbook/plugins#windows) the following plugins:
 
-- `tune n-edo.qml`:
-  - Tunes selected phrase (selection made with shift-click) / whole score (if nothing selected)
-- `pitch up.qml` & `pitch down.qml`:
-  - Transposes up/down selected phrase (shift-click) / individually selected notes (alt-click noteheads).
-- `pitch up no dt.qml` & `pitch down no dt.qml`:
-  - Same as above, but prioritizes up/down arrows over semi/sesqui sharp/flat symbols wherever possible.
+  - `tune n-edo`: Tunes the selected notes, or entire score if nothing selected. Notes are not automatically tuned
+    as they are entered, so it is important to run this regularly for accurate playback.
+  - `pitch up` & `pitch down`: Transposes selected notes by 1 edostep, then updates their tuning.
+    Equivalent to MuseScore's up/down arrow shortcuts. If you prefer arrow notation over semi/sesqui
+    sharp/flat quartertone notation, use `pitch up no dt` & `pitch down no dt` instead.
 
-- Set up keyboard shortcuts for the plugins (optional, you can still access them in the plugin drop-down menu):
-  - Go to Plugins -> Plugin Manager -> select plugin -> Define Shortcut
-  - For Tuning, it is recommended to use Alt+R (for "Retune")
-  - For Pitch up/down, we recommend up/down arrow keys
-    - This plugin is built to work in place of the default up/down arrow key shortcuts in MuseScore (including repositioning other elements)
-    - Before assigning the up/down arrow keys shortcut, you will have to clear or change the following shortcuts in the Shortcuts preferences menu (Edit -> Preferences -> Shortcuts)
-      - _Pitch up or move text or articulation up_ (consider replacing with Alt+PgUp)
-      - _Pitch down or move text or articulation down_ (consider replacing with Alt+PgDn)
-      - _Select string above (TAB only)_ (suggest replacing with Alt+Up, which matches moving to next note above in staff)
-      - _Select string below (TAB only)_ (suggest replacing with Alt+Down, which matches moving to next note below in staff)
-  - Ensure only one variant of each plugin has the keyboard shortcut assigned at a time.\
-    If 'pitch up.qml' is assigned to the up arrow, then 'pitch up no dt.qml' cannot be assigned to the up arrow.\
-    Both plugins may be enabled simultaneously, but they must be assigned different keyboard shortcuts.
+3. Set up keyboard shortcuts for the plugins (optional, highly recommended for the best experience):
+  - First, clear/change the default shortcuts that uses the up/down arrow keys.
+    You can find these in _Edit -> Preferences -> Shortcuts_. Search for the following shortcut names,
+    select them and click the _Clear_ button.
+    - _Pitch up or move text or articulation up_
+    - _Pitch down or move text or articulation down_
+    - _Select string above_
+    - _Select string below_
+  - To define a shortcut for a plugin, go to:  _Plugins -> Plugin Manager -> Select plugin name in the list -> Define Shortcut_.
+  - Set `tune n-edo` to use `Alt-R`.
+  - Set `pitch up`/`pitch up no dt` to use the up arrow. This shortcut should only be assigned on either one of the plugins.
+  - Set `pitch down`/`pitch down no dt` to use the down arrow. This shortcut should only be assigned on either one of the plugins.
+
+  4. Select the tuning system by creating a System Text (`Ctrl-Shift-T`) and typing `___ edo`, fill in the blank with any
+     of the [supported edo tunings](#appendix-a-list-of-supported-edos-according-to-sharpness-classification). This will
+     affect all staffs/parts from the bar where the text was placed onwards. If you wish to only change the tuning of
+     one staff, but not the others, use Staff Text (`Ctrl-T`) instead. You should not place a tuning system change
+     halfway through a bar as it will cause potential issues.
 
 ### Selecting the tuning system
 
