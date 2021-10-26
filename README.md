@@ -1,4 +1,4 @@
-# n-EDO Retuner plugin for Musescore 3.4+
+# n-EDO Microtonal retune+transpose plugin for Musescore 3.4+
 
 Musescore plugin to retune and pitch up/down notes in any EDO ranked from flat-2 to sharp-8.
 (Supports all EDOs from 5-72 except 59, 66, and 71. Also supports larger edos up to 117 that
