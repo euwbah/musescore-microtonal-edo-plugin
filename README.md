@@ -1,4 +1,4 @@
-# n-EDO Microtonal retune+transpose plugin for Musescore 3.4+
+# Microtonal plugin for Musescore 3.4+: Retune + Transpose in almost any EDO.
 
 Musescore plugin to retune and pitch up/down notes in any EDO ranked from flat-2 to sharp-8.
 (Supports all EDOs from 5-72 except 59, 66, and 71. Also supports larger edos up to 117 that
@@ -23,69 +23,134 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 **Make sure you are using MuseScore 3.4 or newer. The plugin will not work in previous versions**
 
-1. [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into MuseScore's plugins directory.
+### 1. [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into
+   [MuseScore's plugins directory](https://musescore.org/en/handbook/3/plugins#windows)
 
-2. [Install & Activate](https://musescore.org/en/handbook/plugins#windows) the following plugins:
+### 2. [Enable](https://musescore.org/en/handbook/3/plugins#enable-disable-plugins) the following plugins
 
-  - `tune n-edo`: Tunes the selected notes, or entire score if nothing selected. Notes are not automatically tuned
-    as they are entered, so it is important to run this regularly for accurate playback.
-  - `pitch up` & `pitch down`: Transposes selected notes by 1 edostep, then updates their tuning.
-    Equivalent to MuseScore's up/down arrow shortcuts. If you prefer arrow notation over semi/sesqui
-    sharp/flat quartertone notation, use `pitch up no dt` & `pitch down no dt` instead.
+- `tune n-edo`: Tunes the selected notes, or entire score if nothing selected. Notes are not automatically tuned
+  as they are entered, so it is important to run this regularly for accurate playback.
+- `pitch up` & `pitch down`: Transposes selected notes by 1 edostep, then updates their tuning.
+  Equivalent to MuseScore's up/down arrow shortcuts. If you prefer arrow notation over semi/sesqui
+  sharp/flat quartertone notation, use `pitch up no dt` & `pitch down no dt` instead.
 
-3. Set up keyboard shortcuts for the plugins (optional, highly recommended for the best experience):
-  - First, clear/change the default shortcuts that uses the up/down arrow keys.
-    You can find these in _Edit -> Preferences -> Shortcuts_. Search for the following shortcut names,
-    select them and click the _Clear_ button.
-    - _Pitch up or move text or articulation up_
-    - _Pitch down or move text or articulation down_
-    - _Select string above_
-    - _Select string below_
-  - To define a shortcut for a plugin, go to:  _Plugins -> Plugin Manager -> Select plugin name in the list -> Define Shortcut_.
-  - Set `tune n-edo` to use `Alt-R`.
-  - Set `pitch up`/`pitch up no dt` to use the up arrow. This shortcut should only be assigned on either one of the plugins.
-  - Set `pitch down`/`pitch down no dt` to use the down arrow. This shortcut should only be assigned on either one of the plugins.
+### 3. Set up keyboard shortcuts for the plugins
+(optional, highly recommended for the best experience)
 
-  4. Select the tuning system by creating a System Text (`Ctrl-Shift-T`) and typing `___ edo`, fill in the blank with any
-     of the [supported edo tunings](#appendix-a-list-of-supported-edos-according-to-sharpness-classification). This will
-     affect all staffs/parts from the bar where the text was placed onwards. If you wish to only change the tuning of
-     one staff, but not the others, use Staff Text (`Ctrl-T`) instead. You should not place a tuning system change
-     halfway through a bar as it will cause potential issues.
+- First, clear/change the default shortcuts that uses the up/down arrow keys.
+  You can find these in _Edit -> Preferences -> Shortcuts_. Search for the following shortcut names,
+  select them and click the _Clear_ button.
+  - _Pitch up or move text or articulation up_
+  - _Pitch down or move text or articulation down_
+  - _Select string above_
+  - _Select string below_
+- To define a shortcut for a plugin, go to:  _Plugins -> Plugin Manager -> Select plugin name in the list -> Define Shortcut_.
+- Set `tune n-edo` to use `Alt-R`.
+- Set `pitch up`/`pitch up no dt` to use the up arrow. This shortcut should only be assigned on either one of the plugins.
+- Set `pitch down`/`pitch down no dt` to use the down arrow. This shortcut should only be assigned on either one of the plugins.
 
-### Selecting the tuning system
+### 4. Select a tuning system
 
-The plugin makes use of staff text annotations (Ctrl-T) and system text annotations (Ctrl-Shift-T) to configure which tuning system is used.
+Create a System Text (`Ctrl-Shift-T`) and type `___ edo`, fill in the blank with any
+of the [supported edo tunings](#appendix-a-list-of-supported-edos-according-to-sharpness-classification). This will
+affect all staves/parts from the bar where the text was placed onwards.
 
-Using staff text will apply the tuning system to only the staff that it is on, and using system text will
-apply the tuning system to the all the staves. Staff/system text will only affect the current and subsequent bars
-of music, but not the bars before, thus, it is possible to change the tuning system mid-piece, and have different
-instruments in different tuning systems concurrently.
+If you wish to only change the tuning of
+one staff, but not the others, use Staff Text (`Ctrl-T`) instead. You should not place a tuning system change
+halfway through a bar.
 
-It is possible, but not recommended, to change the tuning system halfway through a bar,
-as accidentals may carry over and be applied in unexpected ways.
+If a tuning system has not been specified for a part, it defaults to 12 edo.
+The text is case-insensitive.
 
-There are 3 types of tuning system annotations that the plugin accepts, and each one has to be in its own separate staff/system text:
-- **EDO selector** format: `x edo` (e.g. `31 edo`)
-  - Where `x` is the number of equally-spaced notes in the octave.
-  - Spaces and capitalization are optional. Non-integer edos are not currently supported.
-  - When the EDO is changed, any prior key signature must be redeclared as the step offsets of the key signatures would differ
-    and has to be updated.
-- **Reference frequency selector** format: `x: y hz` (e.g. `a4: 440 hz`)
-  - Where `x` is the pitch nominal such as `a4`, `y` is its frequency. Other notes will be tuned to that as reference.
-  - Spaces and capitalization are optional. Decimals in frequency are supported.
-- **Key signature** format: `.x.x.x.x.x.x.x` (e.g. `.b.b.b.b.b.b.bb` is F-flat major in 12/19/31/50 edo)
-  - Where each `x` represents the [textual representation of the accidentals](#key-signatures) applied on the notes C, D, E, F, G, A, and B in that order.
-  - If a particular note is natural, leave the space after the dot empty or use any placeholder like '0' or 'n', but keep the dot there.\
-    In total, there should be 7 dots.
-  - Key signature text must be denoted on **all** key signatures present in the score, whether custom, microtonal, or standard.\
-    If there are no key signatures for the score, there is no need to enter key signature text, but you can still enter a blank
-    key signature text for future reference (e.g.: `.......` is a blank key signature)
-  - Likewise, all key signature annotation texts **must** have a corresponding key signature element placed in that measure, especially if
-    there are standard accidentals (bb/b/#/x) in the key signature.
+### 5. Annotate key signatures
+
+For each key signature, create one System Text (`Ctrl-Shift-T`) at the start of the same
+bar as the key signature, then type `.x.x.x.x.x.x.x`, where each 'x'
+represents an [accidental](#key-signatures) applied on the notes C, D, E, F, G, A, and B respectively.
+If a note should have no accidental, you can leave it blank or put any other placeholder character.
+For example, the key signature for D major can look like: `.#...#...` representing C# and F#.
+There should always be 7 dots (`.`) in the key signature annotation.
+
+If there are staves which have a separate key signatures from the others,
+as in [local key signatures](https://musescore.org/en/handbook/3/key-signatures#add-key-sig-to-one-staff),
+or transposing instruments, you can assign a key signature annotation for just that
+staff using Staff Text (`Ctrl-T`) instead of System Text.
+
+> :warning: Due to current technical limitations of MuseScore,
+**all** key signatures, even standard non-custom ones, must be accompanied by key signature annotations.
+
+If a key signature annotation has not been specified, the plugin assumes that there are no accidentals in the key
+signature. The text is case-insensitive.
+
+### 6. Select a reference pitch
+
+This step is optional and reference pitch is defaulted to `A4: 440 Hz`.
+
+To change reference pitch for all parts, create a System Text (`Ctrl-Shift-T`) and
+type `{note}: {f} Hz`:
+  - `{note}` represents any note A through G followed by
+    its octave without spaces. Middle C is written as `C4`.
+  - `{f}` represents the frequency of the above reference note in Hertz
+  - the _'Hz'_ is optional
+
+To change reference pitch for only one part, use Staff Text (`Ctrl-T`) instead.
+The text is case-insensitive.
+
+------------------------
+
+## Key signatures
+
+![Staff text custom key sig](images/key-sig-example.png)
+
+### Accidental Code
+
+| Accidental | Textual representation |
+| ----: | :---- |
+| ![Double flat down 3](images/bbv3.png)  | `bbv3` |
+| ![Double flat down 2](images/bbv2.png)  | `bbv2` |
+| ![Double flat down](images/bbv1.png)    | `bbv` or `bbv1` |
+| ![Double flat](images/bb.png)           | `bb`   |
+| ![Double flat up](images/bbu1.png)      | `bb^` or `bb^1` |
+| ![Double flat up 2](images/bbu2.png)    | `bb^2` |
+| ![Double flat up 3](images/bbu3.png)    | `bb^3` |
+| ![Sesqui flat](images/db.png)           | `db` or `bd` |
+| ![Flat down 3](images/bv3.png)          | `bv3`  |
+| ![Flat down 2](images/bv2.png)          | `bv2`  |
+| ![Flat down](images/bv1.png)            | `bv` or `bv1` |
+| ![Flat](images/b.png)                   | `b`  |
+| ![Flat up](images/bu1.png)              | `b^` or `b^1` |
+| ![Flat up 2](images/bu2.png)            | `b^2` |
+| ![Flat up 3](images/bu3.png)            | `b^3` |
+| ![Down 3](images/v3.png)                | `v3` |
+| ![Down 2](images/v2.png)                | `v2` |
+| ![Down](images/v.png)                   | `v` or `v1` |
+| ![Quarter flat](images/d.png)           | `d` |
+| ![Natural](images/n.png)                | Leave blank / any other character  |
+| ![Quarter sharp](images/+.png)          | `+` |
+| ![Up](images/u1.png)                    | `^` or `^1` |
+| ![Up2](images/u2.png)                   | `^2` |
+| ![Up3](images/u3.png)                   | `^3` |
+| ![Sharp down3](images/sv3.png)          | `#v3` |
+| ![Sharp down2](images/sv2.png)          | `#v2` |
+| ![Sharp down](images/sv1.png)           | `#v` or `#v1` |
+| ![Sharp](images/s.png)                  | `#`  |
+| ![Sharp up](images/su1.png)             | `#^` or `#^1` |
+| ![Sharp up 2](images/su2.png)           | `#^2`  |
+| ![Sharp up 3](images/su3.png)           | `#^3`  |
+| ![Sesqui sharp](images/s+.png)          | `#+` or `+#` |
+| ![Double sharp down](images/xv3.png)    | `xv3` |
+| ![Double sharp down2](images/xv2.png)   | `xv2` |
+| ![Double sharp down3](images/xv1.png)   | `xv` or `xv1` |
+| ![Double sharp](images/x.png)           | `x` |
+| ![Double sharp up](images/xu1.png)      | `x^` or `x^1` |
+| ![Double sharp up 2](images/xu2.png)    | `x^2` |
+| ![Double sharp up 3](images/xu3.png)    | `x^3` |
+
+-----------------
 
 ## Notation system
 
-The plugin follows notation standards as per [NOTATION GUIDE FOR EDOS 5-72](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf),
+The plugin follows notation standards as per [Kite Giedraitis' ups and downs notation](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf),
 which is a generalized system for notating any EDO.
 
 Here is a brief summary of the contents of the document:
@@ -189,88 +254,6 @@ For example, in 31-edo, where the sharpness rating is sharp-2:
 
 
 --------
-
-
-## Key signatures
-
-In order for the up/down step transposition feature to work properly,
-**all** key signatures, even standard ones, must be accompanied with system/staff
-text key signature annotations.
-
-- Use **System Text** (`Ctrl` + `Shift` + `T`) if you want the key signature code to affect
-  all staves from there onwards
-- Use **Staff Text** (`Shift` + `T`) if you only want the code to affect the staff that it is on.
-  This is especially useful when using **local** key signatures!
-- Remember to make the custom key signature code invisible! (Press `V` to toggle visibility)
-
-Key signature code syntax:
-
-1. Start with a dot `.`
-2. Put the textual representation of the accidental for the note **C** using the [accidental code](#accidental-code)
-3. Put another dot `.`
-4. Put the required accidental for **D**
-5. Repeat from notes **C** thru **B**, in that order.
-
-Natural accidentals are denoted by leaving the space blank, or using any other character
-that does not represent an accidental.
-
-**Examples:**
-Ab-down major in 31 edo's ups-and-downs is written like this: `.v.bv.bv.v.v.bv.bv`\
-representing the key signature of Cv, Dbv, Ebv, Fv, Gv, Abv, Bbv.
-
-C major in 22 edo's ups-and-downs is written like this: `.0.0.v.0.0.v.v`\
-representing the key signature of C, D, Ev, F, G, Av, Bv. (The `0`s represent placeholders,
-you can also choose to put nothing between the dots)
-
-> Note that explicit accidentals will still take precedence over the
-> declared custom key signature, behaving exactly the same way a key signature
-> would.
-
-![Staff text custom key sig](images/key-sig-example.png)
-
-### Accidental Code
-
-| Accidental | Textual representation |
-| ----: | :---- |
-| ![Double flat down 3](images/bbv3.png)  | `bbv3` |
-| ![Double flat down 2](images/bbv2.png)  | `bbv2` |
-| ![Double flat down](images/bbv1.png)    | `bbv` or `bbv1` |
-| ![Double flat](images/bb.png)           | `bb`   |
-| ![Double flat up](images/bbu1.png)      | `bb^` or `bb^1` |
-| ![Double flat up 2](images/bbu2.png)    | `bb^2` |
-| ![Double flat up 3](images/bbu3.png)    | `bb^3` |
-| ![Sesqui flat](images/db.png)           | `db` or `bd` |
-| ![Flat down 3](images/bv3.png)          | `bv3`  |
-| ![Flat down 2](images/bv2.png)          | `bv2`  |
-| ![Flat down](images/bv1.png)            | `bv` or `bv1` |
-| ![Flat](images/b.png)                   | `b`  |
-| ![Flat up](images/bu1.png)              | `b^` or `b^1` |
-| ![Flat up 2](images/bu2.png)            | `b^2` |
-| ![Flat up 3](images/bu3.png)            | `b^3` |
-| ![Down 3](images/v3.png)                | `v3` |
-| ![Down 2](images/v2.png)                | `v2` |
-| ![Down](images/v.png)                   | `v` or `v1` |
-| ![Quarter flat](images/d.png)           | `d` |
-| ![Natural](images/n.png)                | Leave blank / any other character  |
-| ![Quarter sharp](images/+.png)          | `+` |
-| ![Up](images/u1.png)                    | `^` or `^1` |
-| ![Up2](images/u2.png)                   | `^2` |
-| ![Up3](images/u3.png)                   | `^3` |
-| ![Sharp down3](images/sv3.png)          | `#v3` |
-| ![Sharp down2](images/sv2.png)          | `#v2` |
-| ![Sharp down](images/sv1.png)           | `#v` or `#v1` |
-| ![Sharp](images/s.png)                  | `#`  |
-| ![Sharp up](images/su1.png)             | `#^` or `#^1` |
-| ![Sharp up 2](images/su2.png)           | `#^2`  |
-| ![Sharp up 3](images/su3.png)           | `#^3`  |
-| ![Sesqui sharp](images/s+.png)          | `#+` or `+#` |
-| ![Double sharp down](images/xv3.png)    | `xv3` |
-| ![Double sharp down2](images/xv2.png)   | `xv2` |
-| ![Double sharp down3](images/xv1.png)   | `xv` or `xv1` |
-| ![Double sharp](images/x.png)           | `x` |
-| ![Double sharp up](images/xu1.png)      | `x^` or `x^1` |
-| ![Double sharp up 2](images/xu2.png)    | `x^2` |
-| ![Double sharp up 3](images/xu3.png)    | `x^3` |
 
 
 ## Known issues:
