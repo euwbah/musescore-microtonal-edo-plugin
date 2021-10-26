@@ -23,8 +23,7 @@ are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up t
 
 **Make sure you are using MuseScore 3.4 or newer. The plugin will not work in previous versions**
 
-### 1. [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into
-   [MuseScore's plugins directory](https://musescore.org/en/handbook/3/plugins#windows)
+### 1. [Download the project](https://github.com/euwbah/musescore-n-tet-plugins/archive/master.zip) and unzip into [MuseScore's plugins directory](https://musescore.org/en/handbook/3/plugins#windows)
 
 ### 2. [Enable](https://musescore.org/en/handbook/3/plugins#enable-disable-plugins) the following plugins
 
