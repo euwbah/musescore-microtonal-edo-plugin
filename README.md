@@ -95,6 +95,15 @@ type `{note}: {f} Hz`:
 To change reference pitch for only one part, use Staff Text (`Ctrl-T`) instead.
 The text is case-insensitive.
 
+### 7. Done!
+
+Here are some things to take note of:
+- You can make the text annotations invisible by selecting them and pressing `V`.
+- Make sure each System/Staff Text only contains one modifier; don't combine
+  tuning selection and key signature annotation in one Text element.
+- Remember to run the `tune n-edo` plugin regularly to update the pitches of
+  notes that are not yet tuned/transposed.
+
 ------------------------
 
 ## Key signatures
