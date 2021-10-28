@@ -199,11 +199,12 @@ reference frequency selector, or A4: 440 Hz by default.
   `x * log2(3/2)` represents how many steps of x-edo are there in a fifth\
   `round()` rounds it up/down to the nearest whole edostep.
 
+  E.g's:
+  - The best fifth in 12 edo is 7 steps. Thus, the distance between F-C, C-G, G-D, etc.. is 7 steps of 12 edo.
+  - The best fifth in 22 edo is 13 steps. Thus, the distance between C-G, etc.. is 13 steps of 22 edo.
+
 </details>
 
-The best fifth in 12 edo is 7 steps. Thus, the distance between F-C, C-G, G-D, etc.. is 7 steps of 12 edo.
-
-The best fifth in 22 edo is 13 steps. Thus, the distance between C-G, etc.. is 13 steps of 22 edo.
 
 ### Tuning of regular pythagorean accidentals
 
@@ -338,9 +339,7 @@ CURSOR REWIND MECHANICS ARE WEIRD!
 
 It is an invalid operation to set cursor voice/staffIdx without rewinding.
 
-
 IMPORTANT! DO NOT USE `===` or `!==` to compare equivalence of accidentalType to Accidental enum values.
-
 
 When assigning `Note.accidentalType` to variables or passing it into a function as a parameter,
 ensure that the value read is in integer format to invoke the getter of the
@@ -358,43 +357,14 @@ console.log(note.accidentalType); // NATURAL_ARROW_UP
 console.log(0 + note.accidentalType) // 11
 ```
 
-
-It's important to clear the accidental first before assigning (in general).
-  - If existing accidental type is a non-standard accidental, and the new assigned accidental type is standard,
-    the new assigned accidental type would affect the tpc of the note, but
-    the existing non-standard accidental still displays instead of the new one.
-
-```js
-note.line = 0;
-note.tpc = 13; // F natural
-note.accidentalType = Accidental.NATURAL_ARROW_UP; // set to non-standard accidental
-note.accidentalType = Accidental.SHARP; // note will still appear with NATURAL_SHARP_UP, but it will sound as SHARP.
-console.log(note.tpc); // 20 (F sharp)
-console.log(note.accidentalType); // it is STILL NATURAL_ARROW_UP...
-
-note.line = 0;
-note.tpc = 13; // F natural
-note.accidentalType = Accidental.NATURAL_ARROW_UP; // set to non-standard accidental
-note.accidentalType = Accidental.NONE; // Clear accidental
-note.accidentalType = Accidental.SHARP; // note will still appear with NATURAL_SHARP_UP, but it will sound as SHARP.
-console.log(note.tpc); // 20 (F sharp)
-console.log(note.accidentalType); // SHARP (correct)
-```
+There is a very specific method to update an existing note's accidental
+such that there are minimal race/state errors. Refer to the ]
+[`setAccidental()`](https://github.com/euwbah/musescore-n-tet-plugins/blob/56aa8cc3697ac04d31eff82ba59edc177a55d88f/pitch%20down.qml#L3457) function.
 
 `Note.accidental` and `Note.accidentalType` properties of transposed notes that contain new accidental values of standardized
 accidentals are not present in a new cursor instance. The plugin uses tpc as a workaround, but it makes it impossible to
 determine if a prior note's accidental was implicit or explicit.\
 [See this forum post here.](https://musescore.org/en/node/305977)
-
-### Plugin Information
-
-- Transposition plugins are now using stateless accidentals, scanning accidentals on the fly.
-  - Works should be done to make the tuning plugins use stateless accidentals too.
-    Makes it way easier to think and removes a lot of possible state errors.
-
-> The most completely documented / commented variant of the plugin is
-> in the 31-TET ups and downs notation plugins for both tuning and transposing variants.
-> The rest are variants of the 31 up-downs code with certain constants and values changed.
 
 ##### Important properties:
 
@@ -519,3 +489,4 @@ Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN      bbv3
   other than the cursor's staffIdx. Currently, accidentals in the cross-staff do not work on the notes that came from another staff.
   See Add Courtesy Accidentals plugin for how to do this
 - Implement toggling between enharmonic equivalences
+- Make tune n-edo plugin use stateless accidental detection also.
