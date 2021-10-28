@@ -16,13 +16,32 @@ MuseScore {
         }
       }
 
-      version: "2.2.9"
+      version: "2.3.0"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO. " +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whenever possible."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step (Arrows)"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+
+      // these lookups are for transposition annotations
+      property variant fifthsFromC: {
+        'f': -1,
+        'c': 0,
+        'g': 1,
+        'd': 2,
+        'a': 3,
+        'e': 4,
+        'b': 5
+      }
+
+      property variant standardAccFifths: {
+        'bb': -14,
+        'b': -7,
+        '': 0,
+        '#': 7,
+        'x': 14
+      }
 
       // MuseScore's annotations contain formatting code in angle brackets if the
       // annotation text formatting is not default. This function removes
@@ -35,10 +54,25 @@ MuseScore {
       }
 
       // <TUNING SYSTEM VARIANT CHECKPOINT>
-      function getCentOffset(noteName, stepOffset, regAcc, edo, center) {
+      /**
+      noteName: nominal of note to tune
+      stepOffset: number of edosteps away from nominal
+      regAcc: number of sharps in the accidental of this note is a regular accidental
+      edo: edo to tune to
+      center: Reference pitch e.g. {note: 'a4', freq: 440}
+      transFifths: number of fifths this part is transposed by if transposing instrument and
+                   concert pitch mode is off. E.g. Bb clarinet should be -2.
+                   Only regular fifth-based transpositions can be used.
+                   Rationale for this is that musescore's transposing instruments
+                   are transposed in 12 edo, so an additional offset must be applied
+                   to convert it to a fifth-based transposition in n-edo.
+      */
+      function getCentOffset(noteName, stepOffset, regAcc, edo, center, transFifths) {
         var stepSize = 1200.0 / edo;
         var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
+        var twelveFifthVsEdoFifthCents = 700 - (fifthStep * stepSize);
+        var transpositionCorrection = -transFifths * twelveFifthVsEdoFifthCents;
 
         // Offset caused by custom central frequency
         var centOffset = 1200*Math.log (center.freq / 440) / Math.LN2;
@@ -76,22 +110,32 @@ MuseScore {
         }
         centOffset += -1200*(parseInt(center.note.substring(1, 2)) - 4);
 
+        var nominalOffset = 0;
         switch (noteName) {
           case 'f':
-            return stepSize*stepOffset - 100*regAcc + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue - 3)*(stepSize*fifthStep - 700);
+            break;
           case 'c':
-            return stepSize*stepOffset - 100*regAcc + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue - 2)*(stepSize*fifthStep - 700);
+            break;
           case 'g':
-            return stepSize*stepOffset - 100*regAcc + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue - 1)*(stepSize*fifthStep - 700);
+            break;
           case 'd':
-            return stepSize*stepOffset - 100*regAcc + centerValue*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = centerValue*(stepSize*fifthStep - 700);
+            break;
           case 'a':
-            return stepSize*stepOffset - 100*regAcc + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue + 1)*(stepSize*fifthStep - 700);
+            break;
           case 'e':
-            return stepSize*stepOffset - 100*regAcc + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue + 2)*(stepSize*fifthStep - 700);
+            break;
           case 'b':
-            return stepSize*stepOffset - 100*regAcc + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue + 3)*(stepSize*fifthStep - 700);
+            break;
         }
+
+        return stepSize*stepOffset - 100*regAcc + nominalOffset + centOffset + transpositionCorrection;
       }
 
       function convertAccidentalToSteps(acc, edo) {
@@ -1092,6 +1136,7 @@ MuseScore {
             var allKeySigs = [];
             var allEDOs = [];
             var allCenters = [];
+            var allTranspositions = [];
 
             parms.bars = [];
             parms.currKeySig = parms.naturalKeySig;
@@ -1101,6 +1146,7 @@ MuseScore {
               var staffKeySigHistory = [];
               var staffEDOHistory = [];
               var staffCenterHistory = [];
+              var staffTranspositionHistory = [];
 
               for (var voice = 0; voice < 4; voice++) {
                 cursor.rewind(1);
@@ -1145,22 +1191,36 @@ MuseScore {
                     }
 
                     // Check for StaffText key signature changes, then update staffKeySigHistory
+                    // Also check for instrument transposition annotations.
                     for (var i = 0; i < cursor.segment.annotations.length; i++) {
                       var annotation = cursor.segment.annotations[i];
                       console.log("found annotation type: " + annotation.name);
                       if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
                           (annotation.name == 'SystemText')) {
-                        var text = removeFormattingCode(annotation.text);
-                        var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
-                        if (!mostRecentEDO)
-                          mostRecentEDO = 12;
-                        var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
-                        if (maybeKeySig !== null) {
-                          console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
-                          staffKeySigHistory.push({
-                            tick: cursor.tick,
-                            keySig: maybeKeySig
-                          });
+                        var t = annotation.text.toLowerCase().trim();
+                        if (t.startsWith('t:')) {
+                          t = t.substring(2).trim();
+                          var nominal = t.substring(0, 1);
+                          var acc = t.substring(1).trim();
+                          if (fifthsFromC[nominal] !== undefined && standardAccFifths[acc] !== undefined) {
+                            staffTranspositionHistory.push({
+                              tick: cursor.tick,
+                              fifths: fifthsFromC[nominal] + standardAccFifths[acc]
+                            });
+                          }
+                        } else {
+                          var text = removeFormattingCode(t);
+                          var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
+                          if (!mostRecentEDO)
+                            mostRecentEDO = 12;
+                          var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
+                          if (maybeKeySig !== null) {
+                            console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
+                            staffKeySigHistory.push({
+                              tick: cursor.tick,
+                              keySig: maybeKeySig
+                            });
+                          }
                         }
                       }
                     }
@@ -1185,6 +1245,7 @@ MuseScore {
               allKeySigs.push(staffKeySigHistory);
               allEDOs.push(staffEDOHistory);
               allCenters.push(staffCenterHistory);
+              allTranspositions.push(staffTranspositionHistory);
             } // end of key sig and bars population for all staves
 
             // Run transpose operation on all note elements.
@@ -1200,6 +1261,7 @@ MuseScore {
               parms.currKeySig = parms.naturalKeySig;
               parms.currEdo = 12;
               parms.currCenter = {note: 'a4', freq: 440};
+              parms.currTranspose = 0;
 
               // handle transposing the firstTiedNote in the event that a non-first tied note
               // is selected.
@@ -1268,6 +1330,15 @@ MuseScore {
                 }
               }
 
+              var mostRecentTransposeTick = -1;
+              for (var j = 0; j < allTranspositions[cursor.staffIdx].length; j++) {
+                var trans = allTranspositions[cursor.staffIdx][j];
+                if (trans.tick <= segment.tick && trans.tick > mostRecentTransposeTick) {
+                  parms.currTranspose = trans.fifths;
+                  mostRecentTransposeTick = trans.tick;
+                }
+              }
+
               // there's no Array.slice in the plugin API
               parms.chordExcludingSelf = [];
               for (var j = 0; j < notes.length; j++) {
@@ -1297,14 +1368,6 @@ MuseScore {
               func(note, segment, parms, cursor);
             }
 
-            if (selectedNotes.length === 1) {
-              // NOTE: There is no need to do this, playback of a single selected note is automatic.
-              // If only one note was transposed, trigger playback of the transposed note.
-              // This is accomplished by a hack dmitrio95 suggested here: https://musescore.org/en/node/305861
-              // cmd("next-element");
-              // cmd("prev-element");
-            }
-
           }
         } else {
           // Standard implementation for phrase selection.
@@ -1318,6 +1381,7 @@ MuseScore {
             parms.currKeySig = parms.naturalKeySig;
             parms.currEdo = 12;
             parms.currCenter = {note: 'a4', freq: 440};
+            parms.currTranspose = 0;
 
             // Even if system text is used for key sig, the text
             // won't carry over for all voices (if the text was placed on voice 1, only
@@ -1329,6 +1393,7 @@ MuseScore {
             var staffKeySigHistory = [];
             var staffEDOHistory = [];
             var staffCenterHistory = [];
+            var staffTranspositionHistory = [];
 
             // initial run to populate custom key signatures
             for (var voice = 0; voice < 4; voice++) {
@@ -1384,23 +1449,35 @@ MuseScore {
                     }
                   }
 
-                  // Check for StaffText key signature changes, then update staffKeySigHistory
                   for (var i = 0; i < cursor.segment.annotations.length; i++) {
                     var annotation = cursor.segment.annotations[i];
                     console.log("found annotation type: " + annotation.name);
                     if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
                         (annotation.name == 'SystemText')) {
-                      var text = removeFormattingCode(annotation.text);
-                      var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
-                      if (!mostRecentEDO)
-                        mostRecentEDO = 12;
-                      var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
-                      if (maybeKeySig !== null) {
-                        console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
-                        staffKeySigHistory.push({
-                          tick: cursor.tick,
-                          keySig: maybeKeySig
-                        });
+                      var t = annotation.text.toLowerCase().trim();
+                      if (t.startsWith('t:')) {
+                        t = t.substring(2).trim();
+                        var nominal = t.substring(0, 1);
+                        var acc = t.substring(1).trim();
+                        if (fifthsFromC[nominal] !== undefined && standardAccFifths[acc] !== undefined) {
+                          staffTranspositionHistory.push({
+                            tick: cursor.tick,
+                            fifths: fifthsFromC[nominal] + standardAccFifths[acc]
+                          });
+                        }
+                      } else {
+                        var text = removeFormattingCode(t);
+                        var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
+                        if (!mostRecentEDO)
+                          mostRecentEDO = 12;
+                        var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
+                        if (maybeKeySig !== null) {
+                          console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
+                          staffKeySigHistory.push({
+                            tick: cursor.tick,
+                            keySig: maybeKeySig
+                          });
+                        }
                       }
                     }
                   }
@@ -1462,6 +1539,15 @@ MuseScore {
                   if (center.tick <= cursor.tick && center.tick > mostRecentCenterTick) {
                     parms.currCenter = center.center;
                     mostRecentCenterTick = center.tick;
+                  }
+                }
+
+                var mostRecentTransposeTick = -1;
+                for (var i = 0; i < staffTranspositionHistory.length; i++) {
+                  var trans = staffTranspositionHistory[i];
+                  if (trans.tick <= cursor.tick && trans.tick > mostRecentTransposeTick) {
+                    parms.currTranspose = trans.fifths;
+                    mostRecentTransposeTick = trans.tick;
                   }
                 }
 
@@ -3330,6 +3416,8 @@ MuseScore {
         // 2. accidentalType
         // 3. tuning
 
+        var isConcert = note.tpc == note.tpc1;
+
         note.line = newLine;
 
         setAccidental(note, newAccidental);
@@ -3348,7 +3436,7 @@ MuseScore {
             return acc.numSharps;
         }
         var newRegAcc = countRegularAccidental (newImplicitAccidental);
-        note.tuning = getCentOffset(newBaseNote, newOffset, newRegAcc, parms.currEdo, parms.currCenter);
+        note.tuning = getCentOffset(newBaseNote, newOffset, newRegAcc, parms.currEdo, parms.currCenter, isConcert ? 0 : parms.currTranspose);
 
 
         // Step 4. Remove accidentals on all marked notes.

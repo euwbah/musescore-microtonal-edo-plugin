@@ -77,11 +77,30 @@ staff using Staff Text (`Ctrl-T`) instead of System Text.
 
 > :warning: Due to current technical limitations of MuseScore,
 **all** key signatures, even standard non-custom ones, must be accompanied by key signature annotations.
+>
+> :warning: It is necessary to adjust the key signature annotations when toggling between concert and tranposing pitch
+  display modes.
 
 If a key signature annotation has not been specified, the plugin assumes that there are no accidentals in the key
 signature. The text is case-insensitive.
 
-### 6. Select a reference pitch
+### 6. Annotate transposing instruments
+
+If a part uses a transposing instrument, create a Staff Text (`Ctrl-T`) at
+the start of the first bar of the part, or at the start of the bar where an instrument change to
+a transposing instrument of a different transposition is performed. In this staff text,
+type `t: Bb` for Bb instruments, `t: Eb` for Eb instruments, etc. All fifth-based transpositions
+are supported - meaning you can use the accidentals `x`, `#`, `b`, `bb`.
+
+This step is required as MuseScore implements transpositions as offsets in 12-edo.
+Placing the transposition annotation will correct the offset into the current tuning system.
+Note that if [Concert Pitch](https://musescore.org/en/handbook/3/concert-pitch) display mode is active,
+the transposition annotation will not take effect and all parts will be treated as C instruments.
+
+If no transposition annotations were specified, the part is assumed to be a C instrument.
+The text is case-insensitive.
+
+### 7. Select a reference pitch
 
 This step is optional and reference pitch is defaulted to `A4: 440 Hz`.
 
@@ -95,7 +114,7 @@ type `{note}: {f} Hz`:
 To change reference pitch for only one part, use Staff Text (`Ctrl-T`) instead.
 The text is case-insensitive.
 
-### 7. Done!
+### 8. Done!
 
 Here are some things to take note of:
 - You can make the text annotations invisible by selecting them and pressing `V`.

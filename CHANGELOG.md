@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.3.0
+- Added support for transposing instruments via transposition annotation. Only regular fifth-based transpositions
+  are supported (regular accidentals only).
+- Clean up readme.
+
 ### 2.2.9
 - Fixed pitch down invoking pitch-up command when rests/text/non-note elements are selected
 - Fixed pitch up not correcting an exceeded enharmonic (bug fix #31)
