@@ -118,7 +118,8 @@ The text is case-insensitive.
 
 ### 8. Done!
 
-Here are some things to take note of:
+You can now use the up and down arrow keys to adjust a note according
+to the tuning system of choice! Here are some things to take note of:
 - You can make the text annotations invisible by selecting them and pressing `V`.
 - Make sure each System/Staff Text only contains one modifier; don't combine
   tuning selection and key signature annotation in one Text element.
