@@ -1,23 +1,24 @@
 # Microtonal plugin for Musescore 3.4+: Retune + Transpose in almost any EDO.
 
-Musescore plugin to retune and pitch up/down notes in any EDO ranked from flat-2 to sharp-8.
-(Supports all EDOs from 5-72 except 59, 66, and 71. Also supports larger edos up to 117 that
-are rated with a [sharpness](#tuning-of-regular-pythagorean-accidentals) of up to sharp-8)
-
-[Here is the full list of supported EDOs and their respective sharpness values.](#appendix-a-list-of-supported-edos-according-to-sharpness-classification)
 
 ![screenshot](images/microtonal-plugin-screenshot.png)
 
 ## Features
 
-- Retuning notes to match any supported edo of choice
-  - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for
-    evaluating cent offsets for any EDO.
+- Retuning notes to match any [supported edo](#appendix-a-list-of-supported-edos-according-to-sharpness-classification) of choice
+  - Special thanks to [Flora Canou](https://github.com/FloraCanou/musescore-n-tet-plugins) for providing the generalized method for evaluating cent offsets for any EDO.
 - Support for key signatures via [Key signature annotations](#key-signatures)
 - Transposing individual notes/selections by 1 EDO step while automatically assigning accidentals
 - Tuning, key signatures, and reference pitches can be changed mid score;
 - Each staff can be assigned its own tunings, key signatures, and reference pitches simultaneously.
 - Based on [Kite Giedraitis' ups and downs notation](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf)
+
+## Support me
+
+Support this plugin + fund my xenharmonic music creation and research.
+Any amount would be greatly appreciated!
+
+<iframe src="https://github.com/sponsors/euwbah/button" title="Sponsor euwbah" height="35" width="116" style="border: 0;"></iframe>
 
 ## Quick start
 
@@ -65,10 +66,11 @@ The text is case-insensitive.
 
 For each key signature, create one System Text (`Ctrl-Shift-T`) at the start of the same
 bar as the key signature, then type `.x.x.x.x.x.x.x`, where each 'x'
-represents an [accidental](#key-signatures) applied on the notes C, D, E, F, G, A, and B respectively.
+represents an [accidental](#accidental-code) applied on the notes C, D, E, F, G, A, and B respectively.
 If a note should have no accidental, you can leave it blank or put any other placeholder character.
 For example, the key signature for D major can look like: `.#...#...` representing C# and F#.
-There should always be 7 dots (`.`) in the key signature annotation.
+There should always be 7 dots (`.`) in the key signature annotation. Refer to the
+[list of supported key signatures](#accidental-code).
 
 If there are staves which have a separate key signatures from the others,
 as in [local key signatures](https://musescore.org/en/handbook/3/key-signatures#add-key-sig-to-one-staff),
@@ -125,11 +127,9 @@ Here are some things to take note of:
 
 ------------------------
 
-## Key signatures
+## Accidental Code
 
 ![Staff text custom key sig](images/key-sig-example.png)
-
-### Accidental Code
 
 | Accidental | Textual representation |
 | ----: | :---- |
