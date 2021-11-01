@@ -18,7 +18,7 @@
 Support this plugin + fund my xenharmonic music creation and research.
 Any amount would be greatly appreciated!
 
-<iframe src="https://github.com/sponsors/euwbah/button" title="Sponsor euwbah" height="35" width="116" style="border: 0;"></iframe>
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/euwbah?style=for-the-badge)](https://github.com/sponsors/euwbah)
 
 ## Quick start
 
