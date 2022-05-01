@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.3.1
+- Implemented extensible config object; added showallaccidentals feature to always show courtesy accidentals.
+
 ### 2.3.0
 - Added support for transposing instruments via transposition annotation. Only regular fifth-based transpositions
   are supported (regular accidentals only).

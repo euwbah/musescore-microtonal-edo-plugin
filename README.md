@@ -125,6 +125,16 @@ to the tuning system of choice! Here are some things to take note of:
   tuning selection and key signature annotation in one Text element.
 - Remember to run the `tune n-edo` plugin regularly to update the pitches of
   notes that are not yet tuned/transposed.
+- Recall that:
+  - System Text (`Ctrl-Shift-T`) = annotation applies to all staves
+  - Staff Text (`Ctrl-T`) = annotation applies to current staff only.
+
+----------------------
+
+### Additional Settings
+
+In a separate Staff/System Text annotation, type `config: {showallaccidentals: true}` (verbatim)
+to turn on courtesy accidentals for all notes (helpful for atonal pieces or scores without barlines).
 
 ------------------------
 

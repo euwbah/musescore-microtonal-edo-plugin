@@ -16,7 +16,7 @@ MuseScore {
         }
       }
 
-      version: "2.3.0"
+      version: "2.3.1"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step"
 
@@ -1140,6 +1140,7 @@ MuseScore {
             var allEDOs = [];
             var allCenters = [];
             var allTranspositions = [];
+            var allConfigs = [];
 
             parms.bars = [];
             parms.currKeySig = parms.naturalKeySig;
@@ -1150,6 +1151,7 @@ MuseScore {
               var staffEDOHistory = [];
               var staffCenterHistory = [];
               var staffTranspositionHistory = [];
+              var staffConfigHistory = [];
 
               for (var voice = 0; voice < 4; voice++) {
                 cursor.rewind(1);
@@ -1211,6 +1213,22 @@ MuseScore {
                               fifths: fifthsFromC[nominal] + standardAccFifths[acc]
                             });
                           }
+                        } else if (t.startsWith('config:')) {
+                          t = t.substring(7).trim();
+                          console.log('config annotation found: ' + t);
+                          try {
+                            var configObject = eval('(' + t + ')');
+                            if (typeof configObject == 'object') {
+                              staffConfigHistory.push({
+                                tick: cursor.tick,
+                                config: configObject
+                              });
+                              console.log('noted config object:');
+                              console.log(configObject);
+                            }
+                          } catch (x) {
+                            console.log('config parse error: ' + x);
+                          }
                         } else {
                           var text = removeFormattingCode(t);
                           var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
@@ -1249,6 +1267,7 @@ MuseScore {
               allEDOs.push(staffEDOHistory);
               allCenters.push(staffCenterHistory);
               allTranspositions.push(staffTranspositionHistory);
+              allConfigs.push(staffConfigHistory);
             } // end of key sig and bars population for all staves
 
             // Run transpose operation on all note elements.
@@ -1265,6 +1284,7 @@ MuseScore {
               parms.currEdo = 12;
               parms.currCenter = {note: 'a4', freq: 440};
               parms.currTranspose = 0;
+              parms.currConfig = {};
 
               // handle transposing the firstTiedNote in the event that a non-first tied note
               // is selected.
@@ -1342,6 +1362,20 @@ MuseScore {
                 }
               }
 
+              var mostRecentConfigTick = -1;
+              for (var j = 0; j < allConfigs[cursor.staffIdx].length; j++) {
+                var config = allConfigs[cursor.staffIdx][j];
+                if (config.tick <= segment.tick && config.tick > mostRecentConfigTick) {
+                  var conkeys = Object.keys(config.config);
+                  for(var kidx = 0; kidx < conkeys.length; kidx++) {
+                    var key = conkeys[kidx];
+                    parms.currConfig[key] = config.config[key];
+                    console.log('config set "' + key + '" to ' + config.config[key]);
+                  }
+                  mostRecentConfigTick = config.tick;
+                }
+              }
+
               // there's no Array.slice in the plugin API
               parms.chordExcludingSelf = [];
               for (var j = 0; j < notes.length; j++) {
@@ -1385,6 +1419,7 @@ MuseScore {
             parms.currEdo = 12;
             parms.currCenter = {note: 'a4', freq: 440};
             parms.currTranspose = 0;
+            parms.currConfig = {};
 
             // Even if system text is used for key sig, the text
             // won't carry over for all voices (if the text was placed on voice 1, only
@@ -1397,6 +1432,7 @@ MuseScore {
             var staffEDOHistory = [];
             var staffCenterHistory = [];
             var staffTranspositionHistory = [];
+            var staffConfigHistory = [];
 
             // initial run to populate custom key signatures
             for (var voice = 0; voice < 4; voice++) {
@@ -1467,6 +1503,23 @@ MuseScore {
                             tick: cursor.tick,
                             fifths: fifthsFromC[nominal] + standardAccFifths[acc]
                           });
+                        }
+                      } else if (t.startsWith('config:')) {
+                        t = t.substring(7).trim();
+                        console.log('config annotation found: ' + t);
+                        try {
+                          var configObject = eval('(' + t + ')');
+                          console.log(configObject);
+                          if (typeof configObject == 'object') {
+                            staffConfigHistory.push({
+                              tick: cursor.tick,
+                              config: configObject
+                            });
+                            console.log('noted config object:');
+                            console.log(configObject);
+                          }
+                        } catch (x) {
+                          console.log('config parse error: ' + x);
                         }
                       } else {
                         var text = removeFormattingCode(t);
@@ -1551,6 +1604,20 @@ MuseScore {
                   if (trans.tick <= cursor.tick && trans.tick > mostRecentTransposeTick) {
                     parms.currTranspose = trans.fifths;
                     mostRecentTransposeTick = trans.tick;
+                  }
+                }
+
+                var mostRecentConfigTick = -1;
+                for (var i = 0; i < staffConfigHistory.length; i++) {
+                  var config = allConfigs[cursor.staffIdx][j];
+                  if (config.tick <= segment.tick && config.tick > mostRecentConfigTick) {
+                    var conkeys = Object.keys(config.config);
+                    for(var kidx = 0; kidx < conkeys.length; kidx++) {
+                      var key = conkeys[kidx];
+                      parms.currConfig[key] = config.config[key];
+                      console.log('config set "' + key + '" to ' + config.config[key]);
+                    }
+                    mostRecentConfigTick = config.tick;
                   }
                 }
 
@@ -2791,7 +2858,7 @@ MuseScore {
             }
           }
 
-          if (!sameLineNotesHasExplicitAcc) {
+          if (!sameLineNotesHasExplicitAcc && (parms.currConfig.showallaccidentals === undefined || parms.currConfig.showallaccidentals === false)) {
             if (priorAccOnNewLine === null) {
               // If no explicit accidental, check key signature
               if (parms.currKeySig[newBaseNote].type == newAccidental) {
@@ -3444,8 +3511,10 @@ MuseScore {
 
         // Step 4. Remove accidentals on all marked notes.
 
-        for (var i = 0; i < toRemoveAccidentals.length; i++) {
-          setAccidental(toRemoveAccidentals[i], Accidental.NONE);
+        if (parms.currConfig.showallaccidentals === undefined || parms.currConfig.showallaccidentals === false) {
+          for (var i = 0; i < toRemoveAccidentals.length; i++) {
+            setAccidental(toRemoveAccidentals[i], Accidental.NONE);
+          }
         }
 
         return;
