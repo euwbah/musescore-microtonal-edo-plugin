@@ -4,12 +4,31 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version: "2.2.2"
+      version: "2.3.0"
       description: "Retune selection to any EDO temperament, or whole score if nothing selected."
       menuPath: "Plugins.n-EDO.Tune"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
+
+      // these lookups are for transposition annotations
+      property variant fifthsFromC: {
+        'f': -1,
+        'c': 0,
+        'g': 1,
+        'd': 2,
+        'a': 3,
+        'e': 4,
+        'b': 5
+      }
+
+      property variant standardAccFifths: {
+        'bb': -14,
+        'b': -7,
+        '': 0,
+        '#': 7,
+        'x': 14
+      }
 
       // Enumeration of custom names to map MuseScore symbols, text, and accidentals
       // to a consistent accidental enumeration called AccType instead of Accidental.
@@ -110,12 +129,26 @@ MuseScore {
       //
       // Special credits to @FloraCanou (https://github.com/FloraCanou) for conceiving this method
       // method edited by @euwbah to set A as the normalised frequency instead of D
-      // FloraCanou: let's support custom tuning center
 
-      function getCentOffset(noteName, stepOffset, regAcc, edo, center) {
+      /**
+      noteName: nominal of note to tune
+      stepOffset: number of edosteps away from nominal
+      regAcc: number of sharps in the accidental of this note is a regular accidental
+      edo: edo to tune to
+      center: Reference pitch e.g. {note: 'a4', freq: 440}
+      transFifths: number of fifths this part is transposed by if transposing instrument and
+                   concert pitch mode is off. E.g. Bb clarinet should be -2.
+                   Only regular fifth-based transpositions can be used.
+                   Rationale for this is that musescore's transposing instruments
+                   are transposed in 12 edo, so an additional offset must be applied
+                   to convert it to a fifth-based transposition in n-edo.
+      */
+      function getCentOffset(noteName, stepOffset, regAcc, edo, center, transFifths) {
         var stepSize = 1200.0 / edo;
         var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
         var sharpValue = 7 * fifthStep - 4 * edo;
+        var twelveFifthVsEdoFifthCents = 700 - (fifthStep * stepSize);
+        var transpositionCorrection = -transFifths * twelveFifthVsEdoFifthCents;
 
         // Offset caused by custom central frequency
         var centOffset = 1200*Math.log (center.freq / 440) / Math.LN2;
@@ -153,22 +186,33 @@ MuseScore {
         }
         centOffset += -1200*(parseInt(center.note.substring(1, 2)) - 4);
 
+        var nominalOffset = 0;
+        var nominalOffset = 0;
         switch (noteName) {
           case 'f':
-            return stepSize*stepOffset - 100*regAcc + (centerValue - 3)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue - 3)*(stepSize*fifthStep - 700);
+            break;
           case 'c':
-            return stepSize*stepOffset - 100*regAcc + (centerValue - 2)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue - 2)*(stepSize*fifthStep - 700);
+            break;
           case 'g':
-            return stepSize*stepOffset - 100*regAcc + (centerValue - 1)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue - 1)*(stepSize*fifthStep - 700);
+            break;
           case 'd':
-            return stepSize*stepOffset - 100*regAcc + centerValue*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = centerValue*(stepSize*fifthStep - 700);
+            break;
           case 'a':
-            return stepSize*stepOffset - 100*regAcc + (centerValue + 1)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue + 1)*(stepSize*fifthStep - 700);
+            break;
           case 'e':
-            return stepSize*stepOffset - 100*regAcc + (centerValue + 2)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue + 2)*(stepSize*fifthStep - 700);
+            break;
           case 'b':
-            return stepSize*stepOffset - 100*regAcc + (centerValue + 3)*(stepSize*fifthStep - 700) + centOffset;
+            nominalOffset = (centerValue + 3)*(stepSize*fifthStep - 700);
+            break;
         }
+
+        return stepSize*stepOffset - 100*regAcc + nominalOffset + centOffset + transpositionCorrection;
       }
 
       function convertAccidentalToStepsOrNull(acc, edo) {
@@ -357,6 +401,7 @@ MuseScore {
           var staffKeySigHistory = [];
           var staffCenterHistory = [];
           var staffEDOHistory = [];
+          var staffTranspositionHistory = [];
 
           // initial run to populate custom key signatures
           for (var voice = 0; voice < 4; voice++) {
@@ -380,9 +425,9 @@ MuseScore {
                 // scan edo & tuning center first. key signature parsing is dependant on edo used.
                 for (var i = 0; i < cursor.segment.annotations.length; i++) {
                   var annotation = cursor.segment.annotations[i];
-                  console.log("found annotation type: " + annotation.subtypeName());
-                  if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
-                      (annotation.subtypeName() == 'System')) {
+                  console.log("found annotation type: " + annotation.name);
+                  if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
+                      (annotation.name == 'SystemText')) {
                     var text = removeFormattingCode(annotation.text);
                     if (text.toLowerCase().trim().endsWith('edo')) {
                       var edo = parseInt(text.substring(0, text.length - 3));
@@ -412,23 +457,37 @@ MuseScore {
                 // Check for StaffText key signature changes, then update staffKeySigHistory
                 for (var i = 0; i < cursor.segment.annotations.length; i++) {
                   var annotation = cursor.segment.annotations[i];
-                  console.log("found annotation type: " + annotation.subtypeName());
-                  if ((annotation.subtypeName() == 'Staff' && Math.floor(annotation.track / 4) == staff) ||
-                      (annotation.subtypeName() == 'System')) {
-                    var text = removeFormattingCode(annotation.text);
-                    var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
-                    if (!mostRecentEDO)
-                      mostRecentEDO = 12;
-                    var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
-                    if (maybeKeySig !== null) {
-                      console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
-                      staffKeySigHistory.push({
-                        tick: cursor.tick,
-                        keySig: maybeKeySig
-                      });
+                  console.log("found annotation type: " + annotation.name);
+                  if ((annotation.name == 'StaffText' && Math.floor(annotation.track / 4) == staff) ||
+                      (annotation.name == 'SystemText')) {
+                    var t = annotation.text.toLowerCase().trim();
+                    if (t.startsWith('t:')) {
+                      t = t.substring(2).trim();
+                      var nominal = t.substring(0, 1);
+                      var acc = t.substring(1).trim();
+                      if (fifthsFromC[nominal] !== undefined && standardAccFifths[acc] !== undefined) {
+                        staffTranspositionHistory.push({
+                          tick: cursor.tick,
+                          fifths: fifthsFromC[nominal] + standardAccFifths[acc]
+                        });
+                      }
+                    } else {
+                      var text = removeFormattingCode(t);
+                      var mostRecentEDO = staffEDOHistory.length !== 0 ? staffEDOHistory[staffEDOHistory.length - 1].edo : null;
+                      if (!mostRecentEDO)
+                        mostRecentEDO = 12;
+                      var maybeKeySig = scanCustomKeySig(text, mostRecentEDO);
+                      if (maybeKeySig !== null) {
+                        console.log("detected new custom keySig: " + text + ", staff: " + staff + ", voice: " + voice);
+                        staffKeySigHistory.push({
+                          tick: cursor.tick,
+                          keySig: maybeKeySig
+                        });
+                      }
                     }
                   }
                 }
+
                 if (cursor.segment.tick == cursor.measure.firstSegment.tick && voice === 0) {
                   // once new bar is reached, denote new bar in the parms.accidentals.bars object
                   // so that getAccidental will reset. Only do this for the first voice in a staff
@@ -454,6 +513,7 @@ MuseScore {
             parms.currKeySig = parms.keySig;
             parms.currEdo = 12;
             parms.currCenter = {note: 'a4', freq: 440};
+            parms.currTranspose = 0;
             for (var voice = 0; voice < 4; voice++) {
               // if first pass go to start of score so that anchors.all
               // accidentals are accounted for
@@ -477,24 +537,41 @@ MuseScore {
                 // from all 4 voices in a staff since microtonal accidentals from one voice
                 // should affect subsequent notes on the same line in other voices as well.
 
+                var mostRecentKeySigTick = -1;
                 for (var i = 0; i < staffKeySigHistory.length; i++) {
                   var keySig = staffKeySigHistory[i];
-                  if (keySig.tick <= cursor.tick)
+                  if (keySig.tick <= cursor.tick && keySig.tick >= mostRecentKeySigTick) {
                     parms.currKeySig = keySig.keySig;
+                    mostRecentKeySigTick = keySig.tick;
+                  }
                 }
 
+                var mostRecentEDOTick = -1;
                 for (var i = 0; i < staffEDOHistory.length; i++) {
                   var edo = staffEDOHistory[i];
-                  if (edo.tick <= cursor.tick)
+                  if (edo.tick <= cursor.tick && edo.tick >= mostRecentEDOTick) {
                     parms.currEdo = edo.edo;
+                    mostRecentEDOTick = edo.tick;
+                  }
                 }
 
+                var mostRecentCenterTick = -1;
                 for (var i = 0; i < staffCenterHistory.length; i++) {
                   var center = staffCenterHistory[i];
-                  if (center.tick <= cursor.tick)
+                  if (center.tick <= cursor.tick && center.tick >= mostRecentCenterTick) {
                     parms.currCenter = center.center;
+                    mostRecentCenterTick = center.tick;
+                  }
                 }
 
+                var mostRecentTransposeTick = -1;
+                for (var i = 0; i < staffTranspositionHistory.length; i++) {
+                  var trans = staffTranspositionHistory[i];
+                  if (trans.tick <= cursor.tick && trans.tick >= mostRecentTransposeTick) {
+                    parms.currTranspose = trans.fifths;
+                    mostRecentTransposeTick = trans.tick;
+                  }
+                }
 
                 if (cursor.element) {
                   if (cursor.element.type == Ms.CHORD) {
@@ -593,91 +670,91 @@ MuseScore {
 
         switch(tpc) {
         case -1: //Fbb
-          note.tuning = getCentOffset ('f', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 0: //Cbb
-          note.tuning = getCentOffset ('c', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 1: //Gbb
-          note.tuning = getCentOffset ('g', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 2: //Dbb
-          note.tuning = getCentOffset ('d', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 3: //Abb
-          note.tuning = getCentOffset ('a', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 4: //Ebb
-          note.tuning = getCentOffset ('e', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 5: //Bbb
-          note.tuning = getCentOffset ('b', -2*sharpValue, -2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', -2*sharpValue, -2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
 
         case 6: //Fb
-          note.tuning = getCentOffset ('f', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 7: //Cb
-          note.tuning = getCentOffset ('c', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 8: //Gb
-          note.tuning = getCentOffset ('g', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 9: //Db
-          note.tuning = getCentOffset ('d', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 10: //Ab
-          note.tuning = getCentOffset ('a', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 11: //Eb
-          note.tuning = getCentOffset ('e', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 12: //Bb
-          note.tuning = getCentOffset ('b', -sharpValue, -1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', -sharpValue, -1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
 
         case 20: //F#
-          note.tuning = getCentOffset ('f', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 21: //C#
-          note.tuning = getCentOffset ('c', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 22: //G#
-          note.tuning = getCentOffset ('g', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 23: //D#
-          note.tuning = getCentOffset ('d', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 24: //A#
-          note.tuning = getCentOffset ('a', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 25: //E#
-          note.tuning = getCentOffset ('e', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 26: //B#
-          note.tuning = getCentOffset ('b', sharpValue, 1, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', sharpValue, 1, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
 
         case 27: //Fx
-          note.tuning = getCentOffset ('f', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('f', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 28: //Cx
-          note.tuning = getCentOffset ('c', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('c', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 29: //Gx
-          note.tuning = getCentOffset ('g', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('g', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 30: //Dx
-          note.tuning = getCentOffset ('d', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('d', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 31: //Ax
-          note.tuning = getCentOffset ('a', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('a', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 32: //Ex
-          note.tuning = getCentOffset ('e', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('e', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         case 33: //Bx
-          note.tuning = getCentOffset ('b', 2*sharpValue, 2, parms.currEdo, parms.currCenter);
+          note.tuning = getCentOffset ('b', 2*sharpValue, 2, parms.currEdo, parms.currCenter, parms.currTranspose);
           return;
         }
 
@@ -847,8 +924,9 @@ MuseScore {
           console.log('steps on KeySig: ' + stepsFromBaseNote);
         }
 
-        console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote);
-        note.tuning = getCentOffset(baseNote, stepsFromBaseNote, 0, parms.currEdo, parms.currCenter);
+        console.log("Base Note: " + baseNote + ", steps: " + stepsFromBaseNote + ", tick: " + note.parent.parent.tick);
+        var isConcert = note.tpc == note.tpc1;
+        note.tuning = getCentOffset(baseNote, stepsFromBaseNote, 0, parms.currEdo, parms.currCenter, isConcert ? 0 : parms.currTranspose);
         return;
       }
 
