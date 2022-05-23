@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version: "2.3.0"
+      version: "2.3.3"
       description: "Retune selection to any EDO temperament, or whole score if nothing selected."
       menuPath: "Plugins.n-EDO.Tune"
 
@@ -145,8 +145,9 @@ MuseScore {
       */
       function getCentOffset(noteName, stepOffset, regAcc, edo, center, transFifths) {
         var stepSize = 1200.0 / edo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
         var twelveFifthVsEdoFifthCents = 700 - (fifthStep * stepSize);
         var transpositionCorrection = -transFifths * twelveFifthVsEdoFifthCents;
 
@@ -216,8 +217,9 @@ MuseScore {
       }
 
       function convertAccidentalToStepsOrNull(acc, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
         switch(acc.trim()) {
         case 'db':
         case 'bd':
@@ -658,8 +660,9 @@ MuseScore {
       // will not be tuned.
       function tuneNote(note, segment, parms, scanOnly) {
         var tpc = note.tpc;
-        var fifthStep = Math.round(parms.currEdo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7*fifthStep - 4*parms.currEdo;
+        var val = [2, 3].map (function (q) {return Math.round(parms.currEdo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         // If tpc is non-natural, there's no need to go through additional steps,
         // since accidentals and key sig are already taken into consideration

@@ -15,7 +15,7 @@ MuseScore {
         }
       }
 
-      version: "2.3.2"
+      version: "2.3.3"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO. " +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whenever possible."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step (Arrows)"
@@ -74,8 +74,9 @@ MuseScore {
       */
       function getCentOffset(noteName, stepOffset, regAcc, edo, center, transFifths) {
         var stepSize = 1200.0 / edo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
         var twelveFifthVsEdoFifthCents = 700 - (fifthStep * stepSize);
         var transpositionCorrection = -transFifths * twelveFifthVsEdoFifthCents;
 
@@ -245,8 +246,9 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertAccidentalTypeToSteps(accType, edo) {
         var accOffset = null;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         switch(accType) {
         case Accidental.SHARP_SLASH4:
@@ -610,8 +612,9 @@ MuseScore {
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertStepsToAccidentalType(steps, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         var numSharpsFlatter;
         var numSharpsSharper;
@@ -817,8 +820,9 @@ MuseScore {
            less than or eq. to 3 arrows, there is no such note and the tuning system cannot be supported
            as there are more notes than the number of accidentals available in musescore
         */
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         var acc = deconstructAccidental(acc);
 
@@ -848,6 +852,8 @@ MuseScore {
             return constructAccidental(acc.numSharps - 1, 0);
 
           // check if the number of arrows coincide with quarter tone accidentals
+          // in the 'arrow priority' version, this is only enabled if absolutely necessary
+          // (when apotome size is 8 steps and above)
           // <NO DT VARIANT CHECKPOINT>
           else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 0.5, 0);
@@ -922,8 +928,9 @@ MuseScore {
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function getOverLimitEnharmonicEquivalent(baseNote, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
         switch(baseNote) {
         // <UP DOWN VARIANT CHECKPOINT> change to D E G A B for downwards variant
         case 'd':
@@ -931,8 +938,8 @@ MuseScore {
         case 'g':
         case 'a':
         case 'b':
-          // a whole tone up enharmonic nominal. Steps = 2 fifthStep - octave.
-          var wholeToneSteps = 2 * fifthStep - edo;
+          // a whole tone up enharmonic nominal. 9/8 = [-3 2>.
+          var wholeToneSteps = -3*val[0] + 2*val[1];
 
           // <UP DOWN VARIANT CHECKPOINT> flip steps direction
           // limits are: x^3 or bb^3 (super-flat) if upwards, bbv3 or xv3 (super-flat) if downwards
@@ -944,8 +951,8 @@ MuseScore {
 
           return convertStepsToAccidentalType(newSteps, edo);
         default:
-          // a diatonic semitone up enharmonic nominal. Steps = -5 fifthStep + 3 octaves
-          var semitoneSteps = -5 * fifthStep + 3 * edo;
+          // a diatonic semitone up enharmonic nominal. 256/243 = [8 -5>.
+          var semitoneSteps = 8*val[0] - 5*val[1];
           var overLimitSteps = (sharpValue >= 0) ? (2 * sharpValue + 3 + 1) : (-2 * sharpValue + 3 + 1);
           var newSteps = overLimitSteps - semitoneSteps;
           return convertStepsToAccidentalType(newSteps, edo);
@@ -961,10 +968,11 @@ MuseScore {
       function getEnharmonics(baseNote, offset, edo) {
         var above, below;
 
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
-        var wholeToneSteps = 2 * fifthStep - edo;
-        var semitoneSteps = -5 * fifthStep + 3 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
+        var wholeToneSteps = -3*val[0] + 2*val[1];
+        var semitoneSteps = 8*val[0] - 5*val[1];
 
         switch (baseNote) {
         case 'a': case 'd': case 'g':
@@ -2171,8 +2179,9 @@ MuseScore {
       function getNotePitchData(cursor, note, parms) {
         var noteData = {};
         var edo = parms.currEdo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         noteData.line = note.line;
         noteData.tpc = note.tpc;
