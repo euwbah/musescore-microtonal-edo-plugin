@@ -10,7 +10,7 @@
 - Support for key signatures via [Key signature annotations](#key-signatures)
 - Transposing individual notes/selections by 1 EDO step while automatically assigning accidentals
 - Tuning, key signatures, and reference pitches can be changed mid score;
-- Each staff can be assigned its own tunings, key signatures, and reference pitches simultaneously.
+- Each staff can be assigned its own tunings, key signatures, and reference pitches independently.
 - Based on [Kite Giedraitis' ups and downs notation](http://tallkite.com/misc_files/notation%20guide%20for%20edos%205-72.pdf)
 
 ## Support me
