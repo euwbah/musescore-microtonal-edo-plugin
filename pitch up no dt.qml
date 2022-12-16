@@ -11,14 +11,17 @@ MuseScore {
         title: 'n-TET tuning plugin error:'
         text: 'Tuning system not supported, it requires an accidental that cannot be represented.\nOnly EDOs ranked up to sharp-8 are supported. See the README for more info.'
         onAccepted: {
-          Qt.quit();
+          quit();
         }
       }
 
-      version: "2.3.3"
+      version: "2.4.0"
       description: "Raises selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO. " +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whenever possible."
       menuPath: "Plugins.n-EDO.Raise Pitch By 1 Step (Arrows)"
+      title: "Raise Pitch By 1 Step (Arrows)"
+      categoryCode: "playback"
+      // thumbnailName: "something.png"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -1106,6 +1109,7 @@ MuseScore {
         // sadly, there seems to be no way for the plugin to tell if the cursor
         // is in element-array selection mode which would have been helpful for
         // transposing individual note elements selected by alt+click.
+        curScore.startCmd();
         var cursor = curScore.newCursor();
         cursor.rewind(1);
         var startStaff;
@@ -1146,7 +1150,7 @@ MuseScore {
 
           if (curScore.selection.elements.length == 0) {
             clog('no individual selection. quitting.');
-            Qt.quit();
+            quit();
           } else {
             var selectedNotes = [];
             for (var i = 0; i < curScore.selection.elements.length; i++) {
@@ -1164,7 +1168,7 @@ MuseScore {
               clog('no selected note elements, defaulting to pitch-up/pitch-down shortcuts');
               // <UP DOWN VARIANT CHECKPOINT>
               cmd('pitch-up');
-              Qt.quit();
+              quit();
             }
 
             // These selected notes may be in any random order and may come from any staff
@@ -1660,7 +1664,7 @@ MuseScore {
                 }
 
                 if (cursor.element) {
-                  if (cursor.element.type == Ms.CHORD) {
+                  if (cursor.element.type == Element.CHORD) {
                     var graceChords = cursor.element.graceNotes;
                     for (var i = 0; i < graceChords.length; i++) {
                       // iterate through all grace chords
@@ -1742,6 +1746,7 @@ MuseScore {
             }
           }
         }
+        curScore.endCmd();
       }
 
       // Set a cursor to a specific position.
@@ -1827,7 +1832,7 @@ MuseScore {
           var firstAccidentalPropertyUndefinedNaturalTPC = undefined;
 
           while (tickOfThisBar !== -1 && cursor.segment && cursor.tick >= tickOfThisBar) {
-            if (cursor.element && cursor.element.type == Ms.CHORD) {
+            if (cursor.element && cursor.element.type == Element.CHORD) {
               // because this is backwards-traversing, it should look at the main chord first before grace chords.
               var notes = cursor.element.notes;
               var nNotesInSameLine = 0;
@@ -3024,7 +3029,7 @@ MuseScore {
           while (cursor.tick < tickOfThisBar && cursor.nextMeasure());
 
           while (cursor.segment && (tickOfNextBar === -1 || cursor.tick < tickOfNextBar)) {
-            if (cursor.element && cursor.element.type == Ms.CHORD) {
+            if (cursor.element && cursor.element.type == Element.CHORD) {
               var graceChords = cursor.element.graceNotes;
               for (var i = 0; i < graceChords.length; i++) {
                 // iterate through all grace chords
@@ -3590,7 +3595,7 @@ MuseScore {
         clog("hello n-edo");
 
         if (typeof curScore === 'undefined')
-              Qt.quit();
+              quit();
 
         var parms = {};
 
@@ -3620,6 +3625,6 @@ MuseScore {
         parms.currKeySig = parms.naturalKeySig
 
         applyToNotesInSelection(tuneNote, parms);
-        Qt.quit();
+        quit();
       }
 }

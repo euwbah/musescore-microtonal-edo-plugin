@@ -4,9 +4,12 @@ import QtQuick.Controls.Styles 1.3
 import MuseScore 3.0
 
 MuseScore {
-      version: "2.3.3"
+      version: "2.4.0"
       description: "Retune selection to any EDO temperament, or whole score if nothing selected."
       menuPath: "Plugins.n-EDO.Tune"
+      title: "Tune"
+      categoryCode: "playback"
+      // thumbnailName: "something.png"
 
       // WARNING! This doesn't validate the accidental code!
       property variant customKeySigRegex: /\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)\.(.*)/g
@@ -358,6 +361,7 @@ MuseScore {
       // or, if nothing is selected, in the entire score
 
       function applyToNotesInSelection(func, parms) {
+        curScore.startCmd();
         var cursor = curScore.newCursor();
         cursor.rewind(1);
         var startStaff;
@@ -576,7 +580,7 @@ MuseScore {
                 }
 
                 if (cursor.element) {
-                  if (cursor.element.type == Ms.CHORD) {
+                  if (cursor.element.type == Element.CHORD) {
                     var graceChords = cursor.element.graceNotes;
                     for (var i = 0; i < graceChords.length; i++) {
                       // iterate through all grace chords
@@ -596,6 +600,7 @@ MuseScore {
             }
           }
         }
+        curScore.endCmd();
       }
 
       // This will register an accidental's offset value and tick position.
@@ -937,7 +942,7 @@ MuseScore {
         console.log("hello n-edo");
 
         if (typeof curScore === 'undefined')
-              Qt.quit();
+              quit();
 
         var parms = {};
 
@@ -974,6 +979,6 @@ MuseScore {
         parms.accidentals = {};
 
         applyToNotesInSelection(tuneNote, parms);
-        Qt.quit();
+        quit();
       }
 }
