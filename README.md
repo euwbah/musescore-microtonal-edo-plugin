@@ -17,13 +17,13 @@
 | ![bv4](images/new/bv4.png) | `bv4` | `THREE_TWELFTH_FLAT` | 降记号上面加点东西表示比普通的降记号高 |
 | ![bu4](images/new/b^4.png) | `b^4` | `FOUR_TWELFTH_FLAT` | 降记号下面加点东西表示比普通的降记号低 |
 | ![bbv4](images/new/bbv4.png) | `bbv4` | `NINE_TWELFTH_FLAT` | 同上，额外加一个普通的降记号 |
-| ![bbu4](images/new/bb^4.png) | `bbu4` | `TEN_TWELFTH_FLAT` | 同上，额外加一个普通的降记号 |
+| ![bbu4](images/new/bb^4.png) | `bb^4` | `TEN_TWELFTH_FLAT` | 同上，额外加一个普通的降记号 |
 | ![xu4](images/new/x^4.png) | `x^4` | `DOUBLE_SHARP_EQUAL_TEMPERED` | 重升号上面加点东西表示比普通的重升号高 |
 | ![xv4](images/new/xv4.png) | `xv4` | `SAGITTAL_SHARP25SD` | 实在找不到合适的记号就随便找了个不会混淆的 |
 
 ### English
 
-A simple and straight-forward solution to issue https://github.com/euwbah/musescore-microtonal-edo-plugin/issues/36 : Include 10 extra accidentals supported by Musescore representing 4-arrow accidentals so that the plugin can tune sharp-9 & sharp-10 EDOs
+A simple and straight-forward solution to issue https://github.com/euwbah/musescore-microtonal-edo-plugin/issues/36 : Include 10 extra accidentals supported by Musescore representing 4-arrow accidentals so that the plugin can tune sharp-9 & sharp-10 EDOs.
 
 #### New accidental
 
