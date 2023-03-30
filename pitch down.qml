@@ -237,6 +237,29 @@ MuseScore {
         case 'x^':
         case 'x^1':
           return Accidental.DOUBLE_SHARP_ONE_ARROW_UP;
+          
+        // Addon
+        case '^4':
+          return Accidental.RAISE_ONE_SEPTIMAL_COMMA;
+        case 'v4':
+          return Accidental.LOWER_ONE_SEPTIMAL_COMMA;
+        case '#^4':
+          return Accidental.SHARP_SLASH2;
+        case '#v4':
+          return Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE;
+        case 'b^4':
+          return Accidental.FOUR_TWELFTH_FLAT;
+        case 'bv4':
+          return Accidental.THREE_TWELFTH_FLAT;
+        case 'x^4':
+          return Accidental.DOUBLE_SHARP_EQUAL_TEMPERED;
+        case 'xv4':
+          return Accidental.SAGITTAL_SHARP25SD;
+        case 'bb^4':
+          return Accidental.TEN_TWELFTH_FLAT;
+        case 'bbv4':
+          return Accidental.NINE_TWELFTH_FLAT;
+        
         default:
           return Accidental.NATURAL;
         }
@@ -377,6 +400,38 @@ MuseScore {
         case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           accOffset = -2*sharpValue - 3;
           break;
+        
+        // Addon
+        case Accidental.RAISE_ONE_SEPTIMAL_COMMA:  // ^4
+          accOffset = 4;
+          break;
+        case Accidental.LOWER_ONE_SEPTIMAL_COMMA:  // v4
+          accOffset = -4;
+          break;
+        case Accidental.SHARP_SLASH2:  // #^4
+          accOffset = sharpValue + 4;
+          break;
+        case Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE:  // #v4
+          accOffset = sharpValue - 4;
+          break;
+        case Accidental.FOUR_TWELFTH_FLAT:  // b^4
+          accOffset = -sharpValue + 4;
+          break;
+        case Accidental.THREE_TWELFTH_FLAT:  // bv4
+          accOffset = -sharpValue - 4;
+          break;
+        case Accidental.DOUBLE_SHARP_EQUAL_TEMPERED:  // x^4
+          accOffset = 2*sharpValue + 4;
+          break;
+        case Accidental.SAGITTAL_SHARP25SD:  // xv4
+          accOffset = 2*sharpValue - 4;
+          break;
+        case Accidental.TEN_TWELFTH_FLAT:  // bb^4
+          accOffset = -2*sharpValue + 4;
+          break;
+        case Accidental.NINE_TWELFTH_FLAT:  // bbv4
+          accOffset = -2*sharpValue - 4;
+          break;
         }
 
         return accOffset;
@@ -401,6 +456,8 @@ MuseScore {
 
         else if (numSharps == -2) {
           switch(numArrows) {
+          case -4:
+            return Accidental.NINE_TWELFTH_FLAT;    // Addon
           case -3:
             return Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN;
           case -2:
@@ -415,9 +472,13 @@ MuseScore {
             return Accidental.DOUBLE_FLAT_TWO_ARROWS_UP;
           case 3:
             return Accidental.DOUBLE_FLAT_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.TEN_TWELFTH_FLAT;    // Addon
           }
         } else if (numSharps == -1) {
           switch(numArrows) {
+          case -4:
+            return Accidental.THREE_TWELFTH_FLAT;    // Addon
           case -3:
             return Accidental.FLAT_THREE_ARROWS_DOWN;
           case -2:
@@ -432,9 +493,13 @@ MuseScore {
             return Accidental.FLAT_TWO_ARROWS_UP;
           case 3:
             return Accidental.FLAT_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.FOUR_TWELFTH_FLAT;    // Addon
           }
         } else if (numSharps == 0) {
           switch(numArrows) {
+          case -4:
+            return Accidental.LOWER_ONE_SEPTIMAL_COMMA;    // Addon
           case -3:
             return Accidental.NATURAL_THREE_ARROWS_DOWN;
           case -2:
@@ -449,9 +514,13 @@ MuseScore {
             return Accidental.NATURAL_TWO_ARROWS_UP;
           case 3:
             return Accidental.NATURAL_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.RAISE_ONE_SEPTIMAL_COMMA;    // Addon
           }
         } else if (numSharps == 1) {
           switch(numArrows) {
+          case -4:
+            return Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE;    // Addon
           case -3:
             return Accidental.SHARP_THREE_ARROWS_DOWN;
           case -2:
@@ -466,9 +535,13 @@ MuseScore {
             return Accidental.SHARP_TWO_ARROWS_UP;
           case 3:
             return Accidental.SHARP_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.SHARP_SLASH2;    // Addon
           }
         } else if (numSharps == 2) {
           switch(numArrows) {
+          case -4:
+            return Accidental.SAGITTAL_SHARP25SD;    // Addon
           case -3:
             return Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN;
           case -2:
@@ -483,6 +556,8 @@ MuseScore {
             return Accidental.DOUBLE_SHARP_TWO_ARROWS_UP;
           case 3:
             return Accidental.DOUBLE_SHARP_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.DOUBLE_SHARP_EQUAL_TEMPERED;    // Addon
           }
         }
 
@@ -595,6 +670,28 @@ MuseScore {
           return a(-2, -2);
         case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           return a(-2, -3);
+        
+        // Addon
+        case Accidental.RAISE_ONE_SEPTIMAL_COMMA:  // ^4
+          return a(0, 4);
+        case Accidental.LOWER_ONE_SEPTIMAL_COMMA:  // v4
+          return a(0, -4);
+        case Accidental.SHARP_SLASH2:  // #^4
+          return a(1, 4);
+        case Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE:  // #v4
+          return a(1, -4);
+        case Accidental.FOUR_TWELFTH_FLAT:  // b^4
+          return a(-1, 4);
+        case Accidental.THREE_TWELFTH_FLAT:  // bv4
+          return a(-1, -4);
+        case Accidental.DOUBLE_SHARP_EQUAL_TEMPERED:  // x^4
+          return a(2, 4);
+        case Accidental.SAGITTAL_SHARP25SD:  // xv4
+          return a(2, -4);
+        case Accidental.TEN_TWELFTH_FLAT:  // bb^4
+          return a(-2, 4);
+        case Accidental.NINE_TWELFTH_FLAT:  // bbv4
+          return a(-2, -4);
         }
       }
 
@@ -662,7 +759,7 @@ MuseScore {
           numArrows = useFlatSide ? arrowsOnFlatSide : arrowsOnSharpSide;
 
           while (numSharps > 2) {
-            if (numArrows + sharpValue > 3 || numArrows + sharpValue < -3) {
+            if (numArrows + sharpValue > 4 || numArrows + sharpValue < -4) {
               invalidTuningSystemError.open();
               return null;
             } else {
@@ -671,7 +768,7 @@ MuseScore {
             }
           }
           while (numSharps < -2) {
-            if (numArrows - sharpValue > 3 || numArrows - sharpValue < -3) {
+            if (numArrows - sharpValue > 4 || numArrows - sharpValue < -4) {
               invalidTuningSystemError.open();
               return null;
             } else {
@@ -687,7 +784,7 @@ MuseScore {
           // if this is a sharp-0 perfect tuning.
           numArrows = arrowsOnSharpSide;
 
-          if (numArrows > 3 || numArrows < -3) {
+          if (numArrows > 4 || numArrows < -4) {
             invalidTuningSystemError.open();
             return null;
           }
@@ -787,6 +884,29 @@ MuseScore {
         case Accidental.SHARP2_ARROW_UP:
         case Accidental.DOUBLE_SHARP_ONE_ARROW_UP:
           return 'x^';
+          
+        // Addon
+        case Accidental.RAISE_ONE_SEPTIMAL_COMMA:  // ^4
+          return '^4';
+        case Accidental.LOWER_ONE_SEPTIMAL_COMMA:  // v4
+          return 'v4';
+        case Accidental.SHARP_SLASH2:  // #^4
+          return '#^4';
+        case Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE:  // #v4
+          return '#v4';
+        case Accidental.FOUR_TWELFTH_FLAT:  // b^4
+          return 'b^4';
+        case Accidental.THREE_TWELFTH_FLAT:  // bv4
+          return 'bv4';
+        case Accidental.DOUBLE_SHARP_EQUAL_TEMPERED:  // x^4
+          return 'x^4';
+        case Accidental.SAGITTAL_SHARP25SD:  // xv4
+          return 'xv4';
+        case Accidental.TEN_TWELFTH_FLAT:  // bb^4
+          return 'bb^4';
+        case Accidental.NINE_TWELFTH_FLAT:  // bbv4
+          return 'bbv4';
+          
         case Accidental.NONE:
           return 'none';
         default:
@@ -880,21 +1000,21 @@ MuseScore {
         }
 
         // otherwise, make sure its a valid accidental
-        if ((sharpValue > 0 && acc.numSharps == 2 && acc.numArrows > 3) ||
-            (sharpValue < 0 && acc.numSharps == -2 && acc.numArrows > 3))
+        if ((sharpValue > 0 && acc.numSharps == 2 && acc.numArrows > 4) ||
+            (sharpValue < 0 && acc.numSharps == -2 && acc.numArrows > 4))
           return null;
 
-        // make sure the number of arrows are valid. (from -3 to +3)
+        // make sure the number of arrows are valid. (from -3 to +3) (Addon: change to -4 ~ +4)
         // NOTE: will possibly return null from here if edo is perfect (sharp-0)
         if (sharpValue > 0) {
-          if (acc.numArrows > 3 && acc.numArrows - sharpValue >= -3 && acc.numArrows - sharpValue <= 3 && acc.numSharps < 2)
+          if (acc.numArrows > 3 && acc.numArrows - sharpValue >= -4 && acc.numArrows - sharpValue <= 4 && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
-          else if (acc.numArrows < -3 && acc.numArrows + sharpValue >= -3 && acc.numArrows + sharpValue <= 3 && acc.numSharps > -2)
+          else if (acc.numArrows < -3 && acc.numArrows + sharpValue >= -4 && acc.numArrows + sharpValue <= 4 && acc.numSharps > -2)
             return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
         } else if (sharpValue < 0) {
-          if (acc.numArrows > 3 && acc.numArrows + sharpValue >= -3 && acc.numArrows + sharpValue <= 3 && acc.numSharps > -2)
+          if (acc.numArrows > 3 && acc.numArrows + sharpValue >= -4 && acc.numArrows + sharpValue <= 4 && acc.numSharps > -2)
             return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
-          else if (acc.numArrows < -3 && acc.numArrows - sharpValue >= -3 && acc.numArrows - sharpValue <= 3 && acc.numSharps < 2)
+          else if (acc.numArrows < -3 && acc.numArrows - sharpValue >= -4 && acc.numArrows - sharpValue <= 4 && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
         }
 
