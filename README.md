@@ -1,5 +1,49 @@
-# Microtonal plugin for Musescore 3.4+: Retune + Transpose in almost any EDO.
+## 修改内容 Modification
 
+### 中文
+
+原插件issue https://github.com/euwbah/musescore-microtonal-edo-plugin/issues/36 的权宜之计：使用10个Musescore内存在的变音号代替不存在的4箭头变音号，从而使得sharp-9、sharp-10律制可以使用。
+
+![94 edo](images/new/94%20edo%20demo.png)
+
+#### 新的变音号
+
+| 变音号 | 名称 | 内部名称 | 选择原因 |
+| :---- | :---- | :---- | :---- |
+| ![v4](images/new/v4.png) | `v4` | `LOWER_ONE_SEPTIMAL_COMMA` | 看起来像还原号的左半边 |
+| ![u4](images/new/^4.png) | `^4` | `RAISE_ONE_SEPTIMAL_COMMA` | 和上面那个符号相对应 |
+| ![sv4](images/new/%23v4.png) | `#v4` | `RAISE_ONE_TRIDECIMAL_QUARTERTONE` | 升记号少一横，表示少升一点 |
+| ![su4](images/new/%23^4.png) | `#^4` | `SHARP_SLASH2` | 同上，升记号多一横，表示多升一点 |
+| ![bv4](images/new/bv4.png) | `bv4` | `THREE_TWELFTH_FLAT` | 降记号上面加点东西表示比普通的降记号高 |
+| ![bu4](images/new/b^4.png) | `b^4` | `FOUR_TWELFTH_FLAT` | 降记号下面加点东西表示比普通的降记号低 |
+| ![bbv4](images/new/bbv4.png) | `bbv4` | `NINE_TWELFTH_FLAT` | 同上，额外加一个普通的降记号 |
+| ![bbu4](images/new/bb^4.png) | `bbu4` | `TEN_TWELFTH_FLAT` | 同上，额外加一个普通的降记号 |
+| ![xu4](images/new/x^4.png) | `x^4` | `DOUBLE_SHARP_EQUAL_TEMPERED` | 重升号上面加点东西表示比普通的重升号高 |
+| ![xv4](images/new/xv4.png) | `xv4` | `SAGITTAL_SHARP25SD` | 实在找不到合适的记号就随便找了个不会混淆的 |
+
+### English
+
+A simple and straight-forward solution to issue https://github.com/euwbah/musescore-microtonal-edo-plugin/issues/36 : Include 10 extra accidentals supported by Musescore representing 4-arrow accidentals so that the plugin can tune sharp-9 & sharp-10 EDOs
+
+#### New accidental
+
+| Accidental | Text | Internal name | Reason |
+| :---- | :---- | :---- | :---- |
+| ![v4](images/new/v4.png) | `v4` | `LOWER_ONE_SEPTIMAL_COMMA` | It looks like the left half of the natural |
+| ![u4](images/new/^4.png) | `^4` | `RAISE_ONE_SEPTIMAL_COMMA` | Pairing with the symbol above |
+| ![sv4](images/new/%23v4.png) | `#v4` | `RAISE_ONE_TRIDECIMAL_QUARTERTONE` | The sharp, but missing a bar, indicating less sharped |
+| ![su4](images/new/%23^4.png) | `#^4` | `SHARP_SLASH2` | The sharp, but having an extra bar, indicating more sharped |
+| ![bv4](images/new/bv4.png) | `bv4` | `THREE_TWELFTH_FLAT` | The flat, but with bars above, indicating sharper than flat |
+| ![bu4](images/new/b^4.png) | `b^4` | `FOUR_TWELFTH_FLAT` | The flat, but with signs below, indicating flatter than flat |
+| ![bbv4](images/new/bbv4.png) | `bbv4` | `NINE_TWELFTH_FLAT` | As above, an extra flat is added |
+| ![bbu4](images/new/bb^4.png) | `bb^4` | `TEN_TWELFTH_FLAT` | As above, an extra flat is added |
+| ![xu4](images/new/x^4.png) | `x^4` | `DOUBLE_SHARP_EQUAL_TEMPERED` | The double sharp, but with signs above, indicating sharper than double sharp |
+| ![xv4](images/new/xv4.png) | `xv4` | `SAGITTAL_SHARP25SD` | I cannot find an appropriate accidental, so I choose an arbitary one |
+
+
+## 以下为原介绍 Following is the original Readme
+
+# Microtonal plugin for Musescore 3.4+: Retune + Transpose in almost any EDO.
 
 ![screenshot](images/microtonal-plugin-screenshot.png)
 
