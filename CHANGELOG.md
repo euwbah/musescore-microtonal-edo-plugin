@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.3.3
+- Adopted val calculation to improve extensibility
+
 ### 2.3.2
 - Fixed perfect (sharp-0) EDOs not working properly, 35 EDO infinite loop
 - Fixed typo in getOverLimitEnharmonicEquivalent causing overlimit semitone nominals to be calculated

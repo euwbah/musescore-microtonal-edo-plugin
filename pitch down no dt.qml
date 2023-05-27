@@ -15,7 +15,7 @@ MuseScore {
         }
       }
 
-      version: "2.3.2"
+      version: "2.3.3"
       description: "Lowers selection (Shift-click) or individually selected notes (Ctrl-click) by 1 step of n EDO. " +
                    "This version prioritises up/down arrows over semisharp/flat accidentals whenever possible."
       menuPath: "Plugins.n-EDO.Lower Pitch By 1 Step (Arrows)"
@@ -74,8 +74,9 @@ MuseScore {
       */
       function getCentOffset(noteName, stepOffset, regAcc, edo, center, transFifths) {
         var stepSize = 1200.0 / edo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
         var twelveFifthVsEdoFifthCents = 700 - (fifthStep * stepSize);
         var transpositionCorrection = -transFifths * twelveFifthVsEdoFifthCents;
 
@@ -237,6 +238,29 @@ MuseScore {
         case 'x^':
         case 'x^1':
           return Accidental.DOUBLE_SHARP_ONE_ARROW_UP;
+        
+        // Addon
+        case '^4':
+          return Accidental.RAISE_ONE_SEPTIMAL_COMMA;
+        case 'v4':
+          return Accidental.LOWER_ONE_SEPTIMAL_COMMA;
+        case '#^4':
+          return Accidental.SHARP_SLASH2;
+        case '#v4':
+          return Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE;
+        case 'b^4':
+          return Accidental.FOUR_TWELFTH_FLAT;
+        case 'bv4':
+          return Accidental.THREE_TWELFTH_FLAT;
+        case 'x^4':
+          return Accidental.DOUBLE_SHARP_EQUAL_TEMPERED;
+        case 'xv4':
+          return Accidental.SAGITTAL_SHARP25SD;
+        case 'bb^4':
+          return Accidental.TEN_TWELFTH_FLAT;
+        case 'bbv4':
+          return Accidental.NINE_TWELFTH_FLAT;
+        
         default:
           return Accidental.NATURAL;
         }
@@ -245,8 +269,9 @@ MuseScore {
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertAccidentalTypeToSteps(accType, edo) {
         var accOffset = null;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         switch(accType) {
         case Accidental.SHARP_SLASH4:
@@ -376,6 +401,38 @@ MuseScore {
         case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           accOffset = -2*sharpValue - 3;
           break;
+        
+        // Addon
+        case Accidental.RAISE_ONE_SEPTIMAL_COMMA:  // ^4
+          accOffset = 4;
+          break;
+        case Accidental.LOWER_ONE_SEPTIMAL_COMMA:  // v4
+          accOffset = -4;
+          break;
+        case Accidental.SHARP_SLASH2:  // #^4
+          accOffset = sharpValue + 4;
+          break;
+        case Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE:  // #v4
+          accOffset = sharpValue - 4;
+          break;
+        case Accidental.FOUR_TWELFTH_FLAT:  // b^4
+          accOffset = -sharpValue + 4;
+          break;
+        case Accidental.THREE_TWELFTH_FLAT:  // bv4
+          accOffset = -sharpValue - 4;
+          break;
+        case Accidental.DOUBLE_SHARP_EQUAL_TEMPERED:  // x^4
+          accOffset = 2*sharpValue + 4;
+          break;
+        case Accidental.SAGITTAL_SHARP25SD:  // xv4
+          accOffset = 2*sharpValue - 4;
+          break;
+        case Accidental.TEN_TWELFTH_FLAT:  // bb^4
+          accOffset = -2*sharpValue + 4;
+          break;
+        case Accidental.NINE_TWELFTH_FLAT:  // bbv4
+          accOffset = -2*sharpValue - 4;
+          break;
         }
 
         return accOffset;
@@ -400,6 +457,8 @@ MuseScore {
 
         else if (numSharps == -2) {
           switch(numArrows) {
+          case -4:
+            return Accidental.NINE_TWELFTH_FLAT;    // Addon
           case -3:
             return Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN;
           case -2:
@@ -414,9 +473,13 @@ MuseScore {
             return Accidental.DOUBLE_FLAT_TWO_ARROWS_UP;
           case 3:
             return Accidental.DOUBLE_FLAT_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.TEN_TWELFTH_FLAT;    // Addon
           }
         } else if (numSharps == -1) {
           switch(numArrows) {
+          case -4:
+            return Accidental.THREE_TWELFTH_FLAT;    // Addon
           case -3:
             return Accidental.FLAT_THREE_ARROWS_DOWN;
           case -2:
@@ -431,9 +494,13 @@ MuseScore {
             return Accidental.FLAT_TWO_ARROWS_UP;
           case 3:
             return Accidental.FLAT_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.FOUR_TWELFTH_FLAT;    // Addon
           }
         } else if (numSharps == 0) {
           switch(numArrows) {
+          case -4:
+            return Accidental.LOWER_ONE_SEPTIMAL_COMMA;    // Addon
           case -3:
             return Accidental.NATURAL_THREE_ARROWS_DOWN;
           case -2:
@@ -448,9 +515,13 @@ MuseScore {
             return Accidental.NATURAL_TWO_ARROWS_UP;
           case 3:
             return Accidental.NATURAL_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.RAISE_ONE_SEPTIMAL_COMMA;    // Addon
           }
         } else if (numSharps == 1) {
           switch(numArrows) {
+          case -4:
+            return Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE;    // Addon
           case -3:
             return Accidental.SHARP_THREE_ARROWS_DOWN;
           case -2:
@@ -465,9 +536,13 @@ MuseScore {
             return Accidental.SHARP_TWO_ARROWS_UP;
           case 3:
             return Accidental.SHARP_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.SHARP_SLASH2;    // Addon
           }
         } else if (numSharps == 2) {
           switch(numArrows) {
+          case -4:
+            return Accidental.SAGITTAL_SHARP25SD;    // Addon
           case -3:
             return Accidental.DOUBLE_SHARP_THREE_ARROWS_DOWN;
           case -2:
@@ -482,6 +557,8 @@ MuseScore {
             return Accidental.DOUBLE_SHARP_TWO_ARROWS_UP;
           case 3:
             return Accidental.DOUBLE_SHARP_THREE_ARROWS_UP;
+          case 4:
+            return Accidental.DOUBLE_SHARP_EQUAL_TEMPERED;    // Addon
           }
         }
 
@@ -594,6 +671,28 @@ MuseScore {
           return a(-2, -2);
         case Accidental.DOUBLE_FLAT_THREE_ARROWS_DOWN:
           return a(-2, -3);
+          
+        // Addon
+        case Accidental.RAISE_ONE_SEPTIMAL_COMMA:  // ^4
+          return a(0, 4);
+        case Accidental.LOWER_ONE_SEPTIMAL_COMMA:  // v4
+          return a(0, -4);
+        case Accidental.SHARP_SLASH2:  // #^4
+          return a(1, 4);
+        case Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE:  // #v4
+          return a(1, -4);
+        case Accidental.FOUR_TWELFTH_FLAT:  // b^4
+          return a(-1, 4);
+        case Accidental.THREE_TWELFTH_FLAT:  // bv4
+          return a(-1, -4);
+        case Accidental.DOUBLE_SHARP_EQUAL_TEMPERED:  // x^4
+          return a(2, 4);
+        case Accidental.SAGITTAL_SHARP25SD:  // xv4
+          return a(2, -4);
+        case Accidental.TEN_TWELFTH_FLAT:  // bb^4
+          return a(-2, 4);
+        case Accidental.NINE_TWELFTH_FLAT:  // bbv4
+          return a(-2, -4);
         }
       }
 
@@ -610,8 +709,9 @@ MuseScore {
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function convertStepsToAccidentalType(steps, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         var numSharpsFlatter;
         var numSharpsSharper;
@@ -660,7 +760,7 @@ MuseScore {
           numArrows = useFlatSide ? arrowsOnFlatSide : arrowsOnSharpSide;
 
           while (numSharps > 2) {
-            if (numArrows + sharpValue > 3 || numArrows + sharpValue < -3) {
+            if (numArrows + sharpValue > 4 || numArrows + sharpValue < -4) {
               invalidTuningSystemError.open();
               return null;
             } else {
@@ -669,7 +769,7 @@ MuseScore {
             }
           }
           while (numSharps < -2) {
-            if (numArrows - sharpValue > 3 || numArrows - sharpValue < -3) {
+            if (numArrows - sharpValue > 4 || numArrows - sharpValue < -4) {
               invalidTuningSystemError.open();
               return null;
             } else {
@@ -685,7 +785,7 @@ MuseScore {
           // if this is a sharp-0 perfect tuning.
           numArrows = arrowsOnSharpSide;
 
-          if (numArrows > 3 || numArrows < -3) {
+          if (numArrows > 4 || numArrows < -4) {
             invalidTuningSystemError.open();
             return null;
           }
@@ -785,6 +885,29 @@ MuseScore {
         case Accidental.SHARP2_ARROW_UP:
         case Accidental.DOUBLE_SHARP_ONE_ARROW_UP:
           return 'x^';
+          
+        // Addon
+        case Accidental.RAISE_ONE_SEPTIMAL_COMMA:  // ^4
+          return '^4';
+        case Accidental.LOWER_ONE_SEPTIMAL_COMMA:  // v4
+          return 'v4';
+        case Accidental.SHARP_SLASH2:  // #^4
+          return '#^4';
+        case Accidental.RAISE_ONE_TRIDECIMAL_QUARTERTONE:  // #v4
+          return '#v4';
+        case Accidental.FOUR_TWELFTH_FLAT:  // b^4
+          return 'b^4';
+        case Accidental.THREE_TWELFTH_FLAT:  // bv4
+          return 'bv4';
+        case Accidental.DOUBLE_SHARP_EQUAL_TEMPERED:  // x^4
+          return 'x^4';
+        case Accidental.SAGITTAL_SHARP25SD:  // xv4
+          return 'xv4';
+        case Accidental.TEN_TWELFTH_FLAT:  // bb^4
+          return 'bb^4';
+        case Accidental.NINE_TWELFTH_FLAT:  // bbv4
+          return 'bbv4';
+        
         case Accidental.NONE:
           return 'none';
         default:
@@ -817,8 +940,9 @@ MuseScore {
            less than or eq. to 3 arrows, there is no such note and the tuning system cannot be supported
            as there are more notes than the number of accidentals available in musescore
         */
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         var acc = deconstructAccidental(acc);
 
@@ -848,6 +972,8 @@ MuseScore {
             return constructAccidental(acc.numSharps - 1, 0);
 
           // check if the number of arrows coincide with quarter tone accidentals
+          // in the 'arrow priority' version, this is only enabled if absolutely necessary
+          // (when apotome size is 8 steps and above)
           // <NO DT VARIANT CHECKPOINT>
           else if (acc.numArrows == 1/2 * sharpValue && acc.numSharps < 2 && sharpValue >= 8)
             return constructAccidental(acc.numSharps + 0.5, 0);
@@ -877,21 +1003,21 @@ MuseScore {
         }
 
         // otherwise, make sure its a valid accidental
-        if ((sharpValue > 0 && acc.numSharps == 2 && acc.numArrows > 3) ||
-            (sharpValue < 0 && acc.numSharps == -2 && acc.numArrows > 3))
+        if ((sharpValue > 0 && acc.numSharps == 2 && acc.numArrows > 4) ||
+            (sharpValue < 0 && acc.numSharps == -2 && acc.numArrows > 4))
           return null;
 
-        // make sure the number of arrows are valid. (from -3 to +3)
+        // make sure the number of arrows are valid. (from -3 to +3) (Addon: change to -4 ~ +4)
         // NOTE: will possibly return null from here if edo is perfect (sharp-0)
         if (sharpValue > 0) {
-          if (acc.numArrows > 3 && acc.numArrows - sharpValue >= -3 && acc.numArrows - sharpValue <= 3 && acc.numSharps < 2)
+          if (acc.numArrows > 3 && acc.numArrows - sharpValue >= -4 && acc.numArrows - sharpValue <= 4 && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
-          else if (acc.numArrows < -3 && acc.numArrows + sharpValue >= -3 && acc.numArrows + sharpValue <= 3 && acc.numSharps > -2)
+          else if (acc.numArrows < -3 && acc.numArrows + sharpValue >= -4 && acc.numArrows + sharpValue <= 4 && acc.numSharps > -2)
             return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
         } else if (sharpValue < 0) {
-          if (acc.numArrows > 3 && acc.numArrows + sharpValue >= -3 && acc.numArrows + sharpValue <= 3 && acc.numSharps > -2)
+          if (acc.numArrows > 3 && acc.numArrows + sharpValue >= -4 && acc.numArrows + sharpValue <= 4 && acc.numSharps > -2)
             return constructAccidental(acc.numSharps - 1, acc.numArrows + sharpValue);
-          else if (acc.numArrows < -3 && acc.numArrows - sharpValue >= -3 && acc.numArrows - sharpValue <= 3 && acc.numSharps < 2)
+          else if (acc.numArrows < -3 && acc.numArrows - sharpValue >= -4 && acc.numArrows - sharpValue <= 4 && acc.numSharps < 2)
             return constructAccidental(acc.numSharps + 1, acc.numArrows - sharpValue);
         }
 
@@ -922,8 +1048,9 @@ MuseScore {
       //
       // <TUNING SYSTEM VARIANT CHECKPOINT>
       function getOverLimitEnharmonicEquivalent(baseNote, edo) {
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
         switch(baseNote) {
         // <UP DOWN VARIANT CHECKPOINT> change to D E G A B for downwards variant
         case 'd':
@@ -931,8 +1058,8 @@ MuseScore {
         case 'g':
         case 'a':
         case 'b':
-          // a whole tone up enharmonic nominal. Steps = 2 fifthStep - octave.
-          var wholeToneSteps = 2 * fifthStep - edo;
+          // a whole tone up enharmonic nominal. 9/8 = [-3 2>.
+          var wholeToneSteps = -3*val[0] + 2*val[1];
 
           // <UP DOWN VARIANT CHECKPOINT> flip steps direction
           // limits are: x^3 or bb^3 (super-flat) if upwards, bbv3 or xv3 (super-flat) if downwards
@@ -944,8 +1071,8 @@ MuseScore {
 
           return convertStepsToAccidentalType(newSteps, edo);
         default:
-          // a diatonic semitone up enharmonic nominal. Steps = -5 fifthStep + 3 octaves
-          var semitoneSteps = -5 * fifthStep + 3 * edo;
+          // a diatonic semitone up enharmonic nominal. 256/243 = [8 -5>.
+          var semitoneSteps = 8*val[0] - 5*val[1];
           var overLimitSteps = (sharpValue >= 0) ? (2 * sharpValue + 3 + 1) : (-2 * sharpValue + 3 + 1);
           var newSteps = overLimitSteps - semitoneSteps;
           return convertStepsToAccidentalType(newSteps, edo);
@@ -961,10 +1088,11 @@ MuseScore {
       function getEnharmonics(baseNote, offset, edo) {
         var above, below;
 
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
-        var wholeToneSteps = 2 * fifthStep - edo;
-        var semitoneSteps = -5 * fifthStep + 3 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
+        var wholeToneSteps = -3*val[0] + 2*val[1];
+        var semitoneSteps = 8*val[0] - 5*val[1];
 
         switch (baseNote) {
         case 'a': case 'd': case 'g':
@@ -2171,8 +2299,9 @@ MuseScore {
       function getNotePitchData(cursor, note, parms) {
         var noteData = {};
         var edo = parms.currEdo;
-        var fifthStep = Math.round(edo * Math.log(3/2) / Math.LN2);
-        var sharpValue = 7 * fifthStep - 4 * edo;
+        var val = [2, 3].map (function (q) {return Math.round(edo * Math.log(q) / Math.LN2);});
+        var fifthStep = -val[0] + val[1];
+        var sharpValue = -11*val[0] + 7*val[1];
 
         noteData.line = note.line;
         noteData.tpc = note.tpc;
