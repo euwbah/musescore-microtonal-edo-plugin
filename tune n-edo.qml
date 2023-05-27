@@ -105,7 +105,7 @@ MuseScore {
 
         };
 
-        clazz.readFromNote = function(note) {
+        clazz.prototype.readFromNote = function(note) {
 
         };
       })()
@@ -585,6 +585,11 @@ MuseScore {
                     var notes = cursor.element.notes;
                     for (var i = 0; i < notes.length; i++) {
                       var note = notes[i];
+                      // find other symbols (aux accidentals) attached to the note
+                      // for (var j = 0; j < note.elements.length; j++) {
+                      //   if (note.elements[j].symbol)
+                      //     console.log(note.elements[j].symbol);
+                      // }
                       func(note, cursor.segment, parms, rep === 0);
                     }
                   }
