@@ -4,7 +4,7 @@
 
 ## ⚠️ This project is deprecated ⚠️
 
-This project is no longer maintained. Please use [euwbah/musescore-xen-tuner](https://github.com/euwbah/musescore-xen-tuner/tree/master) instead, which is a much more powerful and general solution for microtonality in MuseScore 3. Supports JI, EDOs, stretched tunings, non-octave tunings, NEJI, Bohlen-Pierce, negative staves, chromatic staves, custom/variable nominals, accidental ligatures (HEJI & Sagittal). MS 4 support is being worked on.
+This project is no longer maintained. Please use [euwbah/musescore-xen-tuner](https://github.com/euwbah/musescore-xen-tuner) instead, which is a much more powerful and general solution for microtonality in MuseScore 3. Supports JI, EDOs, stretched tunings, non-octave tunings, NEJI, Bohlen-Pierce, negative staves, chromatic staves, custom/variable nominals, accidental ligatures (HEJI & Sagittal). MS 4 support is being worked on.
 
 -----
 
